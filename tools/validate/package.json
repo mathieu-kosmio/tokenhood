@@ -1,0 +1,22 @@
+{
+  "name": "@tokenhood/validate",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Validation des fichiers .tokenhood/ et des exemples contre les JSON Schema de schemas/",
+  "type": "module",
+  "engines": {
+    "node": ">=22"
+  },
+  "bin": {
+    "tokenhood-validate": "validate.mjs"
+  },
+  "scripts": {
+    "validate": "node validate.mjs",
+    "test": "node --test test/*.test.mjs"
+  },
+  "dependencies": {
+    "ajv": "8.20.0",
+    "ajv-formats": "3.0.1",
+    "yaml": "2.9.1"
+  }
+}

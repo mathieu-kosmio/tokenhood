@@ -9,6 +9,8 @@ type: docs
 objective: "Écrire le skill qui guide un agent contributeur : protocole de réservation, règle de conduite face à une question, règles de sécurité."
 scope:
   paths: [skills/tokenhood-contribute/]
+inputs:
+  paths: [docs/specs/skills.md, docs/specs/gouvernance.md, docs/specs/securite-et-conformite.md, schemas/]
 outputs:
   kind: pull_request
 acceptance:
@@ -19,6 +21,7 @@ acceptance:
 dependencies:
   - mission: TH-002
     type: integrated
+skills: []                 # tokenhood-contribute@0.1 dès TH-004
 estimate:
   size: M
   tokens_eq: null          # à produire par l'agent au cadrage

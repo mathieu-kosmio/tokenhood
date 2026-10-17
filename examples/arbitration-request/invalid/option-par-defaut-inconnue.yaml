@@ -1,0 +1,12 @@
+# Invalide : l'option par défaut doit exister parmi les options (contrôle sémantique).
+schema_version: "2.1"
+type: architecture.choice
+category: 2
+raised_by: {kind: human, user: mathieu-kosmio}
+title: {fr: Stockage des artefacts}
+context: Garage ou MinIO pour le stockage S3 interne.
+options:
+  - {id: A, label: Garage, impact: "Léger, écrit en Rust", reversible: true}
+  - {id: B, label: MinIO, impact: Plus répandu, reversible: true}
+default_option: C
+blocking: false

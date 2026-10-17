@@ -1,0 +1,77 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://tokenhood.kosm.io/schemas/2.1/common.schema.json",
+  "title": "Tokenhood · définitions communes",
+  "description": "Types partagés par les formats Tokenhood V2.1 (docs/specs/annexes-formats.md).",
+  "$defs": {
+    "schemaVersion": {
+      "description": "Version du format. Un changement incompatible crée une nouvelle version majeure.",
+      "type": "string",
+      "const": "2.1"
+    },
+    "lang": {
+      "description": "Code de langue ISO 639-1.",
+      "type": "string",
+      "pattern": "^[a-z]{2}$"
+    },
+    "i18nText": {
+      "description": "Texte avec ses traductions, indexé par code de langue. Au moins une langue.",
+      "type": "object",
+      "propertyNames": { "$ref": "#/$defs/lang" },
+      "additionalProperties": { "type": "string", "minLength": 1 },
+      "minProperties": 1
+    },
+    "text": {
+      "description": "Texte simple, ou texte avec traductions.",
+      "oneOf": [
+        { "type": "string", "minLength": 1 },
+        { "$ref": "#/$defs/i18nText" }
+      ]
+    },
+    "missionId": {
+      "description": "Identifiant stable d'une mission, unique dans le projet (TH-104).",
+      "type": "string",
+      "pattern": "^[A-Z][A-Z0-9]{1,9}-[0-9]{3,}$"
+    },
+    "decisionId": {
+      "description": "Référence à une décision : ADR-002, DEC-2026-003.",
+      "type": "string",
+      "pattern": "^(ADR-[0-9]{3}|DEC-[0-9]{4}-[0-9]{3})$"
+    },
+    "attemptId": {
+      "type": "string",
+      "pattern": "^att_[A-Za-z0-9]{4,}$"
+    },
+    "agentId": {
+      "type": "string",
+      "pattern": "^agt_[A-Za-z0-9]{3,}$"
+    },
+    "submissionId": {
+      "type": "string",
+      "pattern": "^SUB-[0-9]{3,}$"
+    },
+    "skillRef": {
+      "description": "Skill à charger, avec sa version : tokenhood-contribute@0.1.",
+      "type": "string",
+      "pattern": "^[a-z0-9][a-z0-9-]*@[0-9]+(\\.[0-9]+){0,2}$"
+    },
+    "relativePath": {
+      "description": "Chemin relatif à la racine du dépôt, sans remontée.",
+      "type": "string",
+      "minLength": 1,
+      "not": { "pattern": "(^/|(^|/)\\.\\.(/|$))" }
+    },
+    "risk": {
+      "description": "Évalué sur les opérations réellement exécutées, pas seulement sur le livrable.",
+      "enum": ["low", "medium", "high", "critical"]
+    },
+    "commitSha": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{7,40}$"
+    },
+    "sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    }
+  }
+}

@@ -1,0 +1,13 @@
+# Invalide : un agent qui continue sur l'option par défaut ne peut pas bloquer, et il doit déclarer sa conduite.
+schema_version: "2.1"
+type: spec.clarification
+category: 1
+raised_by: {kind: agent, agent: agt_21aa, mission: TH-202, attempt: att_01JC2M}
+title: {fr: Format des identifiants}
+context: ULID ou UUID v7.
+options:
+  - {id: A, label: ULID, impact: Lisible, reversible: true}
+  - {id: B, label: UUID v7, impact: Natif PostgreSQL, reversible: true}
+default_option: A
+conduct: continue
+blocking: true

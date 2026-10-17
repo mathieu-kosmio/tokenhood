@@ -1,0 +1,207 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://tokenhood.kosm.io/schemas/2.1/mission.schema.json",
+  "title": "Tokenhood · contrat de mission",
+  "description": "Fichier .tokenhood/missions/<ID>.yaml. Référence : docs/specs/missions.md.",
+  "type": "object",
+  "required": ["schema_version", "id", "version", "title", "type", "objective", "scope", "inputs", "outputs", "acceptance", "skills", "estimate", "risk", "attempts", "verification"],
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": { "$ref": "common.schema.json#/$defs/schemaVersion" },
+    "id": { "$ref": "common.schema.json#/$defs/missionId" },
+    "version": {
+      "description": "Incrémentée à chaque modification du contrat.",
+      "type": "integer",
+      "minimum": 1
+    },
+    "lot": {
+      "description": "Lot du plan de développement (amorçage).",
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 4
+    },
+    "title": { "$ref": "common.schema.json#/$defs/text" },
+    "type": {
+      "type": "string",
+      "pattern": "^(code|docs|i18n|design|research|data|review|mission\\.drafting|skill\\.authoring|governance\\.[a-z][a-z_]*)$"
+    },
+    "objective": { "$ref": "common.schema.json#/$defs/text" },
+    "scope": {
+      "description": "Périmètre modifiable.",
+      "type": "object",
+      "required": ["paths"],
+      "additionalProperties": false,
+      "properties": {
+        "paths": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": { "$ref": "common.schema.json#/$defs/relativePath" }
+        },
+        "resources": { "type": "array", "items": { "type": "string", "minLength": 1 } }
+      }
+    },
+    "inputs": {
+      "description": "Références à lire : chemins, issues, ressources, décisions.",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "paths": { "type": "array", "items": { "$ref": "common.schema.json#/$defs/relativePath" } },
+        "issues": { "type": "array", "items": { "type": "string", "minLength": 1 } },
+        "resources": { "type": "array", "items": { "type": "string", "minLength": 1 } },
+        "decisions": { "type": "array", "items": { "$ref": "common.schema.json#/$defs/decisionId" } }
+      }
+    },
+    "outputs": {
+      "type": "object",
+      "required": ["kind"],
+      "additionalProperties": false,
+      "properties": {
+        "kind": { "enum": ["pull_request", "file", "report", "decision"] },
+        "paths": { "type": "array", "items": { "$ref": "common.schema.json#/$defs/relativePath" } }
+      }
+    },
+    "acceptance": {
+      "description": "Commandes exécutables et exigences vérifiables par le vérificateur.",
+      "type": "object",
+      "required": ["requirements"],
+      "additionalProperties": false,
+      "properties": {
+        "commands": { "type": "array", "items": { "type": "string", "minLength": 1 } },
+        "requirements": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "$ref": "common.schema.json#/$defs/text" }
+        }
+      }
+    },
+    "dependencies": {
+      "type": "array",
+      "items": {
+        "oneOf": [
+          {
+            "type": "object",
+            "required": ["mission", "type"],
+            "additionalProperties": false,
+            "properties": {
+              "mission": { "$ref": "common.schema.json#/$defs/missionId" },
+              "type": {
+                "description": "integrated : présente dans la branche cible ; artifact : artefact versionné consommable.",
+                "enum": ["integrated", "artifact"]
+              }
+            }
+          },
+          {
+            "type": "object",
+            "required": ["decision"],
+            "additionalProperties": false,
+            "properties": {
+              "decision": { "$ref": "common.schema.json#/$defs/decisionId" }
+            }
+          }
+        ]
+      }
+    },
+    "skills": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": { "$ref": "common.schema.json#/$defs/skillRef" }
+    },
+    "languages": {
+      "type": "object",
+      "required": ["source"],
+      "additionalProperties": false,
+      "properties": {
+        "source": { "$ref": "common.schema.json#/$defs/lang" },
+        "targets": { "type": "array", "items": { "$ref": "common.schema.json#/$defs/lang" } }
+      }
+    },
+    "estimate": {
+      "type": "object",
+      "required": ["tokens_eq", "source"],
+      "additionalProperties": false,
+      "properties": {
+        "size": { "enum": ["S", "M", "L"] },
+        "tokens_eq": {
+          "description": "Fourchette de tokens-équivalents ; null tant que l'agent ne l'a pas produite au cadrage.",
+          "oneOf": [
+            { "type": "null" },
+            {
+              "type": "object",
+              "required": ["low", "high"],
+              "additionalProperties": false,
+              "properties": {
+                "low": { "type": "integer", "minimum": 0 },
+                "high": { "type": "integer", "minimum": 0 }
+              }
+            }
+          ]
+        },
+        "duration_hours": {
+          "type": "object",
+          "required": ["low", "high"],
+          "additionalProperties": false,
+          "properties": {
+            "low": { "type": "number", "minimum": 0 },
+            "high": { "type": "number", "minimum": 0 }
+          }
+        },
+        "source": { "enum": ["plan", "agent", "porteur", "governance.estimation"] }
+      }
+    },
+    "risk": { "$ref": "common.schema.json#/$defs/risk" },
+    "attempts": {
+      "oneOf": [
+        {
+          "type": "object",
+          "required": ["mode"],
+          "additionalProperties": false,
+          "properties": { "mode": { "const": "exclusive" } }
+        },
+        {
+          "type": "object",
+          "required": ["mode", "max"],
+          "additionalProperties": false,
+          "properties": {
+            "mode": { "const": "parallel" },
+            "max": { "type": "integer", "minimum": 2 }
+          }
+        }
+      ]
+    },
+    "execution": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "max_lease_minutes": { "type": "integer", "minimum": 10 },
+        "environment": { "enum": ["any", "container", "vm"] }
+      }
+    },
+    "verification": {
+      "type": "object",
+      "required": ["reviewers", "maintainer_approval"],
+      "additionalProperties": false,
+      "properties": {
+        "reviewers": { "type": "integer", "minimum": 1 },
+        "prefer_different_model_family": { "type": "boolean" },
+        "maintainer_approval": { "const": true }
+      }
+    },
+    "priority": { "enum": ["low", "normal", "high", "urgent"] },
+    "status": {
+      "description": "Amorçage seulement : l'état fait autorité sur la plateforme dès le lot 2.",
+      "enum": ["draft", "open", "blocked", "in_progress", "awaiting_decision", "accepted", "integrated", "closed", "cancelled"]
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": { "risk": { "enum": ["high", "critical"] } },
+        "required": ["risk"]
+      },
+      "then": {
+        "properties": { "verification": { "properties": { "reviewers": { "minimum": 2 } } } }
+      }
+    }
+  ]
+}

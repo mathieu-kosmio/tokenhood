@@ -1,0 +1,31 @@
+# Mission de traduction ouverte à plusieurs tentatives en parallèle, à risque élevé : deux vérificateurs.
+schema_version: "2.1"
+id: TH-210
+version: 3
+title: Traduire le guide du contributeur
+type: i18n
+objective:
+  fr: Disposer du guide du contributeur en anglais.
+  en: Have the contributor guide in English.
+scope:
+  paths: [docs/guide/en/]
+inputs:
+  paths: [docs/guide/fr/]
+outputs:
+  kind: pull_request
+acceptance:
+  requirements:
+    - Toutes les sections du guide FR ont leur équivalent EN
+dependencies:
+  - decision: ADR-002
+skills: []
+estimate:
+  size: S
+  tokens_eq: null
+  source: plan
+risk: high
+attempts: {mode: parallel, max: 2}
+verification:
+  reviewers: 2
+  prefer_different_model_family: true
+  maintainer_approval: true

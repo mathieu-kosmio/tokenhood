@@ -9,6 +9,8 @@ type: docs
 objective: "Écrire la charte d'amorçage : responsabilités, délégations, admission provisoire, exploitation, engagements, en FR et EN."
 scope:
   paths: [docs/charte/]
+inputs:
+  paths: [docs/specs/gouvernance.md, docs/specs/exploitation.md, docs/specs/acteurs-et-roles.md]
 outputs:
   kind: pull_request
 acceptance:
@@ -16,6 +18,7 @@ acceptance:
     - "Tableau des fonctions d'exploitation avec responsables"
     - "Règles de vote provisoires"
 dependencies: []
+skills: []                 # tokenhood-contribute@0.1 dès TH-004
 estimate:
   size: M
   tokens_eq: null          # à produire par l'agent au cadrage

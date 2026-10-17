@@ -1,0 +1,17 @@
+schema_version: "2.1"
+cross_review:
+  required: true
+  reviewer_must_differ_from_producer: true
+  exclude_declared_links: true
+  exclude_project_maintainers: true
+  reciprocal_window: 3                 # N dernières missions, à fixer par la gouvernance
+  high_risk:
+    reviewers: 2
+    prefer_different_model_family: true
+report:
+  scope_declared: true                 # vérifié, non vérifié, incertain
+  bound_to: [contract_version, commit_or_sha256]
+  invalidated_on_change: true
+approval:
+  maintainer_required: true
+  merge_by: human

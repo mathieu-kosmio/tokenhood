@@ -1,0 +1,13 @@
+schema_version: "2.1"
+execution:
+  isolated_environment_required_when: runs_project_commands
+  network: restricted
+  secrets_mounted: false
+  acceptance_commands_source: default_branch_only
+content:
+  external_inputs_untrusted: true     # issues, code et ressources balisés comme non fiables
+  skills_cannot_relax_policies: true
+forbidden:
+  - llm_provider_calls_server_side
+  - direct_push_to_main
+  - kyb_documents_in_mission_packages

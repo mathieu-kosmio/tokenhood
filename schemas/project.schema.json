@@ -1,0 +1,112 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://tokenhood.kosm.io/schemas/2.1/project.schema.json",
+  "title": "Tokenhood · manifeste du projet",
+  "description": "Fichier .tokenhood/project.yaml d'un projet sous convention. Référence : docs/specs/annexes-formats.md.",
+  "type": "object",
+  "required": ["schema_version", "project", "missions", "policies", "flow_limits", "contributions"],
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": { "$ref": "common.schema.json#/$defs/schemaVersion" },
+    "project": {
+      "type": "object",
+      "required": ["id", "name", "license", "languages", "repository", "contract"],
+      "additionalProperties": false,
+      "properties": {
+        "id": { "type": "string", "pattern": "^[a-z0-9][a-z0-9-]{1,62}$" },
+        "name": { "type": "string", "minLength": 1 },
+        "license": {
+          "description": "Identifiant SPDX, ou TBD tant que la gouvernance n'a pas tranché.",
+          "type": "string",
+          "pattern": "^(TBD|[A-Za-z0-9][A-Za-z0-9.+-]*( (AND|OR|WITH) [A-Za-z0-9][A-Za-z0-9.+-]*)*)$"
+        },
+        "languages": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": { "$ref": "common.schema.json#/$defs/lang" }
+        },
+        "repository": {
+          "type": "object",
+          "required": ["provider", "url"],
+          "additionalProperties": false,
+          "properties": {
+            "provider": { "enum": ["github", "gitlab", "forgejo"] },
+            "url": { "type": "string", "format": "uri", "pattern": "^https://" }
+          }
+        },
+        "contract": {
+          "type": "object",
+          "required": ["id", "status"],
+          "additionalProperties": false,
+          "properties": {
+            "id": { "type": "string", "pattern": "^CTR-[0-9]{4}-[0-9]{3}$" },
+            "status": { "enum": ["bootstrap", "active", "suspended", "ended"] }
+          }
+        }
+      }
+    },
+    "missions": {
+      "type": "object",
+      "required": ["directory"],
+      "additionalProperties": false,
+      "properties": {
+        "directory": { "$ref": "common.schema.json#/$defs/relativePath" },
+        "import_from_issues": {
+          "type": "object",
+          "required": ["label"],
+          "additionalProperties": false,
+          "properties": { "label": { "type": "string", "minLength": 1 } }
+        }
+      }
+    },
+    "skills": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "directory": { "$ref": "common.schema.json#/$defs/relativePath" },
+        "platform": {
+          "type": "array",
+          "items": { "type": "string", "pattern": "^[a-z0-9][a-z0-9-]*(@[0-9]+(\\.[0-9]+){0,2})?$" }
+        }
+      }
+    },
+    "policies": {
+      "type": "object",
+      "required": ["security", "review"],
+      "additionalProperties": false,
+      "properties": {
+        "security": { "$ref": "common.schema.json#/$defs/relativePath" },
+        "review": { "$ref": "common.schema.json#/$defs/relativePath" }
+      }
+    },
+    "flow_limits": {
+      "description": "Plafonds de flux du projet (docs/specs/valeur-nette.md).",
+      "type": "object",
+      "required": ["max_in_production", "max_awaiting_review_or_integration"],
+      "additionalProperties": false,
+      "properties": {
+        "max_in_production": { "type": "integer", "minimum": 1 },
+        "max_awaiting_review_or_integration": { "type": "integer", "minimum": 1 }
+      }
+    },
+    "feedback": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "after_integration_days": { "type": "integer", "minimum": 1 }
+      }
+    },
+    "contributions": {
+      "type": "object",
+      "required": ["direct_push", "require_human_merge"],
+      "additionalProperties": false,
+      "properties": {
+        "direct_push": { "const": false },
+        "require_human_merge": { "const": true },
+        "dco": { "type": "boolean" },
+        "ai_attribution_trailer": { "type": "string", "pattern": "^[A-Z][A-Za-z-]*$" }
+      }
+    }
+  }
+}

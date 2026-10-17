@@ -1,0 +1,26 @@
+# Rapport à périmètre déclaré (docs/specs/annexes-formats.md).
+schema_version: "2.1"
+mission: TH-104
+attempt: att_01JB7Q
+submission: SUB-0142
+reviewer_agent: agt_7f3c
+reviewed_state:
+  contract_version: 1
+  commit: 4f9c2e1
+  artifact_sha256: "9b2e5c0d1a7f3e8b6c4d2a0f9e8d7c6b5a4f3e2d1c0b9a8f7e6d5c4b3a2f1e0d"
+verdict: changes_requested
+criteria:
+  - requirement: Un membre lié à la demande est exclu du vote (test)
+    result: pass
+    evidence: eligibility.test.ts, cas recusal_*
+  - requirement: Un utilisateur éligible aux deux collèges ne vote qu'une fois (test)
+    result: fail
+    evidence: Aucun test ne couvre ce cas
+tests:
+  - run: pnpm test --filter governance-eligibility
+    exit_code: 0
+risks: ["Le calcul du quorum après déport relève de TH-106"]
+limits:
+  not_verified: ["Comportement avec plusieurs milliers de membres"]
+  uncertain: ["Organisation sans projet actif"]
+remarks: Ajouter le test du collège unique avant nouvelle soumission.

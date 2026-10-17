@@ -1,0 +1,17 @@
+# Invalide : aucune exigence vérifiable, type inconnu, approbation humaine désactivée.
+schema_version: "2.1"
+id: TH-105
+version: 1
+title: {fr: Demande d'arbitrage}
+type: feature
+objective: Gérer les demandes d'arbitrage.
+scope: {paths: [packages/core/governance/]}
+inputs: {}
+outputs: {kind: pull_request}
+acceptance:
+  requirements: []
+skills: []
+estimate: {tokens_eq: null, source: plan}
+risk: medium
+attempts: {mode: exclusive}
+verification: {reviewers: 1, maintainer_approval: false}

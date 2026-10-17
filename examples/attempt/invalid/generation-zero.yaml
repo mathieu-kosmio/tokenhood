@@ -1,0 +1,10 @@
+# Invalide : la génération commence à 1, le bail est une date ISO 8601 et le niveau de plafond est connu.
+attempt:
+  id: att_01JB7Q
+  mission: TH-104
+  contract_version: 1
+  generation: 0
+  lease_expires_at: demain midi
+  budget:
+    level: illimité
+    limit: {unit: agent_hours, value: 3}

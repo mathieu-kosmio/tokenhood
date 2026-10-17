@@ -1,0 +1,38 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://tokenhood.kosm.io/schemas/2.1/policy-security.schema.json",
+  "title": "Tokenhood · politique de sécurité du projet",
+  "description": "Fichier .tokenhood/policies/security.yaml. Une skill ne peut jamais assouplir ces règles. Référence : docs/specs/securite-et-conformite.md.",
+  "type": "object",
+  "required": ["schema_version", "execution", "content", "forbidden"],
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": { "$ref": "common.schema.json#/$defs/schemaVersion" },
+    "execution": {
+      "type": "object",
+      "required": ["isolated_environment_required_when", "network", "secrets_mounted", "acceptance_commands_source"],
+      "additionalProperties": false,
+      "properties": {
+        "isolated_environment_required_when": { "enum": ["always", "runs_project_commands"] },
+        "network": { "enum": ["none", "restricted", "open"] },
+        "secrets_mounted": { "const": false },
+        "acceptance_commands_source": { "const": "default_branch_only" }
+      }
+    },
+    "content": {
+      "type": "object",
+      "required": ["external_inputs_untrusted", "skills_cannot_relax_policies"],
+      "additionalProperties": false,
+      "properties": {
+        "external_inputs_untrusted": { "const": true },
+        "skills_cannot_relax_policies": { "const": true }
+      }
+    },
+    "forbidden": {
+      "type": "array",
+      "uniqueItems": true,
+      "contains": { "const": "llm_provider_calls_server_side" },
+      "items": { "type": "string", "pattern": "^[a-z][a-z0-9_]*$" }
+    }
+  }
+}

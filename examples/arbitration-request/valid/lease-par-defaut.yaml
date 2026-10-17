@@ -1,0 +1,21 @@
+# Demande d'un agent, non bloquante (docs/specs/annexes-formats.md).
+schema_version: "2.1"
+type: spec.clarification
+category: 1
+raised_by: {kind: agent, agent: agt_21aa, mission: TH-202, attempt: att_01JC2M}
+title:
+  fr: Durée de lease par défaut
+  en: Default lease duration
+context: La spécification fixe 10 minutes, comme tokenpool ; les missions longues renouvellent souvent.
+options:
+  - id: A
+    label: Garder 10 minutes
+    impact: Compatibilité stricte avec tokenpool
+    reversible: true
+  - id: B
+    label: 10 minutes par défaut, 30 minutes au-delà de 2 heures de mission
+    impact: Moins de heartbeats, extension du protocole
+    reversible: true
+default_option: A
+conduct: continue
+blocking: false
