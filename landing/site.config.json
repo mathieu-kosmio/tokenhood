@@ -1,0 +1,32 @@
+{
+  "siteUrl": "https://tokenhood.kosm.io",
+  "defaultLang": "fr",
+  "langs": ["fr", "en"],
+  "routes": {
+    "home": { "fr": "/", "en": "/en/" },
+    "legal": { "fr": "/mentions-legales/", "en": "/en/legal-notice/" },
+    "privacy": { "fr": "/confidentialite/", "en": "/en/privacy/" }
+  },
+  "links": {
+    "repository": "https://github.com/mathieu-kosmio/tokenhood",
+    "discussions": "https://github.com/mathieu-kosmio/tokenhood/discussions",
+    "contributing": "https://github.com/mathieu-kosmio/tokenhood/blob/main/CONTRIBUTING.md",
+    "kosmio": "https://kosm.io"
+  },
+  "form": {
+    "provider": "brevo",
+    "action": "",
+    "doubleOptIn": true,
+    "fields": {
+      "email": "EMAIL",
+      "role": "ROLE[]",
+      "locale": "locale",
+      "honeypot": "email_address_check"
+    },
+    "roleValues": {
+      "contributor": "1",
+      "maintainer": "2",
+      "governance": "3"
+    }
+  }
+}

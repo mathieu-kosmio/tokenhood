@@ -1,0 +1,109 @@
+{
+  "legal": {
+    "metaTitle": "Legal notice · Tokenhood",
+    "metaDescription": "Publisher, publication director and host of the tokenhood.kosm.io website.",
+    "eyebrow": "Legal information",
+    "title": "Legal notice",
+    "intro": "In accordance with French law no. 2004-575 of 21 June 2004 on confidence in the digital economy, here is the information about the publisher of the tokenhood.kosm.io website.",
+    "sections": [
+      {
+        "title": "Publisher",
+        "rows": [
+          { "label": "Company name", "value": "Kosmio" },
+          { "label": "Legal form", "value": "SAS (simplified joint-stock company) with a share capital of €7,500" },
+          { "label": "Registered office", "value": "Villa 8, 301 rue du Romarin, 34160 Castries, France" },
+          { "label": "SIREN", "value": "983 943 903, R.C.S. Montpellier" },
+          { "label": "EU VAT number", "value": "FR83983943903" },
+          { "label": "Contact", "value": "contact@kosm.io" }
+        ],
+        "paragraphs": []
+      },
+      {
+        "title": "Publication director",
+        "rows": [
+          { "label": "Name", "value": "Zokama Sakanga" },
+          { "label": "Position", "value": "President of Kosmio" }
+        ],
+        "paragraphs": []
+      },
+      {
+        "title": "Host",
+        "rows": [
+          { "label": "Provider", "value": "OVH SAS" },
+          { "label": "Address", "value": "2 rue Kellermann, 59100 Roubaix, France" },
+          { "label": "Website", "value": "https://www.ovhcloud.com" }
+        ],
+        "paragraphs": []
+      },
+      {
+        "title": "Intellectual property",
+        "rows": [],
+        "paragraphs": [
+          "Tokenhood's source code is public on GitHub: https://github.com/mathieu-kosmio/tokenhood. Its free licence is being decided by the project's governance.",
+          "The Kosmio name and logo remain the property of Kosmio. The Lexend, Public Sans and JetBrains Mono typefaces are distributed under the SIL Open Font License 1.1."
+        ]
+      }
+    ],
+    "updated": "Last updated: October 2026."
+  },
+  "privacy": {
+    "metaTitle": "Privacy policy · Tokenhood",
+    "metaDescription": "What data the tokenhood.kosm.io website processes, why, and how to exercise your rights.",
+    "eyebrow": "Personal data",
+    "title": "Privacy policy",
+    "intro": "Tokenhood is a commons started by Kosmio. This page explains what data the tokenhood.kosm.io website processes, why, and how to exercise your rights.",
+    "sections": [
+      {
+        "title": "Data controller",
+        "rows": [],
+        "paragraphs": [
+          "Kosmio SAS, Villa 8, 301 rue du Romarin, 34160 Castries, France. Contact: contact@kosm.io."
+        ]
+      },
+      {
+        "title": "Data collected",
+        "rows": [],
+        "paragraphs": [
+          "If you fill in the “Join the bootstrap” form: your email address and the role or roles you tick. Nothing else.",
+          "The website sets no cookies and uses no audience measurement tool. Typefaces are served by our own server: displaying a page sends no request to any third party."
+        ]
+      },
+      {
+        "title": "Purpose and legal basis",
+        "rows": [],
+        "paragraphs": [
+          "Your address is only used to notify you when the bootstrap opens and about the steps that concern you. Processing is based on your consent, which you confirm through the link sent by email and may withdraw at any time."
+        ]
+      },
+      {
+        "title": "Recipients",
+        "rows": [],
+        "paragraphs": [
+          "Only the team running Tokenhood at Kosmio has access to the list. It is hosted by Brevo (Sendinblue SAS, France), which sends the emails on our behalf from servers located in the European Union. The website is hosted by OVH SAS (France). No data is sold or transferred."
+        ]
+      },
+      {
+        "title": "Retention",
+        "rows": [],
+        "paragraphs": [
+          "Until you unsubscribe, and at most three years after our last exchange. Every email contains an unsubscribe link."
+        ]
+      },
+      {
+        "title": "Technical logs",
+        "rows": [],
+        "paragraphs": [
+          "The website keeps no visit log. Only server errors are logged, for diagnosis; they may contain the IP address of the request involved."
+        ]
+      },
+      {
+        "title": "Your rights",
+        "rows": [],
+        "paragraphs": [
+          "You have the right to access, rectify, erase, object to, restrict and port your data. Write to contact@kosm.io. If you believe your rights are not respected, you can lodge a complaint with the CNIL, the French data protection authority: https://www.cnil.fr."
+        ]
+      }
+    ],
+    "updated": "Last updated: October 2026."
+  }
+}
