@@ -1,0 +1,772 @@
+/* Copie de travail du design system Kosmio v2 « Horizon », versée le 2026-10-17.
+   Source : espace Kosmio, 01-Strategie/design-system/kosmio.css (le site kosm.io fait foi pour les valeurs).
+   Ne pas modifier ici : mettre à jour depuis la source, puis adapter design/tokenhood.css si besoin. */
+
+/* ============================================================================
+   KOSMIO DESIGN SYSTEM · v2 « Horizon »
+   ----------------------------------------------------------------------------
+   Socle unique de la marque ombrelle Kosmio.
+   Source de verite : le site public kosm.io (Astro + Tailwind), fichier
+   `tailwind.config.mjs` + `DESIGN.md`, cadre par `Specs/Design-Brief-Site-Kosmio-v1.md`.
+   Toute divergence entre ce fichier et le site est un bug : le site fait foi
+   pour les valeurs, ce fichier fait foi pour l'architecture des tokens.
+
+   Registre par defaut : CLAIR (papier, editorial, institutionnel).
+   Le sombre est un theme derive pour les tableaux de bord internes
+   (Kosmio Control, OpsControl), pas un second socle.
+
+   Tous les ratios de contraste annotes sont calcules WCAG 2.1 sur les surfaces
+   reelles du systeme (papier #FAFAF7, blanc, craie #F3F1EC).
+   ============================================================================ */
+
+/* ============================================================================
+   1. PRIMITIVES
+   ============================================================================ */
+
+:root {
+  /* --- Teal Horizon : couleur de marque -------------------------------- */
+  --kos-teal-50:  #e6f1ef;  /* voile de hero, fonds de section tres doux */
+  --kos-teal-100: #cfe3df;
+  --kos-teal-200: #a8ccc6;
+  --kos-teal-300: #7db2aa;
+  --kos-teal-400: #4f958c;
+  --kos-teal-500: #2a7a71;  /* 4,87:1 sur papier · texte large uniquement */
+  --kos-teal-600: #0e5450;  /* PRIMARY (site) · 8,36:1 sur papier */
+  --kos-teal-700: #0c4744;
+  --kos-teal-800: #0a3b38;  /* SECONDARY (site) · 11,84:1 sur papier */
+  --kos-teal-900: #072826;
+
+  /* --- Neutres : de l'encre au papier ---------------------------------- */
+  --kos-encre:    #14201e;  /* texte principal · 16,00:1 sur papier */
+  --kos-ardoise:  #424c49;  /* = encre 80% sur papier · 8,50:1 */
+  --kos-ardoise-2:#4e5654;  /* = encre 75% · 7,22:1 */
+  --kos-brume:    #59615f;  /* = encre 70% · 6,09:1 */
+  --kos-brume-2:  #646c6a;  /* = encre 65% · 5,16:1 · PLANCHER texte */
+  --kos-trait:    #e3e4e1;  /* = encre 10% · bordures, filets */
+  --kos-trait-2:  #dee0dd;  /* = encre 12% · bordures marquees */
+  --kos-craie:    #f3f1ec;  /* sections alternees */
+  --kos-papier:   #fafaf7;  /* fond principal · jamais blanc pur */
+  --kos-blanc:    #ffffff;  /* surface des cartes */
+
+  /* Triplet RGB de l'encre, pour les opacites calculees en ligne :
+     color: rgb(var(--kos-encre-rgb) / 0.65) */
+  --kos-encre-rgb: 20 32 30;
+  --kos-blanc-rgb: 255 255 255;
+
+  /* --- Accents (parcimonie : jamais plus de 20% d'un ecran) ------------ */
+  --kos-or-300:   #f2c98a;
+  --kos-or-500:   #e8a33d;  /* aplat uniquement · 2,06:1, JAMAIS en texte */
+  --kos-or-700:   #8a5a12;  /* variante texte · 5,65:1 sur papier */
+
+  --kos-ciel-300: #a9cfe6;
+  --kos-ciel-500: #6baed6;  /* aplat uniquement · 2,32:1, JAMAIS en texte */
+  --kos-ciel-700: #38718f;  /* variante texte · 5,11:1 sur papier */
+
+  /* --- Semantique metier ------------------------------------------------ */
+  --kos-foret-500:      #2e7d5a;  /* aplat succes */
+  --kos-foret-700:      #1f6647;  /* texte succes · 6,58:1 sur papier */
+  --kos-terracotta-500: #a34a30;  /* erreur · 5,61:1 sur papier */
+  --kos-terracotta-700: #8a3d27;
+
+  /* --- Typographie ------------------------------------------------------ */
+  --font-display: "Lexend Variable", "Lexend", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-body:    "Public Sans Variable", "Public Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono:    "JetBrains Mono Variable", "JetBrains Mono", ui-monospace, "SFMono-Regular", monospace;
+
+  /* Echelle fluide : mobile -> desktop, alignee sur `fontSize` du site */
+  --text-display: clamp(2.5rem, 6vw, 4.5rem);      /* 40 -> 72 */
+  --text-h1:      clamp(2.25rem, 5vw, 3.5rem);     /* 36 -> 56 */
+  --text-h2:      clamp(1.625rem, 3.6vw, 2.5rem);  /* 26 -> 40 */
+  --text-h3:      clamp(1.375rem, 2.4vw, 1.75rem); /* 22 -> 28 */
+  --text-h4:      1.25rem;                          /* 20 */
+  --text-h5:      1.0625rem;                        /* 17 */
+  --text-h6:      0.9375rem;                        /* 15 */
+  --text-lg:      1.125rem;                         /* 18 · chapo */
+  --text-base:    1rem;                             /* 16 · corps */
+  --text-sm:      0.875rem;                         /* 14 · legendes */
+  --text-xs:      0.75rem;                          /* 12 · eyebrow, tags */
+
+  --leading-display: 1.05;
+  --leading-tight:   1.15;
+  --leading-snug:    1.3;
+  --leading-normal:  1.6;
+  --leading-relaxed: 1.75;
+
+  --tracking-display: -0.025em;
+  --tracking-tight:   -0.02em;
+  --tracking-normal:  0;
+  --tracking-eyebrow: 0.2em;
+
+  --weight-light:    300;
+  --weight-regular:  400;
+  --weight-medium:   500;  /* poids des titres · jamais 700/900 */
+  --weight-semibold: 600;
+
+  --measure: 68ch;   /* longueur de ligne cible du corps de texte */
+  --measure-narrow: 46ch;
+
+  /* --- Espacement : base 4px -------------------------------------------- */
+  --space-1: 0.25rem;  --space-2: 0.5rem;   --space-3: 0.75rem;
+  --space-4: 1rem;     --space-5: 1.25rem;  --space-6: 1.5rem;
+  --space-8: 2rem;     --space-10: 2.5rem;  --space-12: 3rem;
+  --space-16: 4rem;    --space-20: 5rem;    --space-24: 6rem;
+  --space-32: 8rem;    --space-40: 10rem;   /* 160px : rythme inter-sections */
+
+  --rythme-section: clamp(4rem, 10vw, 10rem);  /* 64 -> 160 */
+  --gouttiere: clamp(1rem, 2vw, 1.5rem);       /* 16 -> 24 */
+  --container: 80rem;        /* 1280px · max-w-7xl du site */
+  --container-lecture: 45rem; /* 720px · colonne editoriale */
+
+  /* --- Rayons ------------------------------------------------------------ */
+  --radius-sm:   0.25rem;  /* 4  · filets, puces */
+  --radius-md:   0.5rem;   /* 8  · champs, petites cartes */
+  --radius-lg:   0.75rem;  /* 12 */
+  --radius-card: 1rem;     /* 16 · carte standard (rounded-2xl du site) */
+  --radius-xl:   1.5rem;   /* 24 · grands blocs, bannieres */
+  --radius-pill: 9999px;   /* boutons, tags, badges */
+
+  /* --- Ombres : discretes. Le systeme repose sur le filet, pas l'ombre --- */
+  --shadow-xs: 0 1px 2px rgb(var(--kos-encre-rgb) / 0.04);
+  --shadow-sm: 0 1px 3px rgb(var(--kos-encre-rgb) / 0.06), 0 1px 2px rgb(var(--kos-encre-rgb) / 0.04);
+  --shadow-md: 0 8px 20px -8px rgb(var(--kos-encre-rgb) / 0.12);
+  --shadow-lg: 0 20px 40px -16px rgb(var(--kos-encre-rgb) / 0.16);
+
+  /* --- Mouvement : sert la comprehension, jamais la decoration ---------- */
+  --ease:        cubic-bezier(0.4, 0, 0.2, 1);
+  --duree-micro: 150ms;
+  --duree-base:  200ms;
+  --duree-lente: 350ms;
+
+  /* --- Profondeur -------------------------------------------------------- */
+  --z-base: 0;      --z-dropdown: 100; --z-sticky: 200;  --z-fixed: 300;
+  --z-overlay: 400; --z-modal: 500;    --z-popover: 600; --z-tooltip: 700;
+}
+
+/* ============================================================================
+   2. TOKENS SEMANTIQUES · SOCLE CLAIR (defaut)
+   Ne jamais utiliser une primitive directement dans un composant : passer
+   toujours par un token semantique, sinon le theme sombre ne suit pas.
+   ============================================================================ */
+
+:root,
+[data-theme="light"] {
+  color-scheme: light;
+
+  --color-primary:        var(--kos-teal-600);
+  --color-primary-hover:  var(--kos-teal-700);
+  --color-primary-subtle: var(--kos-teal-50);
+  --color-primary-border: rgb(14 84 80 / 0.3);
+  --color-on-primary:     var(--kos-blanc);
+
+  --color-secondary:       var(--kos-teal-800);
+  --color-secondary-hover: var(--kos-teal-900);
+  --color-on-secondary:    var(--kos-blanc);
+
+  --color-accent:         var(--kos-or-500);   /* aplat */
+  --color-accent-text:    var(--kos-or-700);   /* texte */
+  --color-on-accent:      var(--kos-encre);
+  --color-info:           var(--kos-ciel-500); /* aplat */
+  --color-info-text:      var(--kos-ciel-700); /* texte */
+  --color-success:        var(--kos-foret-500);
+  --color-success-text:   var(--kos-foret-700);
+  --color-warning:        var(--kos-or-500);
+  --color-warning-text:   var(--kos-or-700);
+  --color-error:          var(--kos-terracotta-500);
+  --color-error-text:     var(--kos-terracotta-500);
+
+  --surface:         var(--kos-papier);
+  --surface-raised:  var(--kos-blanc);
+  --surface-sunken:  var(--kos-craie);
+  --surface-inverse: var(--kos-teal-800);
+
+  --text:           var(--kos-encre);
+  --text-body:      var(--kos-ardoise);
+  --text-secondary: var(--kos-brume);
+  --text-muted:     var(--kos-brume-2);   /* plancher AA */
+  --text-inverse:   var(--kos-blanc);
+  --text-link:      var(--color-primary);
+
+  --border:        var(--kos-trait);
+  --border-strong: var(--kos-trait-2);
+  --focus-ring:    var(--color-primary);
+
+  --voile-hero: linear-gradient(to bottom, var(--kos-teal-50), transparent);
+  --voile-papier: linear-gradient(180deg, #f9f6f4 0%, #f9f6f4 70%, transparent 100%);
+}
+
+/* ============================================================================
+   3. THEME SOMBRE · derive du teal Horizon, reserve aux interfaces de pilotage
+   Ce n'est pas un second socle : memes tokens, memes composants, valeurs
+   reassignees. Aucun composant ne doit connaitre le theme actif.
+   ============================================================================ */
+
+[data-theme="dark"] {
+  color-scheme: dark;
+
+  --color-primary:        #4fa69b;  /* 6,50:1 sur le fond sombre */
+  --color-primary-hover:  #5cb5a6;
+  --color-primary-subtle: #10312d;
+  --color-primary-border: rgb(79 166 155 / 0.35);
+  --color-on-primary:     var(--kos-encre);
+
+  --color-secondary:       #2a7a71;
+  --color-secondary-hover: #349186;
+  --color-on-secondary:    var(--kos-blanc);
+
+  --color-accent:       var(--kos-or-500);
+  --color-accent-text:  #edb45f;   /* 8,7:1 sur fond sombre */
+  --color-on-accent:    var(--kos-encre);
+  --color-info:         var(--kos-ciel-500);
+  --color-info-text:    #8cc3e2;
+  --color-success:      #3f9c74;
+  --color-success-text: #4fb585;
+  --color-warning:      var(--kos-or-500);
+  --color-warning-text: #edb45f;
+  --color-error:        #c25f42;
+  --color-error-text:   #e08a6b;
+
+  --surface:         #0b1312;
+  --surface-raised:  #111b19;
+  --surface-sunken:  #070e0d;
+  --surface-inverse: var(--kos-papier);
+
+  --text:           #e9f0ee;   /* 16,27:1 */
+  --text-body:      #d3ddda;
+  --text-secondary: #b4c2be;   /* 10,21:1 */
+  --text-muted:     #8ca09b;   /*  6,82:1 · plancher */
+  --text-inverse:   var(--kos-encre);
+  --text-link:      var(--color-primary);
+
+  --border:        rgb(233 240 238 / 0.12);
+  --border-strong: rgb(233 240 238 / 0.2);
+  --focus-ring:    #5cb5a6;
+
+  --shadow-xs: 0 1px 2px rgb(0 0 0 / 0.3);
+  --shadow-sm: 0 1px 3px rgb(0 0 0 / 0.4);
+  --shadow-md: 0 8px 20px -8px rgb(0 0 0 / 0.5);
+  --shadow-lg: 0 20px 40px -16px rgb(0 0 0 / 0.6);
+
+  --voile-hero: linear-gradient(to bottom, #10312d, transparent);
+  --voile-papier: none;
+}
+
+/* Suit le reglage systeme quand aucun theme n'est impose */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]):not([data-theme="dark"]) {
+    color-scheme: dark;
+    --color-primary: #4fa69b; --color-primary-hover: #5cb5a6;
+    --color-primary-subtle: #10312d; --color-primary-border: rgb(79 166 155 / 0.35);
+    --color-on-primary: var(--kos-encre);
+    --color-secondary: #2a7a71; --color-secondary-hover: #349186; --color-on-secondary: var(--kos-blanc);
+    --color-accent-text: #edb45f; --color-info-text: #8cc3e2;
+    --color-success: #3f9c74; --color-success-text: #4fb585;
+    --color-warning-text: #edb45f; --color-error: #c25f42; --color-error-text: #e08a6b;
+    --surface: #0b1312; --surface-raised: #111b19; --surface-sunken: #070e0d;
+    --surface-inverse: var(--kos-papier);
+    --text: #e9f0ee; --text-body: #d3ddda; --text-secondary: #b4c2be; --text-muted: #8ca09b;
+    --text-inverse: var(--kos-encre);
+    --border: rgb(233 240 238 / 0.12); --border-strong: rgb(233 240 238 / 0.2);
+    --focus-ring: #5cb5a6;
+  }
+}
+
+/* ============================================================================
+   4. DECLINAISONS SATELLITES
+   La marque ombrelle tient par la typographie, la grille et le papier.
+   Un satellite ne redefinit QUE sa couleur de signature. Il n'invente ni
+   police, ni rayon, ni rythme : c'est ce qui le fait reconnaitre comme Kosmio.
+   ============================================================================ */
+
+.kos-certifiko {
+  --color-primary:        #0e5450;
+  --color-primary-hover:  #0a3b38;
+  --color-primary-subtle: #fdf3e2;
+  --color-accent:         var(--kos-or-500);
+  --color-accent-text:    var(--kos-or-700);
+}
+
+.kos-perfia {
+  --color-primary:        #0f6b5c;
+  --color-primary-hover:  #0b5347;
+  --color-primary-subtle: #e6f2ef;
+  --color-accent:         #ba8748;
+  --color-accent-text:    #7a5527;
+}
+
+.kos-datawood {
+  --color-primary:        var(--kos-teal-600);
+  --color-primary-hover:  var(--kos-teal-700);
+  --color-accent:         var(--kos-ciel-500);
+  --color-accent-text:    var(--kos-ciel-700);
+}
+
+/* ============================================================================
+   5. BASE
+   ============================================================================ */
+
+*, *::before, *::after { box-sizing: border-box; }
+
+html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; }
+
+body {
+  margin: 0;
+  background-color: var(--surface);
+  color: var(--text-body);
+  font-family: var(--font-body);
+  font-size: var(--text-base);
+  line-height: var(--leading-normal);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+::selection { background: var(--color-primary-subtle); color: var(--text); }
+
+:where(a) { color: var(--text-link); text-decoration-thickness: 1px; text-underline-offset: 0.2em; }
+:where(a):hover { color: var(--color-primary-hover); }
+
+:where(img, svg, video) { max-width: 100%; height: auto; }
+
+:where(hr) { border: 0; border-top: 1px solid var(--border); margin: var(--space-12) 0; }
+
+/* Focus : visible partout, jamais supprime sans remplacement (RGAA 10.7) */
+:where(a, button, input, select, textarea, summary, [tabindex]):focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
+}
+
+/* ============================================================================
+   6. TYPOGRAPHIE
+   Titres en Lexend, poids 500. Corps en Public Sans. Mono pour les eyebrows,
+   les chiffres et les identifiants techniques. Pas de justification.
+   ============================================================================ */
+
+:where(h1, h2, h3, h4, h5, h6), .kos-display {
+  font-family: var(--font-display);
+  font-weight: var(--weight-medium);
+  color: var(--text);
+  margin: 0 0 var(--space-4);
+  text-wrap: balance;
+}
+
+.kos-display { font-size: var(--text-display); line-height: var(--leading-display); letter-spacing: var(--tracking-display); }
+h1 { font-size: var(--text-h1); line-height: var(--leading-tight); letter-spacing: var(--tracking-tight); }
+h2 { font-size: var(--text-h2); line-height: var(--leading-tight); }
+h3 { font-size: var(--text-h3); line-height: var(--leading-snug); }
+h4 { font-size: var(--text-h4); line-height: var(--leading-snug); }
+h5 { font-size: var(--text-h5); line-height: var(--leading-normal); }
+h6 { font-size: var(--text-h6); line-height: var(--leading-normal); }
+
+:where(p, li) { max-width: var(--measure); text-align: left; }
+p { margin: 0 0 var(--space-4); }
+
+.kos-chapo {
+  font-size: var(--text-lg);
+  line-height: var(--leading-relaxed);
+  color: var(--text-secondary);
+  max-width: var(--measure);
+}
+
+.kos-eyebrow {
+  display: inline-block;
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-eyebrow);
+  color: var(--text-muted);
+  margin-bottom: var(--space-3);
+}
+
+.kos-legende { font-size: var(--text-sm); color: var(--text-muted); }
+
+code, kbd, samp, pre { font-family: var(--font-mono); font-size: 0.9em; }
+
+/* ============================================================================
+   7. MISE EN PAGE
+   ============================================================================ */
+
+.kos-container {
+  width: 100%;
+  max-width: var(--container);
+  margin-inline: auto;
+  padding-inline: var(--gouttiere);
+}
+
+.kos-lecture { max-width: var(--container-lecture); margin-inline: auto; }
+
+/* Rythme vertical du site : 160px entre sections desktop, 64px mobile */
+.kos-sections { display: flex; flex-direction: column; gap: var(--rythme-section); }
+
+.kos-section-head { display: flex; flex-direction: column; margin-bottom: var(--space-10); }
+.kos-section-head > p { max-width: var(--measure); }
+
+.kos-grid { display: grid; gap: var(--space-6); grid-template-columns: repeat(auto-fit, minmax(min(100%, 18rem), 1fr)); }
+.kos-grid-2 { display: grid; gap: var(--space-6); grid-template-columns: 1fr; }
+.kos-grid-3 { display: grid; gap: var(--space-6); grid-template-columns: 1fr; }
+@media (min-width: 768px) {
+  .kos-grid-2 { grid-template-columns: repeat(2, 1fr); }
+  .kos-grid-3 { grid-template-columns: repeat(3, 1fr); }
+}
+
+.kos-bande { background: var(--surface-sunken); padding-block: var(--rythme-section); }
+
+/* ============================================================================
+   8. COMPOSANTS
+   ============================================================================ */
+
+/* --- Bouton : pastille pleine ou contour, jamais d'ombre portee ---------- */
+.btn, .kos-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  min-height: 44px;                 /* cible tactile RGAA */
+  padding: var(--space-3) var(--space-6);
+  font-family: var(--font-display);
+  font-size: var(--text-base);
+  font-weight: var(--weight-medium);
+  line-height: 1.2;
+  text-align: center;
+  text-decoration: none;
+  border: 1px solid transparent;
+  border-radius: var(--radius-pill);
+  cursor: pointer;
+  transition: background-color var(--duree-base) var(--ease),
+              color var(--duree-base) var(--ease),
+              border-color var(--duree-base) var(--ease),
+              filter var(--duree-base) var(--ease);
+}
+
+.btn-primary  { background: var(--color-primary);   color: var(--color-on-primary); }
+.btn-primary:hover  { filter: brightness(0.9); color: var(--color-on-primary); }
+.btn-secondary { background: var(--color-secondary); color: var(--color-on-secondary); }
+.btn-secondary:hover { filter: brightness(0.9); color: var(--color-on-secondary); }
+
+.btn-outline {
+  background: transparent;
+  color: var(--color-primary);
+  border-color: var(--color-primary);
+}
+.btn-outline:hover { background: var(--color-primary-subtle); }
+
+.btn-outline-secondary {
+  background: transparent;
+  color: var(--color-secondary);
+  border-color: var(--color-secondary);
+}
+.btn-outline-secondary:hover { background: var(--color-primary-subtle); }
+
+/* Lien d'action fleche : le decalage du chevron remplace le soulignement */
+.kos-lien-action {
+  display: inline-flex; align-items: center; gap: var(--space-1);
+  font-family: var(--font-display); font-weight: var(--weight-medium);
+  color: var(--color-secondary); text-decoration: none;
+  transition: gap var(--duree-micro) var(--ease), color var(--duree-micro) var(--ease);
+}
+.kos-lien-action:hover { gap: var(--space-2); color: var(--color-primary); }
+
+.btn-sm { min-height: 36px; padding: var(--space-2) var(--space-4); font-size: var(--text-sm); }
+.btn-lg { min-height: 52px; padding: var(--space-4) var(--space-8); font-size: var(--text-lg); }
+.btn:disabled, .kos-btn[aria-disabled="true"] { opacity: 0.5; cursor: not-allowed; }
+
+/* --- Carte : filet 1px, fond eleve, rayon 16. L'ombre n'arrive qu'au survol */
+.card, .kos-card {
+  background: var(--surface-raised);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-card);
+  padding: var(--space-6);
+  transition: border-color var(--duree-base) var(--ease), box-shadow var(--duree-base) var(--ease);
+}
+@media (min-width: 768px) { .card, .kos-card { padding: var(--space-8); } }
+
+.card:hover, .kos-card:hover { border-color: var(--color-primary); box-shadow: var(--shadow-sm); }
+.kos-card--statique:hover { border-color: var(--border); box-shadow: none; }
+
+/* Carte bordee : filet degrade en diagonale, reprise du BorderedCard du site */
+.kos-card-bordee {
+  position: relative;
+  padding: 4px;
+  border-radius: var(--radius-card);
+  background:
+    radial-gradient(133px 133px at 0% 0%, var(--color-secondary) 0%, transparent 100%),
+    radial-gradient(133px 133px at 100% 100%, var(--color-secondary) 0%, transparent 100%),
+    var(--border);
+}
+.kos-card-bordee > * {
+  background: var(--surface-raised);
+  border-radius: calc(var(--radius-card) - 4px);
+  padding: var(--space-6);
+  height: 100%;
+}
+
+/* --- Tag / pastille ------------------------------------------------------ */
+.badge, .kos-tag {
+  display: inline-flex; align-items: center; gap: var(--space-2);
+  padding: var(--space-1) var(--space-3);
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  border: 1px solid var(--color-primary-border);
+  border-radius: var(--radius-pill);
+  background: var(--color-primary-subtle);
+  color: var(--color-primary);
+}
+.badge-primary { background: var(--color-primary-subtle); color: var(--color-primary); border-color: var(--color-primary-border); }
+.badge-accent  { background: rgb(232 163 61 / 0.12);  color: var(--color-accent-text);  border-color: rgb(232 163 61 / 0.35); }
+.badge-info    { background: rgb(107 174 214 / 0.15); color: var(--color-info-text);    border-color: rgb(107 174 214 / 0.35); }
+.badge-success { background: rgb(46 125 90 / 0.12);   color: var(--color-success-text); border-color: rgb(46 125 90 / 0.3); }
+.badge-warning { background: rgb(232 163 61 / 0.12);  color: var(--color-warning-text); border-color: rgb(232 163 61 / 0.35); }
+.badge-error   { background: rgb(163 74 48 / 0.1);    color: var(--color-error-text);   border-color: rgb(163 74 48 / 0.3); }
+.badge-outline { background: transparent; color: var(--text-secondary); border-color: var(--border-strong); }
+
+/* Badge de maturite sectorielle : l'asymetrie bois / logistique est assumee */
+.kos-maturite { font-family: var(--font-display); text-transform: uppercase; letter-spacing: 0.05em; }
+.kos-maturite::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+
+/* --- Bloc KPI : le chiffre en mono, le libelle en Lexend ----------------- */
+.kos-kpi { display: flex; flex-direction: column; gap: var(--space-2);
+  background: var(--surface-raised); border: 1px solid var(--border);
+  border-radius: var(--radius-card); padding: var(--space-6); }
+.kos-kpi__valeur, .stat-value {
+  font-family: var(--font-mono); font-size: clamp(1.75rem, 4vw, 3rem);
+  font-weight: var(--weight-medium); letter-spacing: -0.02em; color: var(--color-primary);
+}
+.kos-kpi__label { font-family: var(--font-display); font-weight: var(--weight-medium); color: var(--text); }
+.kos-kpi__contexte, .stat-label { font-size: var(--text-sm); color: var(--text-muted); }
+
+/* --- Banniere manifeste : le seul aplat plein autorise en grand format --- */
+.kos-manifeste {
+  display: flex; flex-direction: column; gap: var(--space-4);
+  padding: var(--space-10) var(--space-6);
+  border-radius: var(--radius-xl);
+  background: var(--color-primary); color: var(--color-on-primary);
+}
+@media (min-width: 768px) { .kos-manifeste { padding: var(--space-12) var(--space-12); } }
+.kos-manifeste--secondaire { background: var(--color-secondary); color: var(--color-on-secondary); }
+.kos-manifeste--accent { background: var(--color-accent); color: var(--color-on-accent); }
+.kos-manifeste blockquote {
+  margin: 0; font-family: var(--font-display); font-weight: var(--weight-medium);
+  font-size: var(--text-h3); line-height: var(--leading-snug); max-width: 56rem;
+}
+.kos-manifeste .kos-eyebrow { color: inherit; opacity: 0.8; margin: 0; }
+.kos-manifeste cite { font-style: normal; font-size: var(--text-sm); opacity: 0.9; }
+
+/* --- Citation ------------------------------------------------------------ */
+.kos-citation {
+  margin: 0; padding-left: var(--space-6);
+  border-left: 2px solid var(--color-primary);
+  font-size: var(--text-lg); color: var(--text-body);
+}
+.kos-citation footer { margin-top: var(--space-3); font-size: var(--text-sm); color: var(--text-muted); }
+
+/* --- Liste a coches ------------------------------------------------------ */
+.kos-coches { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: var(--space-3); }
+.kos-coches li { position: relative; padding-left: var(--space-8); }
+.kos-coches li::before {
+  content: ""; position: absolute; left: 0; top: 0.35em;
+  width: 1rem; height: 1rem; border-radius: 50%;
+  background: var(--color-primary-subtle);
+  box-shadow: inset 0 0 0 1px var(--color-primary-border);
+}
+
+/* --- Etapes de methode --------------------------------------------------- */
+.kos-etapes { counter-reset: etape; display: grid; gap: var(--space-6); }
+.kos-etape { counter-increment: etape; position: relative; padding-top: var(--space-8); border-top: 1px solid var(--border); }
+.kos-etape::before {
+  content: counter(etape, decimal-leading-zero);
+  position: absolute; top: var(--space-4); left: 0;
+  font-family: var(--font-mono); font-size: var(--text-sm); color: var(--color-primary);
+}
+
+/* --- Formulaires ---------------------------------------------------------- */
+.kos-champ { display: flex; flex-direction: column; gap: var(--space-2); margin-bottom: var(--space-5); }
+.kos-champ label { font-family: var(--font-display); font-size: var(--text-sm); font-weight: var(--weight-medium); color: var(--text); }
+.kos-champ input, .kos-champ select, .kos-champ textarea {
+  width: 100%; min-height: 44px; padding: var(--space-3) var(--space-4);
+  font-family: var(--font-body); font-size: var(--text-base); color: var(--text);
+  background: var(--surface-raised);
+  border: 1px solid var(--border-strong); border-radius: var(--radius-md);
+  transition: border-color var(--duree-base) var(--ease);
+}
+.kos-champ input::placeholder, .kos-champ textarea::placeholder { color: var(--text-muted); }
+.kos-champ input:focus, .kos-champ select:focus, .kos-champ textarea:focus { border-color: var(--color-primary); }
+.kos-champ__aide { font-size: var(--text-sm); color: var(--text-muted); }
+.kos-champ__erreur { font-size: var(--text-sm); color: var(--color-error-text); }
+.kos-champ[data-invalide] input, .kos-champ[data-invalide] textarea, .kos-champ[data-invalide] select { border-color: var(--color-error); }
+
+/* --- Tableau -------------------------------------------------------------- */
+.kos-table { width: 100%; border-collapse: collapse; font-size: var(--text-sm); }
+.kos-table th, .kos-table td { padding: var(--space-3) var(--space-4); text-align: left; border-bottom: 1px solid var(--border); }
+.kos-table th {
+  font-family: var(--font-mono); font-size: var(--text-xs);
+  text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-muted);
+  border-bottom-color: var(--border-strong);
+}
+.kos-table tbody tr:hover { background: var(--surface-sunken); }
+.kos-table caption { caption-side: top; text-align: left; margin-bottom: var(--space-3); color: var(--text-muted); font-size: var(--text-sm); }
+
+/* --- Navigation ----------------------------------------------------------- */
+.nav-item, .kos-nav__lien {
+  display: inline-flex; align-items: center; gap: var(--space-2);
+  min-height: 44px; padding: var(--space-2) var(--space-3);
+  font-family: var(--font-display); font-size: var(--text-sm); font-weight: var(--weight-medium);
+  color: var(--text-body); text-decoration: none; border-radius: var(--radius-md);
+  transition: color var(--duree-micro) var(--ease), background-color var(--duree-micro) var(--ease);
+}
+.nav-item:hover, .kos-nav__lien:hover { color: var(--color-primary); background: var(--color-primary-subtle); }
+.nav-item.active, .kos-nav__lien[aria-current="page"] { color: var(--color-secondary); background: var(--color-primary-subtle); }
+
+/* --- Accordeon (details/summary, sans JS) -------------------------------- */
+.kos-faq { border-top: 1px solid var(--border); }
+.kos-faq details { border-bottom: 1px solid var(--border); }
+.kos-faq summary {
+  display: flex; justify-content: space-between; align-items: center; gap: var(--space-4);
+  padding: var(--space-5) 0; cursor: pointer; list-style: none;
+  font-family: var(--font-display); font-weight: var(--weight-medium); color: var(--text);
+}
+.kos-faq summary::-webkit-details-marker { display: none; }
+.kos-faq summary::after { content: "+"; font-family: var(--font-mono); color: var(--color-primary); transition: transform var(--duree-base) var(--ease); }
+.kos-faq details[open] summary::after { transform: rotate(45deg); }
+.kos-faq details > :not(summary) { padding-bottom: var(--space-5); color: var(--text-body); }
+
+/* --- Barre de progression ------------------------------------------------- */
+.progress, .kos-jauge { height: 8px; background: var(--surface-sunken); border-radius: var(--radius-pill); overflow: hidden; }
+.progress-bar, .kos-jauge__valeur { height: 100%; background: var(--color-primary); border-radius: inherit; transition: width var(--duree-lente) var(--ease); }
+.progress-bar-accent { background: var(--color-accent); }
+
+/* --- Fiche statistique (heritee des tableaux de bord) --------------------- */
+.stat-card {
+  background: var(--surface-raised); border: 1px solid var(--border);
+  border-radius: var(--radius-card); padding: var(--space-6);
+  display: flex; flex-direction: column; gap: var(--space-2);
+}
+
+/* --- Lien d'evitement ----------------------------------------------------- */
+.kos-evitement {
+  position: absolute; left: -9999px;
+  background: var(--color-primary); color: var(--color-on-primary);
+  padding: var(--space-3) var(--space-5); border-radius: var(--radius-pill);
+  font-family: var(--font-display); font-weight: var(--weight-medium);
+}
+.kos-evitement:focus { left: var(--space-3); top: var(--space-3); z-index: var(--z-tooltip); }
+
+/* ============================================================================
+   9. UTILITAIRES
+   Volontairement peu nombreux : ce fichier n'est pas un framework utilitaire.
+   Sur les projets Tailwind, utiliser Tailwind ; ces classes servent aux pages
+   HTML autonomes (notes, rapports, planches, exports).
+   ============================================================================ */
+
+.kos-texte-primaire   { color: var(--color-primary); }
+.kos-texte-secondaire { color: var(--text-secondary); }
+.kos-texte-attenue    { color: var(--text-muted); }
+.kos-texte-inverse    { color: var(--text-inverse); }
+.kos-fond-papier  { background: var(--surface); }
+.kos-fond-eleve   { background: var(--surface-raised); }
+.kos-fond-craie   { background: var(--surface-sunken); }
+.kos-fond-inverse { background: var(--surface-inverse); color: var(--text-inverse); }
+.kos-fond-voile   { background-image: var(--voile-hero); background-repeat: no-repeat; background-size: 100% 800px; }
+.kos-filet { border: 1px solid var(--border); }
+.kos-rayon-carte { border-radius: var(--radius-card); }
+.kos-rayon-pastille { border-radius: var(--radius-pill); }
+
+.sr-only {
+  position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
+}
+
+/* ============================================================================
+   10. MOUVEMENT
+   Apparition sobre, une seule fois, jamais de parallaxe ni de scroll-trigger
+   permanent. `prefers-reduced-motion` neutralise tout.
+   ============================================================================ */
+
+[data-reveal] { opacity: 0; transform: translateY(8px); transition: opacity var(--duree-lente) var(--ease), transform var(--duree-lente) var(--ease); }
+[data-reveal].est-visible { opacity: 1; transform: none; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+  [data-reveal] { opacity: 1; transform: none; }
+}
+
+/* ============================================================================
+   11. IMPRESSION
+   ============================================================================ */
+
+@media print {
+  :root { --surface: #ffffff; --surface-raised: #ffffff; --text: #000000; --text-body: #1a1a1a; }
+  .kos-manifeste, .kos-fond-inverse { background: none !important; color: #000 !important; border: 1px solid #000; }
+  a[href^="http"]::after { content: " (" attr(href) ")"; font-size: 0.85em; color: #555; }
+  .kos-evitement, nav { display: none !important; }
+}
+
+/* ============================================================================
+   12. SCHEMAS ET INFOGRAPHIES
+   Palette de series validee (six controles du protocole dataviz : bande de
+   clarte, plancher de chroma, separation deutan/protan/tritan, plancher vision
+   normale, contraste sur la surface). Ordre FIXE : la serie 1 est toujours le
+   teal, quelle que soit la donnee. Ne jamais recycler ni generer une 6e teinte.
+   Details et regles d'emploi : `kit-schemas.md`.
+   ============================================================================ */
+
+:root {
+  /* Series categorielles · fond clair */
+  --data-1: #008c7f;  /* teal Horizon, version data */
+  --data-2: #e8a33d;  /* or */
+  --data-3: #5aa0dc;  /* ciel */
+  --data-4: #c4553a;  /* terracotta */
+  --data-5: #4e5ba6;  /* indigo */
+  --data-autre: #7c8a87;  /* « Autre », toujours en dernier, jamais une serie nommee */
+
+  /* Rampe sequentielle · une seule teinte, clair vers fonce */
+  --data-seq-1: #e6f1ef; --data-seq-2: #cfe3df; --data-seq-3: #a8ccc6;
+  --data-seq-4: #7db2aa; --data-seq-5: #4f958c; --data-seq-6: #2a7a71;
+  --data-seq-7: #0e5450;
+
+  /* Rampe divergente · deux poles, gris neutre au centre */
+  --data-div-neg-2: #a34a30; --data-div-neg-1: #d99a7f;
+  --data-div-mid:   #e3e4e1;
+  --data-div-pos-1: #6fa9a1; --data-div-pos-2: #0e5450;
+
+  /* Etats · reserves, jamais utilises comme serie */
+  --data-bon:      #2e7d5a;
+  --data-attention:#e8a33d;
+  --data-serieux:  #c4553a;
+  --data-critique: #8a3d27;
+
+  /* Habillage */
+  --data-grille:  var(--border);
+  --data-axe:     var(--border-strong);
+  --data-texte:   var(--text);
+  --data-legende: var(--text-secondary);
+  --data-trait:   2px;   /* epaisseur des courbes */
+  --data-ecart:   2px;   /* respiration entre deux aplats adjacents */
+}
+
+[data-theme="dark"] {
+  /* Le sombre plafonne a 4 series : la bande de clarte exploitable y est plus
+     etroite. Une 5e categorie se traite en petits multiples, pas en teinte. */
+  --data-1: #0f9887;
+  --data-2: #be861f;
+  --data-3: #5a82d8;
+  --data-4: #c24b58;
+  --data-5: #7c8a87;
+  --data-autre: #6b7875;
+
+  --data-seq-1: #0a2b28; --data-seq-2: #0f423d; --data-seq-3: #165a52;
+  --data-seq-4: #1f7268; --data-seq-5: #2f8c80; --data-seq-6: #46a698;
+  --data-seq-7: #6cc0b3;
+
+  --data-div-neg-2: #c24b58; --data-div-neg-1: #8a4a45;
+  --data-div-mid:   #2a3634;
+  --data-div-pos-1: #2f8c80; --data-div-pos-2: #6cc0b3;
+
+  --data-bon: #4fb585; --data-attention: #edb45f;
+  --data-serieux: #d97a5e; --data-critique: #c24b58;
+}
