@@ -2,7 +2,7 @@
 
 Direction retenue le 17 octobre 2026 : **Canopée Kosmio**. Tokenhood est un satellite du design system Kosmio v2 « Horizon » et sera publié sur `tokenhood.kosm.io`.
 
-Source de vérité : `01-Strategie/design-system/kosmio.css` et le site publié kosm.io. Ce fichier ne redéfinit que ce que la règle des satellites autorise : la couleur de signature. Police, rayons, rythme, ombres et grille sont ceux de Kosmio.
+Source de vérité : `01-Strategie/design-system/kosmio.css` (espace Kosmio, copié dans `design/kosmio.css` pour que ce dépôt se construise seul) et le site publié kosm.io. Ce fichier ne redéfinit que ce que la règle des satellites autorise : la couleur de signature. Police, rayons, rythme, ombres et grille sont ceux de Kosmio.
 
 ## Déclinaison satellite
 
@@ -37,6 +37,8 @@ Point d'attention : Certifiko utilise aussi l'or comme accent. La distinction de
 | Ciel (aplat) | `--kos-ciel-500` | #6BAED6 | Cernes, illustration |
 | Ciel (texte) | `--color-info-text` | #38718F | Information |
 | Succès | aplat #2E7D5A, texte #1F6647 | | Accepté, intégré |
+
+Compléments locaux de la landing (`landing/src/styles.css`), faute d'équivalent Kosmio : fond « en revue croisée » `#FDF3E2`, bordure de champ `#A8ACA9` (3:1 sur papier), filet sur teal profond `#1F5450`.
 
 ## États de mission (forme + couleur)
 
