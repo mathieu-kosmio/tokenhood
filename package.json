@@ -1,0 +1,32 @@
+{
+  "name": "tokenhood",
+  "private": true,
+  "description": "Tokenhood : mécénat de tokens pour les communs numériques (monorepo de la plateforme)",
+  "type": "module",
+  "packageManager": "pnpm@12.14.0",
+  "engines": {
+    "node": ">=22.12"
+  },
+  "scripts": {
+    "build": "pnpm -r --workspace-concurrency=1 build",
+    "dev:api": "pnpm --filter @tokenhood/api dev",
+    "dev:web": "pnpm --filter @tokenhood/web dev",
+    "test": "pnpm -r test",
+    "typecheck": "pnpm -r typecheck",
+    "lint": "eslint apps packages && prettier --check apps packages locales",
+    "format": "prettier --write apps packages locales",
+    "check": "pnpm lint && pnpm build && pnpm typecheck && pnpm test"
+  },
+  "devDependencies": {
+    "@eslint/js": "10.0.1",
+    "@types/node": "22.20.5",
+    "eslint": "10.13.0",
+    "eslint-plugin-svelte": "3.23.1",
+    "globals": "17.13.0",
+    "prettier": "3.9.10",
+    "prettier-plugin-svelte": "4.1.1",
+    "typescript": "6.0.3",
+    "typescript-eslint": "8.71.2",
+    "vitest": "5.0.5"
+  }
+}

@@ -1,0 +1,232 @@
+/* Interface web de Tokenhood : styles de page sur les tokens Kosmio (design/kosmio.css). */
+
+.kos-tokenhood {
+  --th-marge: clamp(1rem, 4vw, 3rem);
+  --th-or-50: #fdf3e2;
+  color: var(--text);
+}
+
+.th-wrap {
+  max-width: var(--container);
+  margin-inline: auto;
+  padding-inline: var(--th-marge);
+}
+
+#contenu:focus {
+  outline: none;
+}
+
+.th-header {
+  position: sticky;
+  top: 0;
+  z-index: var(--z-sticky);
+  background: rgb(250 250 247 / 0.94);
+  border-bottom: 1px solid var(--border);
+}
+.th-header__inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  padding-block: 0.875rem;
+}
+.th-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.625rem;
+  font-family: var(--font-display);
+  font-weight: var(--weight-medium);
+  font-size: 1.375rem;
+  color: var(--color-secondary);
+  text-decoration: none;
+}
+.th-mark {
+  stroke: var(--color-accent);
+}
+.th-lang {
+  display: inline-flex;
+  padding: 3px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-pill);
+  background: var(--surface-raised);
+}
+.th-lang a {
+  padding: 0.375rem 0.75rem;
+  border-radius: var(--radius-pill);
+  font-family: var(--font-display);
+  font-weight: var(--weight-medium);
+  font-size: 0.8125rem;
+  color: var(--text-body);
+  text-decoration: none;
+}
+.th-lang a[aria-current='true'] {
+  background: var(--color-primary);
+  color: var(--color-on-primary);
+}
+
+.th-hero {
+  background-image: var(--voile-hero);
+  background-repeat: no-repeat;
+  background-size: 100% 560px;
+}
+.th-hero__inner {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+  padding-block: clamp(3.5rem, 8vw, 7rem) clamp(3rem, 6vw, 5rem);
+}
+.th-hero h1 {
+  margin: 0;
+  max-width: 20ch;
+  font-size: var(--text-h1);
+  letter-spacing: -0.03em;
+}
+.th-eyebrow {
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  letter-spacing: var(--tracking-eyebrow);
+  text-transform: uppercase;
+  color: var(--color-primary);
+}
+.th-lead {
+  margin: 0;
+  max-width: 62ch;
+  font-size: clamp(1.0625rem, 1.6vw, 1.25rem);
+  color: var(--text-body);
+}
+.th-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+}
+.th-btn {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.8125rem 1.5rem;
+  border: 1.5px solid transparent;
+  border-radius: var(--radius-pill);
+  font-family: var(--font-display);
+  font-weight: var(--weight-medium);
+  text-decoration: none;
+}
+.th-btn--primary {
+  background: var(--color-primary);
+  color: var(--color-on-primary);
+}
+.th-btn--primary:hover {
+  background: var(--color-primary-hover);
+  color: var(--color-on-primary);
+}
+.th-btn--outline {
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+}
+
+.th-missions {
+  padding-block: var(--space-16) var(--rythme-section);
+}
+.th-missions h2 {
+  margin: 0 0 var(--space-2);
+  font-size: var(--text-h2);
+}
+.th-progress {
+  color: var(--text-secondary);
+}
+.th-mission-list {
+  display: grid;
+  margin: var(--space-6) 0;
+  padding: 0;
+  list-style: none;
+  border-top: 1px solid var(--border);
+}
+.th-mission-list li {
+  display: grid;
+  grid-template-columns: 5.5rem minmax(0, 1fr) auto auto;
+  align-items: baseline;
+  gap: var(--space-4);
+  max-width: none;
+  padding-block: var(--space-3);
+  border-bottom: 1px solid var(--border);
+}
+.th-mission-id,
+.th-mission-type {
+  font-family: var(--font-mono);
+  font-size: 0.8125rem;
+  color: var(--text-secondary);
+}
+.th-mission-title {
+  color: var(--text);
+}
+.th-status {
+  padding: 2px 10px;
+  border: 1px solid transparent;
+  border-radius: var(--radius-pill);
+  font-family: var(--font-display);
+  font-weight: var(--weight-medium);
+  font-size: 0.8125rem;
+  white-space: nowrap;
+}
+.th-status--open,
+.th-status--draft {
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+}
+.th-status--in_progress {
+  background: var(--color-primary-subtle);
+  color: var(--color-primary);
+}
+.th-status--awaiting_decision {
+  background: var(--th-or-50);
+  color: var(--color-accent-text);
+}
+.th-status--accepted,
+.th-status--integrated,
+.th-status--closed {
+  background: #e3f1ea;
+  color: var(--color-success-text);
+}
+.th-status--blocked,
+.th-status--cancelled {
+  border-color: var(--text);
+  color: var(--text);
+}
+.th-note {
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
+}
+@media (max-width: 40rem) {
+  .th-mission-list li {
+    grid-template-columns: 4.5rem minmax(0, 1fr);
+  }
+  .th-mission-type {
+    display: none;
+  }
+  .th-status {
+    grid-column: 2;
+    justify-self: start;
+  }
+}
+
+.th-error {
+  padding-block: var(--rythme-section);
+}
+
+.th-footer {
+  padding-block: var(--space-10);
+  background: var(--surface-sunken);
+  border-top: 1px solid var(--border);
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
+}
+
+.th-footer__inner {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+.th-footer__inner img {
+  display: block;
+  width: auto;
+  height: 1.75rem;
+}

@@ -1,0 +1,24 @@
+{
+  "name": "@tokenhood/api",
+  "version": "0.1.0",
+  "private": true,
+  "description": "API REST de Tokenhood (Fastify)",
+  "type": "module",
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "dev": "tsx watch src/server.ts",
+    "start": "node dist/server.js",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@fastify/swagger": "9.9.2",
+    "@fastify/type-provider-typebox": "6.3.0",
+    "@tokenhood/i18n": "workspace:*",
+    "fastify": "5.12.7",
+    "typebox": "1.3.37"
+  },
+  "devDependencies": {
+    "tsx": "4.23.15"
+  }
+}

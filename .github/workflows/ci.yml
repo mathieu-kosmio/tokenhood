@@ -1,0 +1,29 @@
+# TH-101 : CI du monorepo de la plateforme (lint, build, typecheck, tests).
+# Les scans de sécurité et les statuts requis arrivent avec TH-015.
+name: ci
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  monorepo:
+    runs-on: ubuntu-latest
+    env:
+      COREPACK_ENABLE_DOWNLOAD_PROMPT: '0'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Activer pnpm (version du champ packageManager)
+        run: corepack enable && pnpm --version
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm lint
+      - run: pnpm build
+      - run: pnpm typecheck
+      - run: pnpm test

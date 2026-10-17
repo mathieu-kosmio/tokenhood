@@ -7,3 +7,6 @@ dist/
 .DS_Store
 coverage/
 .tokenhood/claims/
+build/
+.svelte-kit/
+packages/i18n/src/messages.ts
