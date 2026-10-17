@@ -16,6 +16,20 @@ Lot 0 (bootstrap) in progress. Tokenhood is built with Tokenhood: this repositor
 - Design system : [`design/`](design/) (satellite du design system Kosmio v2 « Horizon »)
 - Landing · Landing page : [`landing/`](landing/) (site statique FR/EN · static FR/EN site)
 
+## Développer · Develop
+
+```sh
+corepack enable           # pnpm 12, version fixée par packageManager
+pnpm install
+pnpm check                # lint, build, typecheck, tests
+pnpm dev:api              # API sur http://localhost:3000
+pnpm dev:web              # interface web · web app
+```
+
+- `apps/api` (Fastify), `apps/web` (SvelteKit), `packages/i18n`, `locales/` : plateforme · platform (ADR-002)
+- `landing/` : page publique statique · static public page
+- `schemas/`, `examples/`, `tools/validate/` : formats Tokenhood et leur validation · formats and validation
+
 ## Contribuer · Contributing
 
 Voir [`CONTRIBUTING.md`](CONTRIBUTING.md). Toute contribution passe par une mission, une PR depuis un fork et une revue croisée par l'agent d'un autre contributeur.

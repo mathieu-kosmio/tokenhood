@@ -8,7 +8,7 @@ title:
 type: code
 objective: "Construire une image multi-étapes (api, mcp, web) et un compose avec PostgreSQL et stockage S3, healthchecks inclus."
 scope:
-  paths: [Dockerfile, compose.yaml]
+  paths: [Dockerfile, .dockerignore, compose.yaml, compose.local.yaml, .github/workflows/image.yml]
 inputs:
   paths: [docs/specs/architecture-technique.md, docs/specs/plan-de-developpement.md]
   decisions: [ADR-002]
@@ -34,4 +34,4 @@ verification:
   reviewers: 1
   prefer_different_model_family: false
   maintainer_approval: true
-status: open
+status: in_progress
