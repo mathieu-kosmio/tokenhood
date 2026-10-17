@@ -1,0 +1,40 @@
+# TH-003 : validation par parseur et par schéma de .tokenhood/ et des exemples, à chaque PR.
+name: tokenhood
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    name: validation .tokenhood
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: tools/validate/package-lock.json
+      - name: Installer le validateur
+        working-directory: tools/validate
+        run: npm ci --ignore-scripts
+      - name: Tests du validateur
+        working-directory: tools/validate
+        run: npm test
+      - name: Valider le manifeste, les politiques, les missions et les exemples
+        run: node tools/validate/validate.mjs .
+      - name: Vérifier que la validation échoue sur une mission invalide
+        run: |
+          tmp=$(mktemp -d)
+          cp -R .tokenhood schemas examples "$tmp/"
+          cp examples/mission/invalid/sans-critere.yaml "$tmp/.tokenhood/missions/TH-105.yaml"
+          if node tools/validate/validate.mjs "$tmp" > "$tmp/sortie.txt"; then
+            echo "La validation aurait dû échouer sur TH-105.yaml"; cat "$tmp/sortie.txt"; exit 1
+          fi
+          grep -q '✗ .tokenhood/missions/TH-105.yaml' "$tmp/sortie.txt"
+          echo "Échec attendu obtenu :"; grep -A4 'TH-105.yaml' "$tmp/sortie.txt"
