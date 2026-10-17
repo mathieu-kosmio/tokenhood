@@ -14,6 +14,7 @@ Lot 0 (bootstrap) in progress. Tokenhood is built with Tokenhood: this repositor
 - Missions : [`.tokenhood/missions/`](.tokenhood/missions/)
 - Décisions · Decisions : [`decisions/`](decisions/)
 - Design system : [`design/`](design/) (satellite du design system Kosmio v2 « Horizon »)
+- Landing · Landing page : [`landing/`](landing/) (site statique FR/EN · static FR/EN site)
 
 ## Contribuer · Contributing
 

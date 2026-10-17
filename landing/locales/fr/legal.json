@@ -1,0 +1,109 @@
+{
+  "legal": {
+    "metaTitle": "Mentions légales · Tokenhood",
+    "metaDescription": "Éditeur, directeur de la publication et hébergeur du site tokenhood.kosm.io.",
+    "eyebrow": "Informations légales",
+    "title": "Mentions légales",
+    "intro": "Conformément à la loi n° 2004-575 du 21 juin 2004 pour la confiance dans l'économie numérique, voici les informations relatives à l'éditeur du site tokenhood.kosm.io.",
+    "sections": [
+      {
+        "title": "Éditeur du site",
+        "rows": [
+          { "label": "Raison sociale", "value": "Kosmio" },
+          { "label": "Forme juridique", "value": "SAS, société par actions simplifiée, au capital de 7 500 €" },
+          { "label": "Siège social", "value": "Villa 8, 301 rue du Romarin, 34160 Castries, France" },
+          { "label": "SIREN", "value": "983 943 903, R.C.S. Montpellier" },
+          { "label": "TVA intracommunautaire", "value": "FR83983943903" },
+          { "label": "Contact", "value": "contact@kosm.io" }
+        ],
+        "paragraphs": []
+      },
+      {
+        "title": "Directeur de la publication",
+        "rows": [
+          { "label": "Nom", "value": "Zokama Sakanga" },
+          { "label": "Qualité", "value": "Président de Kosmio" }
+        ],
+        "paragraphs": []
+      },
+      {
+        "title": "Hébergeur",
+        "rows": [
+          { "label": "Prestataire", "value": "OVH SAS" },
+          { "label": "Adresse", "value": "2 rue Kellermann, 59100 Roubaix, France" },
+          { "label": "Site", "value": "https://www.ovhcloud.com" }
+        ],
+        "paragraphs": []
+      },
+      {
+        "title": "Propriété intellectuelle",
+        "rows": [],
+        "paragraphs": [
+          "Le code source de Tokenhood est public sur GitHub : https://github.com/mathieu-kosmio/tokenhood. Le choix de sa licence libre est en cours de décision par la gouvernance du projet.",
+          "Le nom et le logo de Kosmio restent la propriété de Kosmio. Les polices Lexend, Public Sans et JetBrains Mono sont distribuées sous licence SIL Open Font License 1.1."
+        ]
+      }
+    ],
+    "updated": "Dernière mise à jour : octobre 2026."
+  },
+  "privacy": {
+    "metaTitle": "Politique de confidentialité · Tokenhood",
+    "metaDescription": "Quelles données le site tokenhood.kosm.io traite, pourquoi, et comment exercer vos droits.",
+    "eyebrow": "Données personnelles",
+    "title": "Politique de confidentialité",
+    "intro": "Tokenhood est un commun initié par Kosmio. Cette page dit quelles données le site tokenhood.kosm.io traite, pourquoi, et comment exercer vos droits.",
+    "sections": [
+      {
+        "title": "Responsable du traitement",
+        "rows": [],
+        "paragraphs": [
+          "Kosmio SAS, Villa 8, 301 rue du Romarin, 34160 Castries, France. Contact : contact@kosm.io."
+        ]
+      },
+      {
+        "title": "Données collectées",
+        "rows": [],
+        "paragraphs": [
+          "Si vous remplissez le formulaire « Rejoindre l'amorçage » : votre adresse e-mail et le ou les rôles que vous cochez. Rien d'autre.",
+          "Le site ne dépose aucun cookie et n'utilise aucun outil de mesure d'audience. Les polices de caractères sont servies par notre serveur : afficher une page n'envoie aucune requête à un tiers."
+        ]
+      },
+      {
+        "title": "Finalité et base légale",
+        "rows": [],
+        "paragraphs": [
+          "Votre adresse sert uniquement à vous prévenir de l'ouverture de l'amorçage et des étapes qui vous concernent. Le traitement repose sur votre consentement, que vous confirmez par le lien reçu par e-mail et que vous pouvez retirer à tout moment."
+        ]
+      },
+      {
+        "title": "Destinataires",
+        "rows": [],
+        "paragraphs": [
+          "Seule l'équipe qui anime Tokenhood chez Kosmio a accès à la liste. Elle est hébergée par Brevo (Sendinblue SAS, France), qui envoie les e-mails pour notre compte depuis des serveurs situés dans l'Union européenne. Le site est hébergé par OVH SAS (France). Aucune donnée n'est vendue ni cédée."
+        ]
+      },
+      {
+        "title": "Durée de conservation",
+        "rows": [],
+        "paragraphs": [
+          "Jusqu'à votre désinscription, et au plus trois ans après notre dernier échange. Chaque e-mail contient un lien de désinscription."
+        ]
+      },
+      {
+        "title": "Journaux techniques",
+        "rows": [],
+        "paragraphs": [
+          "Le site ne tient pas de journal des visites. Seules les erreurs du serveur sont journalisées, pour le diagnostic ; elles peuvent contenir l'adresse IP de la requête en cause."
+        ]
+      },
+      {
+        "title": "Vos droits",
+        "rows": [],
+        "paragraphs": [
+          "Vous disposez d'un droit d'accès, de rectification, d'effacement, d'opposition, de limitation et de portabilité sur vos données. Écrivez à contact@kosm.io. Si vous estimez que vos droits ne sont pas respectés, vous pouvez saisir la CNIL : https://www.cnil.fr."
+        ]
+      }
+    ],
+    "updated": "Dernière mise à jour : octobre 2026."
+  }
+}
