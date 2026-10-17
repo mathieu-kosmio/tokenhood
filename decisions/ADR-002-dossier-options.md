@@ -68,7 +68,7 @@
 
 ## Points de vigilance, quelle que soit l'option
 
-- **Versions** : à la date du dossier, TypeScript 7 (compilateur natif), SvelteKit 3, Vitest 5 et pnpm 12 sont les dernières versions majeures. TH-101 doit épingler des versions exactes et vérifier que l'outillage Svelte suit TypeScript 7 ; sinon, rester sur TypeScript 5.9 jusqu'à ce qu'il suive.
+- **Versions** : à la date du dossier, TypeScript 7 (compilateur natif), SvelteKit 3, Vitest 5 et pnpm 12 sont les dernières versions majeures. TH-101 doit épingler des versions exactes. Vérifié le 18/10/2026 : SvelteKit 3 et svelte-check déclarent `typescript ^6`, le monorepo reste donc en TypeScript 6 jusqu'à ce que l'outillage Svelte suive TypeScript 7.
 - **Migrations** : jamais au démarrage de chaque réplique ; un service unique, puis les applications (`depends_on: service_completed_successfully`).
 - **Prévisualisations de PR** : Coolify les gère pour les applications ; pour une ressource Compose, prévoir le staging comme environnement de recette et des prévisualisations limitées à `web`.
 - **Contrôle d'absence de SDK de LLM** : liste de paquets interdits vérifiée en CI (TH-015) sur tous les `package.json` du monorepo.
