@@ -1,0 +1,58 @@
+# Compose de référence de la plateforme (TH-013), utilisé tel quel par Coolify (ressource Docker Compose).
+# Aucun port publié : le proxy de Coolify atteint les services sur le réseau interne.
+# Domaines à déclarer dans Coolify : app. -> web:3000, api. -> api:3000.
+# Secret requis : POSTGRES_PASSWORD (variable d'environnement de la ressource, jamais dans le dépôt).
+# En local : docker compose -f compose.yaml -f compose.local.yaml up --build
+
+name: tokenhood
+
+x-app: &app
+  build:
+    context: .
+    dockerfile: Dockerfile
+  image: tokenhood-app
+  restart: unless-stopped
+  environment: &app-env
+    NODE_ENV: production
+    PORT: '3000'
+    LOG_LEVEL: ${LOG_LEVEL:-info}
+    DATABASE_URL: postgres://tokenhood:${POSTGRES_PASSWORD:?POSTGRES_PASSWORD est requis}@postgres:5432/tokenhood
+
+services:
+  api:
+    <<: *app
+    command: ['node', 'apps/api/dist/server.js']
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  web:
+    <<: *app
+    command: ['node', 'apps/web/build/index.js']
+    environment:
+      <<: *app-env
+      # Derrière le proxy TLS de Coolify : l'origine se lit dans les en-têtes transmis.
+      PROTOCOL_HEADER: x-forwarded-proto
+      HOST_HEADER: x-forwarded-host
+      API_URL: http://api:3000
+    depends_on:
+      api:
+        condition: service_healthy
+
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: tokenhood
+      POSTGRES_USER: tokenhood
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD est requis}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U tokenhood -d tokenhood']
+      interval: 10s
+      timeout: 3s
+      retries: 5
+
+volumes:
+  pgdata:

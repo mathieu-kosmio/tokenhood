@@ -1,0 +1,15 @@
+# Contexte de l'image de la plateforme (Dockerfile). La landing a le sien : landing/Dockerfile.dockerignore.
+.git
+**/node_modules
+**/dist
+**/build
+**/.svelte-kit
+landing
+tools
+docs
+examples
+schemas
+decisions
+*.md
+.env
+.env.*

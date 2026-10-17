@@ -15,17 +15,31 @@ Principes non négociables :
 
 ## Références
 
-- Spécifications V2.1 : https://claude.ai/code/artifact/70f6540c-17f9-4d27-95dd-8b33017cf7d2 (à verser dans `docs/specs/` par TH-001)
+- Spécifications V2.1 : `docs/specs/` (versées par TH-001, PR #2) ; source : https://claude.ai/code/artifact/70f6540c-17f9-4d27-95dd-8b33017cf7d2
 - Plan de développement (56 missions, 5 lots) : https://claude.ai/code/artifact/c4fd5cb0-43b3-487d-a5a8-b98bf86c0a94
-- Décisions : `decisions/` (DEC-2026-001 direction artistique, DEC-2026-002 déploiement, DEC-2026-003 landing)
+- Décisions : `decisions/` (DEC-2026-001 direction artistique, DEC-2026-002 déploiement, DEC-2026-003 landing, ADR-002 stack proposée par TH-007)
 
-## État au 17/10/2026
+## État au 18/10/2026
 
-- Lot 0 (amorçage) en cours ; missions TH-001 à TH-016 publiées, TH-017 (landing) réservée et livrée en PR.
+- Lot 0 (amorçage) en cours ; missions TH-001 à TH-017 publiées, TH-101 (lot 1) ouverte en avance.
 - Dépôt public, licence non encore choisie (AGPL-3.0 proposée).
 - Dépôt réglé : description, site, sujets, labels, Discussions activées. Les catégories Clarifications, Décisions, Propositions restent à créer dans l'interface GitHub (aucune API).
-- `main` protégée : PR obligatoire (y compris pour les administrateurs), historique linéaire, conversations résolues, ni force-push ni suppression. Zéro approbation requise tant que le porteur est seul mainteneur ; aucun statut de CI requis avant TH-003 / TH-015.
-- Stack proposée (à confirmer par ADR-002 / TH-007) : TypeScript, Node 22, monorepo pnpm, Fastify, PostgreSQL + Drizzle, SDK MCP TypeScript, SvelteKit, i18n ICU (FormatJS).
+- `main` protégée : PR obligatoire (y compris pour les administrateurs), historique linéaire (fusion en rebase ou squash), conversations résolues, ni force-push ni suppression. Zéro approbation requise tant que le porteur est seul mainteneur ; aucun statut de CI requis avant TH-015.
+- La fusion des PR revient au porteur : l'agent prépare, vérifie et documente, il ne fusionne pas.
+
+### File de PR (ordre de fusion)
+
+| PR | Mission | Base | Contenu |
+|---|---|---|---|
+| #1 | TH-017 | `main` | Landing statique FR/EN, publiée sur tokenhood.kosm.io après fusion |
+| #2 | TH-001 | `main` | Spécifications V2.1 dans `docs/specs/` (FR et EN) |
+| #3 | TH-002 | `main` | JSON Schema, exemples, validateur `tools/validate/` |
+| #4 | TH-003 | #3 | Workflow `tokenhood` : validation de `.tokenhood/` et des exemples |
+| #5 | TH-007 | `main` | Dossier d'options et ADR-002 (fusion = adoption) |
+| #6 | TH-101 | #1 | Monorepo pnpm : `apps/api`, `apps/web`, `packages/i18n`, `locales/`, CI |
+| #7 | TH-013 | #6 | Image unique, `compose.yaml`, workflow `image` |
+
+Une PR empilée change de base quand la précédente est fusionnée ; avec une fusion en rebase, la rebaser ensuite sur `main` (`git rebase --onto origin/main <ancienne-base>`).
 
 ## Landing (`landing/`)
 
@@ -34,10 +48,19 @@ Principes non négociables :
 - Textes : `landing/locales/<lang>/*.json` uniquement ; le test refuse toute chaîne visible absente des locales et toute divergence de structure FR/EN.
 - Formulaire : Brevo hébergé, URL dans la variable de build `BREVO_FORM_ACTION` ; sans elle, repli sur GitHub Discussions.
 
+## Plateforme (monorepo, ADR-002)
+
+- pnpm 12 via corepack (`corepack enable`, version fixée par `packageManager`), Node 22, TypeScript 6 (SvelteKit 3 ne suit pas encore TypeScript 7).
+- `pnpm install`, puis `pnpm check` (lint, build, typecheck, tests) ; `pnpm dev:api`, `pnpm dev:web`.
+- `locales/fr.json` et `locales/en.json` (ICU) : seule source des chaînes de l'API et du web ; parité des clés et des arguments vérifiée à chaque build.
+- Scripts d'installation des dépendances refusés (`allowBuilds`) ; politique d'âge minimal des versions de pnpm à respecter (épingler une version plus ancienne plutôt qu'ajouter une exception).
+- Image : `Dockerfile` à la racine (api et web), `compose.yaml` (api, web, PostgreSQL) ; essai en CI par le workflow `image` (Docker indisponible sur le poste du porteur).
+
 ## Déploiement
 
 - Coolify, déploiement automatique à chaque commit sur `main` (mis en place par Mathieu).
 - Page publique au démarrage : `tokenhood.kosm.io`. Landing : build pack Dockerfile, base directory `/`, Dockerfile `/landing/Dockerfile`, port 8080, healthcheck `/healthz`.
+- Plateforme : ressource Coolify Docker Compose depuis `compose.yaml`, domaines `app.` (web:3000) et `api.` (api:3000), variable secrète `POSTGRES_PASSWORD`.
 - Plus de push direct sur `main` (protection active) : PR, CI au vert, revue croisée, approbation du porteur.
 
 ## Design
@@ -50,12 +73,10 @@ Principes non négociables :
 
 ## Prochaines étapes
 
-1. Ajouter `LICENSE` une fois la licence décidée, mettre à jour README, `.tokenhood/project.yaml` et la FAQ de la landing.
-2. Fusionner la PR TH-017, créer l'application Coolify de la landing (réglages dans `landing/README.md`), vérifier tokenhood.kosm.io.
-3. Créer le formulaire Brevo (liste « Tokenhood », double opt-in) et renseigner `BREVO_FORM_ACTION`.
-4. Créer les catégories Discussions : Clarifications, Décisions, Propositions.
-5. Relire les textes de la landing (coût, licence) et les pages légales (sous-traitants, conservation).
-6. Enchaîner les missions sans dépendance : TH-001 (débloque TH-002, TH-007, TH-008, TH-016), TH-006, TH-010, TH-011.
+1. Porteur : fusionner la file de PR dans l'ordre ci-dessus ; créer dans Coolify l'application de la landing (`landing/README.md`) puis la ressource Compose de la plateforme.
+2. Porteur : formulaire Brevo (liste « Tokenhood », double opt-in) et `BREVO_FORM_ACTION` ; catégories Discussions ; licence (`LICENSE`, README, `project.yaml`, FAQ de la landing).
+3. Relire les textes de la landing et les pages légales (sous-traitants, conservation), et la traduction EN des spécifications (PR #2).
+4. Missions suivantes : TH-015 (scans et statuts requis), TH-004 et TH-005 (skills), TH-009 (contrats du protocole), TH-006, TH-010, TH-011 ; côté MVP, TH-102 (identité, OAuth GitHub, `packages/db` avec Drizzle) et le stockage S3 laissé hors de TH-013.
 
 ## Conventions de commit
 
