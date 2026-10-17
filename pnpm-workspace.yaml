@@ -1,0 +1,8 @@
+# Monorepo de la plateforme (ADR-002). landing/ et tools/ restent des paquets npm autonomes.
+packages:
+  - apps/*
+  - packages/*
+# Scripts d'installation des dépendances : refusés par défaut. esbuild fonctionne sans le sien.
+allowBuilds:
+  esbuild: false
+

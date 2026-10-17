@@ -1,0 +1,43 @@
+schema_version: "2.1"
+id: TH-101
+version: 1
+lot: 1
+title:
+  fr: "Squelette du monorepo, CI, socle i18n"
+  en: "Monorepo skeleton, CI, i18n foundation"
+type: code
+objective: "Poser le monorepo pnpm de la plateforme (api, web, i18n) selon ADR-002, avec sa CI et le socle i18n FR/EN en ICU."
+scope:
+  paths: [package.json, pnpm-workspace.yaml, pnpm-lock.yaml, tsconfig.base.json, eslint.config.js, .prettierrc.json, .prettierignore, .gitignore, apps/, packages/, locales/, .github/workflows/ci.yml]
+inputs:
+  paths: [docs/specs/architecture-technique.md, docs/specs/non-code-et-i18n.md, docs/specs/api-et-mcp.md]
+  decisions: [ADR-002]
+outputs:
+  kind: pull_request
+acceptance:
+  commands: ["pnpm install --frozen-lockfile", "pnpm check"]
+  requirements:
+    - "pnpm check passe : lint, build, typecheck, tests"
+    - "Les catalogues locales/fr.json et locales/en.json ont les mêmes clés et les mêmes arguments ICU (test)"
+    - "L'API localise ses erreurs selon Accept-Language et publie une description OpenAPI 3.1 (tests)"
+    - "L'interface web négocie la langue (choix explicite, cookie, navigateur) et n'affiche aucune chaîne hors locales/"
+    - "Aucun SDK de fournisseur de LLM importable (règle ESLint)"
+dependencies:
+  - decision: ADR-002
+  - mission: TH-015
+    type: integrated
+skills: []
+estimate:
+  size: M
+  tokens_eq: null
+  source: plan
+risk: medium
+attempts: {mode: exclusive}
+execution:
+  max_lease_minutes: 240
+  environment: container
+verification:
+  reviewers: 1
+  prefer_different_model_family: false
+  maintainer_approval: true
+status: in_progress
