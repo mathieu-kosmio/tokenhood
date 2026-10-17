@@ -24,6 +24,6 @@ Option A du dossier : monolithe modulaire TypeScript, plusieurs services issus d
 ## Conséquences
 
 - TH-013 (image et compose), TH-015 (CI et scans) et TH-101 (squelette du monorepo) peuvent démarrer.
-- Les versions exactes sont épinglées par TH-101 ; si l'outillage Svelte ne suit pas TypeScript 7, le dépôt reste sur TypeScript 5.9.
+- Les versions exactes sont épinglées par TH-101. SvelteKit 3 et svelte-check déclarent `typescript ^6` : le dépôt est en TypeScript 6 jusqu'à ce que l'outillage Svelte suive TypeScript 7.
 - La landing (`landing/`, DEC-2026-003) reste un site statique indépendant ; elle pourra rejoindre `apps/web` plus tard.
 - Aucun SDK de fournisseur de LLM n'entre dans le monorepo ; TH-015 le contrôle en CI.
