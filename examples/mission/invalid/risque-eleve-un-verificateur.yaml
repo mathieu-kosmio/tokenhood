@@ -1,0 +1,16 @@
+# Invalide : une mission à risque élevé exige deux vérificateurs.
+schema_version: "2.1"
+id: TH-204
+version: 1
+title: Serveur MCP
+type: code
+objective: Exposer les missions aux agents par MCP.
+scope: {paths: [apps/mcp/]}
+inputs: {paths: [docs/specs/api-et-mcp.md]}
+outputs: {kind: pull_request}
+acceptance: {requirements: [Les outils MCP du lot 2 répondent selon le protocole]}
+skills: []
+estimate: {tokens_eq: {low: 400000, high: 900000}, source: plan}
+risk: high
+attempts: {mode: exclusive}
+verification: {reviewers: 1, maintainer_approval: true}

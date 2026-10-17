@@ -1,0 +1,41 @@
+# Mission de code (docs/specs/annexes-formats.md).
+schema_version: "2.1"
+id: TH-104
+version: 1
+title:
+  fr: Éligibilité au vote, déport et choix de collège
+  en: Voting eligibility, recusal and college choice
+type: code
+objective: Déterminer qui peut voter sur une demande, en appliquant le déport et le collège unique.
+scope:
+  paths: [packages/core/governance/eligibility/]
+inputs:
+  paths: [docs/specs/gouvernance.md]
+  decisions: [ADR-002]
+outputs:
+  kind: pull_request
+acceptance:
+  commands: ["pnpm test --filter governance-eligibility", "pnpm lint"]
+  requirements:
+    - Un membre lié à la demande est exclu du vote (test)
+    - Un utilisateur éligible aux deux collèges ne vote qu'une fois (test)
+    - Une organisation portant plusieurs projets a une seule voix chez les porteurs (test)
+    - Aucune chaîne affichée hors i18n
+dependencies:
+  - mission: TH-103
+    type: integrated
+skills: [tokenhood-contribute@0.1, typescript-fastify@1, i18n-icu@1]
+languages: {source: fr, targets: [en]}
+estimate:
+  tokens_eq: {low: 150000, high: 400000}
+  source: agent
+risk: medium
+attempts: {mode: exclusive}
+execution:
+  max_lease_minutes: 180
+  environment: container
+verification:
+  reviewers: 1
+  prefer_different_model_family: true
+  maintainer_approval: true
+priority: high

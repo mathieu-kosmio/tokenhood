@@ -1,0 +1,96 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://tokenhood.kosm.io/schemas/2.1/arbitration-request.schema.json",
+  "title": "Tokenhood · demande d'arbitrage",
+  "description": "Créée par un humain, un agent (request_arbitration) ou une règle automatique. Référence : docs/specs/gouvernance.md.",
+  "type": "object",
+  "required": ["schema_version", "type", "category", "raised_by", "title", "context", "options", "default_option", "blocking"],
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": { "$ref": "common.schema.json#/$defs/schemaVersion" },
+    "type": {
+      "enum": ["spec.clarification", "roadmap.priority", "architecture.choice", "allocation.weights", "project.admission", "project.suspension", "verification.dispute", "scale.update", "charter.amendment", "security.emergency"]
+    },
+    "category": {
+      "description": "1 clarification locale, 2 choix technique structurant, 3 décision collective ; null pour une urgence de sécurité (hors catégorie).",
+      "enum": [1, 2, 3, null]
+    },
+    "raised_by": {
+      "oneOf": [
+        {
+          "type": "object",
+          "required": ["kind", "agent", "mission", "attempt"],
+          "additionalProperties": false,
+          "properties": {
+            "kind": { "const": "agent" },
+            "agent": { "$ref": "common.schema.json#/$defs/agentId" },
+            "mission": { "$ref": "common.schema.json#/$defs/missionId" },
+            "attempt": { "$ref": "common.schema.json#/$defs/attemptId" }
+          }
+        },
+        {
+          "type": "object",
+          "required": ["kind", "user"],
+          "additionalProperties": false,
+          "properties": {
+            "kind": { "const": "human" },
+            "user": { "type": "string", "minLength": 1 }
+          }
+        },
+        {
+          "type": "object",
+          "required": ["kind", "rule"],
+          "additionalProperties": false,
+          "properties": {
+            "kind": { "const": "rule" },
+            "rule": { "type": "string", "minLength": 1 }
+          }
+        }
+      ]
+    },
+    "title": { "$ref": "common.schema.json#/$defs/i18nText" },
+    "context": { "type": "string", "minLength": 1 },
+    "options": {
+      "type": "array",
+      "minItems": 2,
+      "items": {
+        "type": "object",
+        "required": ["id", "label", "impact", "reversible"],
+        "additionalProperties": false,
+        "properties": {
+          "id": { "type": "string", "pattern": "^[A-Z]$" },
+          "label": { "type": "string", "minLength": 1 },
+          "impact": { "type": "string", "minLength": 1 },
+          "reversible": { "type": "boolean" }
+        }
+      }
+    },
+    "default_option": {
+      "description": "Doit désigner l'id d'une des options (contrôle sémantique du validateur).",
+      "type": "string",
+      "pattern": "^[A-Z]$"
+    },
+    "conduct": {
+      "description": "Règle de conduite appliquée par l'agent en attendant la décision.",
+      "enum": ["continue", "switch_mission", "stop"]
+    },
+    "blocking": { "type": "boolean" },
+    "urgency": { "enum": ["low", "normal", "high"] },
+    "blocked_missions": { "type": "array", "items": { "$ref": "common.schema.json#/$defs/missionId" } }
+  },
+  "allOf": [
+    {
+      "if": { "properties": { "raised_by": { "properties": { "kind": { "const": "agent" } } } } },
+      "then": { "required": ["conduct"] }
+    },
+    {
+      "if": { "properties": { "conduct": { "const": "continue" } }, "required": ["conduct"] },
+      "then": { "properties": { "blocking": { "const": false } } }
+    },
+    {
+      "if": { "properties": { "type": { "const": "security.emergency" } } },
+      "then": { "properties": { "category": { "const": null } } },
+      "else": { "properties": { "category": { "type": "integer" } } }
+    }
+  ]
+}

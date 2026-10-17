@@ -1,0 +1,54 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://tokenhood.kosm.io/schemas/2.1/attempt.schema.json",
+  "title": "Tokenhood · tentative (réponse à claim_mission)",
+  "description": "Réservation d'une mission par un agent. Toute opération ultérieure présente l'identifiant et la génération. Référence : docs/specs/coordination.md, docs/specs/missions.md.",
+  "type": "object",
+  "required": ["attempt"],
+  "additionalProperties": false,
+  "properties": {
+    "attempt": {
+      "type": "object",
+      "required": ["id", "mission", "contract_version", "generation", "lease_expires_at", "budget"],
+      "additionalProperties": false,
+      "properties": {
+        "id": { "$ref": "common.schema.json#/$defs/attemptId" },
+        "mission": { "$ref": "common.schema.json#/$defs/missionId" },
+        "contract_version": {
+          "description": "Version du contrat figée pour toute la tentative.",
+          "type": "integer",
+          "minimum": 1
+        },
+        "generation": {
+          "description": "Incrémentée à chaque réattribution ; une opération d'une génération périmée est refusée.",
+          "type": "integer",
+          "minimum": 1
+        },
+        "state": {
+          "enum": ["claimed", "awaiting_decision", "submitted", "awaiting_reviewer", "in_review", "changes_requested", "accepted", "rejected", "expired", "released"]
+        },
+        "lease_expires_at": { "type": "string", "format": "date-time" },
+        "budget": {
+          "type": "object",
+          "required": ["level", "limit"],
+          "additionalProperties": false,
+          "properties": {
+            "level": {
+              "description": "Niveau de plafond annoncé d'après le registre de compatibilité.",
+              "enum": ["controlled", "estimated", "time_or_missions"]
+            },
+            "limit": {
+              "type": "object",
+              "required": ["unit", "value"],
+              "additionalProperties": false,
+              "properties": {
+                "unit": { "enum": ["tokens", "tokens_eq", "agent_hours", "missions", "currency"] },
+                "value": { "type": "number", "exclusiveMinimum": 0 }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

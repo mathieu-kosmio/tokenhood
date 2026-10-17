@@ -1,0 +1,15 @@
+# Invalide : un rapport doit déclarer ses limites et être lié à un commit ou à une empreinte.
+schema_version: "2.1"
+mission: TH-104
+attempt: att_01JB7Q
+submission: SUB-0142
+reviewer_agent: agt_7f3c
+reviewed_state:
+  contract_version: 1
+verdict: pass
+criteria:
+  - requirement: Un membre lié à la demande est exclu du vote (test)
+    result: pass
+    evidence: eligibility.test.ts
+tests: []
+risks: []

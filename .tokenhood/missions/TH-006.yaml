@@ -9,6 +9,9 @@ type: governance.instruction
 objective: "Instruire ADR-001 : reprise, réimplémentation compatible ou contribution à tokenpool."
 scope:
   paths: [decisions/]
+inputs:
+  paths: [docs/specs/coordination.md]
+  resources: [https://github.com/rickheere/tokenpool]
 outputs:
   kind: pull_request
 acceptance:
@@ -17,6 +20,7 @@ acceptance:
     - "Sources citées"
     - "Aucune décision prise par l'agent"
 dependencies: []
+skills: []                 # tokenhood-contribute@0.1 dès TH-004
 estimate:
   size: M
   tokens_eq: null          # à produire par l'agent au cadrage

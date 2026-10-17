@@ -9,6 +9,8 @@ type: research
 objective: "Définir la campagne pilote : missions, données enregistrées, retour à 30 jours, gabarit du rapport."
 scope:
   paths: [docs/pilote/]
+inputs:
+  paths: [docs/specs/campagne-pilote.md, docs/specs/valeur-nette.md]
 outputs:
   kind: pull_request
 acceptance:
@@ -16,6 +18,7 @@ acceptance:
     - "Questionnaire à 30 jours en trois questions"
     - "Gabarit du rapport de campagne"
 dependencies: []
+skills: []                 # tokenhood-contribute@0.1 dès TH-004
 estimate:
   size: M
   tokens_eq: null          # à produire par l'agent au cadrage

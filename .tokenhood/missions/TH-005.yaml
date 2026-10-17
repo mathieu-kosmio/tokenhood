@@ -9,6 +9,8 @@ type: docs
 objective: "Écrire le skill du vérificateur : exécution des critères, gabarit de rapport à périmètre déclaré."
 scope:
   paths: [skills/tokenhood-verify/]
+inputs:
+  paths: [docs/specs/skills.md, docs/specs/verification-croisee.md, schemas/review-report.schema.json]
 outputs:
   kind: pull_request
 acceptance:
@@ -18,6 +20,7 @@ acceptance:
 dependencies:
   - mission: TH-002
     type: integrated
+skills: []                 # tokenhood-contribute@0.1 dès TH-004
 estimate:
   size: M
   tokens_eq: null          # à produire par l'agent au cadrage

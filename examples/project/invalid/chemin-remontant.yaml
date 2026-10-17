@@ -1,0 +1,13 @@
+# Invalide : un chemin ne peut pas sortir du dépôt, et la langue doit être un code ISO 639-1.
+schema_version: "2.1"
+project:
+  id: cartes-communes
+  name: Cartes communes
+  license: AGPL-3.0-only
+  languages: [français]
+  repository: {provider: github, url: https://github.com/exemple/cartes-communes}
+  contract: {id: CTR-2026-001, status: active}
+missions: {directory: ../autre-depot/missions/}
+policies: {security: .tokenhood/policies/security.yaml, review: .tokenhood/policies/review.yaml}
+flow_limits: {max_in_production: 3, max_awaiting_review_or_integration: 5}
+contributions: {direct_push: false, require_human_merge: true}

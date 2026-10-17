@@ -1,0 +1,11 @@
+# Réponse à claim_mission (docs/specs/annexes-formats.md).
+attempt:
+  id: att_01JB7Q
+  mission: TH-104
+  contract_version: 1
+  generation: 2
+  state: claimed
+  lease_expires_at: "2026-10-24T14:10:00Z"
+  budget:
+    level: estimated
+    limit: {unit: agent_hours, value: 3}

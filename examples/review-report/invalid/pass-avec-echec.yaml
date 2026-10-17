@@ -1,0 +1,15 @@
+# Invalide : un verdict favorable ne peut pas coexister avec un critère en échec.
+schema_version: "2.1"
+mission: TH-104
+attempt: att_01JB7Q
+submission: SUB-0142
+reviewer_agent: agt_7f3c
+reviewed_state: {contract_version: 1, commit: 4f9c2e1}
+verdict: pass
+criteria:
+  - requirement: Un utilisateur éligible aux deux collèges ne vote qu'une fois (test)
+    result: fail
+    evidence: Aucun test ne couvre ce cas
+tests: [{run: pnpm test, exit_code: 1}]
+risks: []
+limits: {not_verified: [], uncertain: []}

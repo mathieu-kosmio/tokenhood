@@ -9,6 +9,8 @@ type: docs
 objective: "Produire la matrice des garanties et le registre de compatibilité initial par client et par mode."
 scope:
   paths: [docs/specs/garanties.md]
+inputs:
+  paths: [docs/specs/garanties.md, docs/specs/etude-de-faisabilite.md]
 outputs:
   kind: pull_request
 acceptance:
@@ -18,6 +20,7 @@ acceptance:
 dependencies:
   - mission: TH-001
     type: integrated
+skills: []                 # tokenhood-contribute@0.1 dès TH-004
 estimate:
   size: M
   tokens_eq: null          # à produire par l'agent au cadrage

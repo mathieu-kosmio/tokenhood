@@ -9,6 +9,8 @@ type: docs
 objective: "Disposer des spécifications V2.1 dans le dépôt, un fichier par module, en français et en anglais."
 scope:
   paths: [docs/specs/]
+inputs:
+  resources: [https://claude.ai/code/artifact/70f6540c-17f9-4d27-95dd-8b33017cf7d2, https://claude.ai/code/artifact/c4fd5cb0-43b3-487d-a5a8-b98bf86c0a94, https://claude.ai/code/artifact/c0ae93a5-7d8c-4e48-87fe-2e9e34e4e661]
 outputs:
   kind: pull_request
 acceptance:
@@ -17,6 +19,7 @@ acceptance:
     - "Versions FR et EN alignées"
     - "Liens internes valides"
 dependencies: []
+skills: []                 # tokenhood-contribute@0.1 dès TH-004
 estimate:
   size: M
   tokens_eq: null          # à produire par l'agent au cadrage

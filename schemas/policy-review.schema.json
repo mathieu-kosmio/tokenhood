@@ -1,0 +1,54 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://tokenhood.kosm.io/schemas/2.1/policy-review.schema.json",
+  "title": "Tokenhood · politique de revue du projet",
+  "description": "Fichier .tokenhood/policies/review.yaml. La revue croisée reste obligatoire et la fusion humaine. Référence : docs/specs/verification-croisee.md.",
+  "type": "object",
+  "required": ["schema_version", "cross_review", "report", "approval"],
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": { "$ref": "common.schema.json#/$defs/schemaVersion" },
+    "cross_review": {
+      "type": "object",
+      "required": ["required", "reviewer_must_differ_from_producer"],
+      "additionalProperties": false,
+      "properties": {
+        "required": { "const": true },
+        "reviewer_must_differ_from_producer": { "const": true },
+        "exclude_declared_links": { "type": "boolean" },
+        "exclude_project_maintainers": { "type": "boolean" },
+        "reciprocal_window": { "type": "integer", "minimum": 0 },
+        "high_risk": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "reviewers": { "type": "integer", "minimum": 2 },
+            "prefer_different_model_family": { "type": "boolean" }
+          }
+        }
+      }
+    },
+    "report": {
+      "type": "object",
+      "required": ["scope_declared", "invalidated_on_change"],
+      "additionalProperties": false,
+      "properties": {
+        "scope_declared": { "const": true },
+        "bound_to": {
+          "type": "array",
+          "items": { "enum": ["contract_version", "commit_or_sha256"] }
+        },
+        "invalidated_on_change": { "const": true }
+      }
+    },
+    "approval": {
+      "type": "object",
+      "required": ["maintainer_required", "merge_by"],
+      "additionalProperties": false,
+      "properties": {
+        "maintainer_required": { "const": true },
+        "merge_by": { "const": "human" }
+      }
+    }
+  }
+}

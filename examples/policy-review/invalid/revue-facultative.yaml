@@ -1,0 +1,7 @@
+# Invalide : la revue croisée est obligatoire et la fusion reste humaine.
+schema_version: "2.1"
+cross_review:
+  required: false
+  reviewer_must_differ_from_producer: true
+report: {scope_declared: true, invalidated_on_change: true}
+approval: {maintainer_required: true, merge_by: bot}

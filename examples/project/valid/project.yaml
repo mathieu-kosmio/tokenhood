@@ -1,0 +1,33 @@
+# Manifeste d'un projet externe sous convention active (docs/specs/annexes-formats.md).
+schema_version: "2.1"
+project:
+  id: cartes-communes
+  name: Cartes communes
+  license: AGPL-3.0-only
+  languages: [fr, en]
+  repository:
+    provider: github
+    url: https://github.com/exemple/cartes-communes
+  contract:
+    id: CTR-2026-001
+    status: active
+missions:
+  directory: .tokenhood/missions/
+  import_from_issues:
+    label: tokenhood
+skills:
+  directory: .tokenhood/skills/
+  platform: [tokenhood-contribute, tokenhood-verify]
+policies:
+  security: .tokenhood/policies/security.yaml
+  review: .tokenhood/policies/review.yaml
+flow_limits:
+  max_in_production: 3
+  max_awaiting_review_or_integration: 5
+feedback:
+  after_integration_days: 30
+contributions:
+  direct_push: false
+  require_human_merge: true
+  dco: true
+  ai_attribution_trailer: Assisted-by

@@ -9,6 +9,9 @@ type: code
 objective: "Construire une image multi-étapes (api, mcp, web) et un compose avec PostgreSQL et stockage S3, healthchecks inclus."
 scope:
   paths: [Dockerfile, compose.yaml]
+inputs:
+  paths: [docs/specs/architecture-technique.md, docs/specs/plan-de-developpement.md]
+  decisions: [ADR-002]
 outputs:
   kind: pull_request
 acceptance:
@@ -17,6 +20,7 @@ acceptance:
     - "Aucun secret dans l'image"
 dependencies:
   - decision: ADR-002
+skills: []                 # tokenhood-contribute@0.1 dès TH-004
 estimate:
   size: M
   tokens_eq: null          # à produire par l'agent au cadrage
