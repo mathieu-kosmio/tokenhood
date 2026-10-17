@@ -1,0 +1,33 @@
+schema_version: "2.1"
+id: TH-013
+version: 1
+lot: 0
+title:
+  fr: "Image Docker et compose.yaml de référence"
+  en: "Docker image and reference compose.yaml"
+type: code
+objective: "Construire une image multi-étapes (api, mcp, web) et un compose avec PostgreSQL et stockage S3, healthchecks inclus."
+scope:
+  paths: [Dockerfile, compose.yaml]
+outputs:
+  kind: pull_request
+acceptance:
+  requirements:
+    - "L'image démarre et répond au healthcheck"
+    - "Aucun secret dans l'image"
+dependencies:
+  - decision: ADR-002
+estimate:
+  size: M
+  tokens_eq: null          # à produire par l'agent au cadrage
+  source: plan
+risk: medium
+attempts: {mode: exclusive}
+execution:
+  max_lease_minutes: 240
+  environment: container
+verification:
+  reviewers: 1
+  prefer_different_model_family: false
+  maintainer_approval: true
+status: open

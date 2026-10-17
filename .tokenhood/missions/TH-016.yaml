@@ -1,0 +1,33 @@
+schema_version: "2.1"
+id: TH-016
+version: 1
+lot: 0
+title:
+  fr: "Gabarits du dépôt"
+  en: "Repository templates"
+type: docs
+objective: "Compléter CONTRIBUTING, code de conduite, modèles d'issue et de PR, DCO et trailer Assisted-by, en FR et EN."
+scope:
+  paths: [.github/, CONTRIBUTING.md]
+outputs:
+  kind: pull_request
+acceptance:
+  requirements:
+    - "Modèle d'issue mission conforme au schéma"
+dependencies:
+  - mission: TH-001
+    type: integrated
+estimate:
+  size: S
+  tokens_eq: null          # à produire par l'agent au cadrage
+  source: plan
+risk: low
+attempts: {mode: exclusive}
+execution:
+  max_lease_minutes: 240
+  environment: any
+verification:
+  reviewers: 1
+  prefer_different_model_family: false
+  maintainer_approval: true
+status: open

@@ -1,0 +1,34 @@
+schema_version: "2.1"
+id: TH-012
+version: 1
+lot: 0
+title:
+  fr: "Recherche d'un projet externe pilote"
+  en: "Pilot external project search"
+type: governance.instruction
+objective: "Identifier des projets externes candidats et préparer un dossier d'admission manuelle."
+scope:
+  paths: [docs/pilote/]
+outputs:
+  kind: pull_request
+acceptance:
+  requirements:
+    - "Au moins trois candidats documentés"
+    - "Données publiques uniquement"
+dependencies:
+  - mission: TH-011
+    type: integrated
+estimate:
+  size: M
+  tokens_eq: null          # à produire par l'agent au cadrage
+  source: plan
+risk: low
+attempts: {mode: exclusive}
+execution:
+  max_lease_minutes: 240
+  environment: any
+verification:
+  reviewers: 1
+  prefer_different_model_family: false
+  maintainer_approval: true
+status: open

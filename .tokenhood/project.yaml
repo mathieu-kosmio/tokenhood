@@ -1,0 +1,32 @@
+schema_version: "2.1"
+project:
+  id: tokenhood
+  name: Tokenhood
+  license: TBD                 # AGPL-3.0-only proposée, décision de gouvernance au lot 0
+  languages: [fr, en]
+  repository:
+    provider: github
+    url: https://github.com/mathieu-kosmio/tokenhood
+  contract:
+    id: CTR-2026-000
+    status: bootstrap          # projet n°1, convention formalisée au lot 4
+missions:
+  directory: .tokenhood/missions/
+  import_from_issues:
+    label: tokenhood
+skills:
+  directory: .tokenhood/skills/
+  platform: [tokenhood-contribute, tokenhood-verify]
+policies:
+  security: .tokenhood/policies/security.yaml
+  review: .tokenhood/policies/review.yaml
+flow_limits:
+  max_in_production: 3
+  max_awaiting_review_or_integration: 5
+feedback:
+  after_integration_days: 30
+contributions:
+  direct_push: false
+  require_human_merge: true
+  dco: true
+  ai_attribution_trailer: Assisted-by

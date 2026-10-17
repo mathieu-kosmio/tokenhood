@@ -1,0 +1,5 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Question ou demande d'arbitrage · Question or arbitration request
+    url: https://github.com/mathieu-kosmio/tokenhood/discussions
+    about: Les questions bloquantes se posent dans Discussions (Clarifications).

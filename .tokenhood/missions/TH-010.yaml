@@ -1,0 +1,32 @@
+schema_version: "2.1"
+id: TH-010
+version: 1
+lot: 0
+title:
+  fr: "Protocole pilote et mesure de valeur"
+  en: "Pilot protocol and value measurement"
+type: research
+objective: "Définir la campagne pilote : missions, données enregistrées, retour à 30 jours, gabarit du rapport."
+scope:
+  paths: [docs/pilote/]
+outputs:
+  kind: pull_request
+acceptance:
+  requirements:
+    - "Questionnaire à 30 jours en trois questions"
+    - "Gabarit du rapport de campagne"
+dependencies: []
+estimate:
+  size: M
+  tokens_eq: null          # à produire par l'agent au cadrage
+  source: plan
+risk: low
+attempts: {mode: exclusive}
+execution:
+  max_lease_minutes: 240
+  environment: any
+verification:
+  reviewers: 1
+  prefer_different_model_family: false
+  maintainer_approval: true
+status: open

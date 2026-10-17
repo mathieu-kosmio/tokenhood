@@ -1,0 +1,9 @@
+/* Tokenhood · déclinaison satellite du design system Kosmio v2 « Horizon ».
+   Charger kosmio.css avant ce fichier. Ne redéfinit que la couleur de signature. */
+.kos-tokenhood {
+  --color-primary:        var(--kos-teal-600);
+  --color-primary-hover:  var(--kos-teal-700);
+  --color-primary-subtle: var(--kos-teal-50);
+  --color-accent:         var(--kos-or-500);
+  --color-accent-text:    var(--kos-or-700);
+}

@@ -1,0 +1,34 @@
+schema_version: "2.1"
+id: TH-015
+version: 1
+lot: 0
+title:
+  fr: "Pipeline CI : tests et scans"
+  en: "CI pipeline: tests and scans"
+type: code
+objective: "Mettre en place tests, gitleaks, Trivy, audit des dépendances et contrôle d'absence de SDK de LLM ; le déploiement automatique est assuré par le porteur."
+scope:
+  paths: [.github/workflows/]
+outputs:
+  kind: pull_request
+acceptance:
+  requirements:
+    - "Statuts requis sur les PR"
+    - "Détection d'un SDK de LLM ajouté volontairement"
+dependencies:
+  - mission: TH-013
+    type: integrated
+estimate:
+  size: M
+  tokens_eq: null          # à produire par l'agent au cadrage
+  source: plan
+risk: medium
+attempts: {mode: exclusive}
+execution:
+  max_lease_minutes: 240
+  environment: container
+verification:
+  reviewers: 1
+  prefer_different_model_family: false
+  maintainer_approval: true
+status: open

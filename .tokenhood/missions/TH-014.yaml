@@ -1,0 +1,33 @@
+schema_version: "2.1"
+id: TH-014
+version: 1
+lot: 0
+title:
+  fr: "Runbook Coolify"
+  en: "Coolify runbook"
+type: docs
+objective: "Documenter environnements, domaines sous tokenhood.kosm.io, secrets, sauvegardes, restauration testée et retour arrière."
+scope:
+  paths: [docs/exploitation/]
+outputs:
+  kind: pull_request
+acceptance:
+  requirements:
+    - "Procédure de restauration testée et datée"
+dependencies:
+  - mission: TH-013
+    type: integrated
+estimate:
+  size: M
+  tokens_eq: null          # à produire par l'agent au cadrage
+  source: plan
+risk: medium
+attempts: {mode: exclusive}
+execution:
+  max_lease_minutes: 240
+  environment: container
+verification:
+  reviewers: 1
+  prefer_different_model_family: false
+  maintainer_approval: true
+status: open

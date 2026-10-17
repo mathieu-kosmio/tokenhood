@@ -1,0 +1,34 @@
+schema_version: "2.1"
+id: TH-003
+version: 1
+lot: 0
+title:
+  fr: "CI de validation de .tokenhood/ et des exemples"
+  en: "CI validation of .tokenhood/ and examples"
+type: code
+objective: "Valider par parseur et par schéma tous les fichiers .tokenhood/ et les exemples à chaque PR."
+scope:
+  paths: [.github/workflows/]
+outputs:
+  kind: pull_request
+acceptance:
+  requirements:
+    - "La CI échoue sur un fichier invalide"
+    - "La CI passe sur le dépôt actuel"
+dependencies:
+  - mission: TH-002
+    type: integrated
+estimate:
+  size: S
+  tokens_eq: null          # à produire par l'agent au cadrage
+  source: plan
+risk: medium
+attempts: {mode: exclusive}
+execution:
+  max_lease_minutes: 240
+  environment: container
+verification:
+  reviewers: 1
+  prefer_different_model_family: false
+  maintainer_approval: true
+status: open

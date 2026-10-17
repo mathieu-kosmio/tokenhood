@@ -1,0 +1,28 @@
+name: Mission
+description: Proposer une mission Tokenhood · Propose a Tokenhood mission
+labels: ["tokenhood"]
+body:
+  - type: input
+    id: title_fr
+    attributes: {label: "Titre (FR)"}
+    validations: {required: true}
+  - type: input
+    id: title_en
+    attributes: {label: "Title (EN)"}
+  - type: dropdown
+    id: type
+    attributes:
+      label: Type
+      options: [code, docs, i18n, design, research, data, review, governance.instruction, mission.drafting, skill.authoring]
+    validations: {required: true}
+  - type: textarea
+    id: objective
+    attributes: {label: "Objectif · Objective", description: "Le résultat attendu en une phrase."}
+    validations: {required: true}
+  - type: textarea
+    id: acceptance
+    attributes: {label: "Critères d'acceptation vérifiables · Checkable acceptance criteria"}
+    validations: {required: true}
+  - type: input
+    id: dependencies
+    attributes: {label: "Dépendances · Dependencies", placeholder: "TH-002 (integrated)"}
