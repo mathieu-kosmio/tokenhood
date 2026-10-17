@@ -9,6 +9,9 @@ type: code
 objective: "Intégrer la maquette validée de la landing en site statique bilingue, servi par une image nginx déployable sur Coolify, avec le formulaire d'inscription relié à Brevo."
 scope:
   paths: [landing/, decisions/, design/kosmio.css, .github/workflows/landing.yml]
+inputs:
+  paths: [design/maquettes/landing.dc.html, design/tokens.md, design/tokenhood.css]
+  decisions: [DEC-2026-001, DEC-2026-002]
 outputs:
   kind: pull_request
 acceptance:
@@ -20,6 +23,7 @@ acceptance:
     - "Mentions légales et politique de confidentialité en FR et EN"
     - "L'image démarre en utilisateur non root et répond 200 sur /healthz"
 dependencies: []
+skills: []
 estimate:
   size: M
   tokens_eq: null          # à produire par l'agent au cadrage
@@ -33,4 +37,4 @@ verification:
   reviewers: 1
   prefer_different_model_family: false
   maintainer_approval: true
-status: claimed
+status: in_progress
