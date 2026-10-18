@@ -1,6 +1,7 @@
 # syntax=docker/dockerfile:1
 # Landing statique de Tokenhood : build Node, puis service par nginx non root.
-# Le contexte de build est la racine du dépôt, car la landing lit design/ :
+# Le contexte de build est la racine du dépôt, car la landing lit design/, .tokenhood/,
+# le plan de développement et decisions/ :
 #   docker build -f landing/Dockerfile -t tokenhood-landing .
 #   docker build -f landing/Dockerfile --build-arg BREVO_FORM_ACTION=https://xxx.sibforms.com/serve/... .
 
@@ -10,6 +11,8 @@ COPY landing/package.json landing/package-lock.json ./
 RUN npm ci --ignore-scripts --no-audit --no-fund
 COPY design/ /repo/design/
 COPY .tokenhood/ /repo/.tokenhood/
+COPY docs/specs/plan-de-developpement.md /repo/docs/specs/
+COPY decisions/ /repo/decisions/
 COPY landing/ ./
 ARG BREVO_FORM_ACTION=""
 RUN npm test && BREVO_FORM_ACTION="$BREVO_FORM_ACTION" npm run build

@@ -1,10 +1,13 @@
 # Lu par BuildKit pour landing/Dockerfile (contexte : racine du dépôt).
-# Liste blanche : seuls la landing et les feuilles du design system entrent dans le contexte.
+# Liste blanche : seuls la landing, les feuilles du design system et les données de la feuille de route
+# (contrats, rapports, plan de développement, registre des décisions) entrent dans le contexte.
 *
 !design/kosmio.css
 !design/tokenhood.css
 !.tokenhood/missions/
 !.tokenhood/usage/
+!docs/specs/plan-de-developpement.md
+!decisions/
 !landing/
 landing/node_modules
 landing/dist

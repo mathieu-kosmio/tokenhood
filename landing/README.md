@@ -18,16 +18,17 @@ Pour voir la variante avec formulaire : `BREVO_FORM_ACTION=https://xxx.sibforms.
 
 | Chemin | Rôle |
 |---|---|
-| `locales/<lang>/landing.json`, `legal.json` | Tous les textes de l'interface, FR et EN |
+| `locales/<lang>/landing.json`, `roadmap.json`, `legal.json` | Tous les textes de l'interface, FR et EN, dont le résumé fonctionnel de chaque mission |
 | `site.config.json` | URL du site, routes par langue, liens, réglages du formulaire |
 | `src/layout.mjs` | `<head>`, en-tête, pied de page |
 | `src/home.mjs` | Sections de l'accueil |
+| `src/roadmap.mjs`, `src/roadmap-data.mjs` | Page « Feuille de route » et données tirées du dépôt |
 | `src/prose.mjs` | Mentions légales, confidentialité, page 404 |
 | `src/styles.css` | Styles propres à la landing, sur les tokens Kosmio |
 | `src/site.js` | Envoi du formulaire sans rechargement, présélection du rôle |
 | `build.mjs` | Génération de `dist/` : pages, CSS et JS à empreinte, polices, sitemap |
 | `nginx.conf`, `Dockerfile` | Service en production |
-| `test/build.test.mjs` | Vérifications du build |
+| `test/build.test.mjs`, `test/roadmap.test.mjs` | Vérifications du build et des règles de la feuille de route |
 
 La feuille servie concatène, dans l'ordre : les `@font-face`, `design/kosmio.css` (copie du design system Kosmio), `design/tokenhood.css` (couleur de signature) et `src/styles.css`.
 
@@ -42,6 +43,26 @@ La feuille servie concatène, dans l'ordre : les `@font-face`, `design/kosmio.cs
 ## Compteur de la hero
 
 Le build additionne le champ `counted` des rapports de consommation de `.tokenhood/usage/` et compte les missions `integrated` ou `closed` de `.tokenhood/missions/`. Les chiffres sont figés à chaque déploiement : un nouveau rapport fusionné sur `main` redéploie la landing (chemins surveillés : `landing/**`, `design/**`, `.tokenhood/**`). Sans rapport, le compteur n'apparaît pas.
+
+## Feuille de route
+
+La page `/feuille-de-route/` (`/en/roadmap/`) se génère au build, sans saisie des états :
+
+| Donnée | Source |
+|---|---|
+| Liste et ordre des missions, lot, type, taille | tableaux « Lot N » de `docs/specs/plan-de-developpement.md`, complétés et corrigés par les contrats publiés |
+| État d'une mission | champ `status` de `.tokenhood/missions/<id>.yaml` ; une mission du plan sans contrat est « prévue » |
+| Date d'intégration | fin du premier rapport `integration` de `.tokenhood/usage/` qui cite la mission, à défaut fin de son dernier rapport (jour civil à Paris) |
+| Tokens d'une mission | somme du champ `counted` de ses rapports ; un rapport commun à plusieurs missions est réparti à parts égales |
+| Prochaines missions | au plus trois missions `open` dont les dépendances sont satisfaites, classées par `priority` (`urgent`, `high`, puis sans priorité, puis `low`), puis par identifiant |
+| Dépendance à une décision | satisfaite dès que `decisions/<id>-*.md` existe sur `main` |
+| Lot en cours | premier lot dont toutes les missions ne sont pas intégrées ; l'accueil en tire aussi l'état de ses lots |
+
+Le résumé fonctionnel d'une mission, en une ligne, vit dans `roadmapPage.missions` de `locales/<lang>/roadmap.json`, sous son identifiant. Le test exige un résumé FR et EN pour chaque mission du plan ; une mission publiée hors du plan sans résumé affiche le titre de son contrat, et `npm run build` la signale.
+
+Le bouton « Contribuer » ouvre une discussion GitHub préremplie (titre et corps avec l'identifiant, le résumé et le lien du contrat), dans la catégorie `contribute.discussionCategory` de `site.config.json` (`general` tant que les catégories propres au projet n'existent pas).
+
+Pour mettre une mission en avant : `priority: high` dans son contrat (et `version` incrémentée). Pour qu'un changement du plan ou des décisions redéploie la landing, ajouter `docs/specs/plan-de-developpement.md` et `decisions/**` aux watch paths de Coolify.
 
 ## Formulaire d'inscription (Brevo)
 
@@ -67,9 +88,9 @@ Le build refuse toute URL qui n'est pas en `https://*.sibforms.com`, seule desti
 | Domaine | `https://tokenhood.kosm.io` |
 | Healthcheck | chemin `/healthz`, port `8080` |
 | Variable de build | `BREVO_FORM_ACTION` (cocher « Build Variable ») |
-| Watch paths | `landing/**`, `design/**`, `.tokenhood/**` |
+| Watch paths | `landing/**`, `design/**`, `.tokenhood/**`, `docs/specs/plan-de-developpement.md`, `decisions/**` |
 
-Le build Docker exécute les tests avant de générer le site : une régression bloque le déploiement. L'image tourne en utilisateur non root et ne contient aucun secret.
+Le build Docker exécute les tests avant de générer le site : une régression bloque le déploiement. Le contexte de build n'admet que la landing, les feuilles du design system, `.tokenhood/missions/`, `.tokenhood/usage/`, le plan de développement et `decisions/` (`Dockerfile.dockerignore`). L'image tourne en utilisateur non root et ne contient aucun secret.
 
 ## Marques et polices
 

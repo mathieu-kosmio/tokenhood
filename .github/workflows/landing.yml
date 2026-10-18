@@ -7,7 +7,7 @@ on:
   pull_request:
   push:
     branches: [main]
-    paths: ['landing/**', 'design/**', '.tokenhood/**', '.github/workflows/landing.yml']
+    paths: ['landing/**', 'design/**', '.tokenhood/**', 'docs/specs/plan-de-developpement.md', 'decisions/**', '.github/workflows/landing.yml']
 
 permissions:
   contents: read
@@ -47,6 +47,8 @@ jobs:
           check "$(code /healthz)" 200 /healthz
           check "$(code /)" 200 /
           check "$(code /en/)" 200 /en/
+          check "$(code /feuille-de-route/)" 200 /feuille-de-route/
+          check "$(code /en/roadmap/)" 200 /en/roadmap/
           check "$(code /mentions-legales/)" 200 /mentions-legales/
           check "$(code /en/privacy/)" 200 /en/privacy/
           check "$(code /page-inconnue)" 404 /page-inconnue

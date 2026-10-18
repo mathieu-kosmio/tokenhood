@@ -43,16 +43,16 @@ function header(ctx) {
   const { t, lang, config, page } = ctx;
   const routes = config.routes[page] ?? config.routes.home;
   const nav = [
-    ['how', t.nav.how],
-    ['principles', t.nav.principles],
-    ['roadmap', t.nav.roadmap],
-    ['faq', t.nav.faq],
+    [anchor(ctx, 'how'), t.nav.how],
+    [anchor(ctx, 'principles'), t.nav.principles],
+    [config.routes.roadmap[lang], t.nav.roadmap, page === 'roadmap'],
+    [anchor(ctx, 'faq'), t.nav.faq],
   ];
   return html`<header class="th-header">
 <div class="th-header__inner">
 <a class="th-brand" href="${config.routes.home[lang]}" aria-label="${t.brand.home}">${arrowMark(26)}<span aria-hidden="true">${t.brand.name}</span></a>
 <nav class="th-nav" aria-label="${t.nav.label}">
-${nav.map(([id, label]) => html`<a href="${anchor(ctx, id)}">${label}</a>`)}
+${nav.map(([href, label, current]) => html`<a href="${href}"${attr('aria-current', current && 'page')}>${label}</a>`)}
 </nav>
 <div class="th-header__actions">
 <div class="th-lang" role="group" aria-label="${t.lang.label}">

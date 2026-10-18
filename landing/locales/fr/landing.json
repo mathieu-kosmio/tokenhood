@@ -132,32 +132,32 @@
     "eyebrow": "Feuille de route",
     "title": "Ouvert dès l'amorçage.",
     "text": "Le développement suit ses propres règles : missions publiques, revue croisée, décisions tracées. Le rythme dépend de la capacité engagée, pas d'un calendrier.",
-    "cta": "Suivre le dépôt sur GitHub",
+    "cta": "Parcourir la feuille de route",
+    "states": {
+      "done": "Terminé",
+      "live": "En cours",
+      "next": "À venir"
+    },
     "lots": [
       {
         "n": "Lot 0",
-        "name": "Amorçage",
-        "status": "En cours"
+        "name": "Amorçage"
       },
       {
         "n": "Lot 1",
-        "name": "Gouvernance",
-        "status": "À venir"
+        "name": "Gouvernance"
       },
       {
         "n": "Lot 2",
-        "name": "Missions et agents",
-        "status": "À venir"
+        "name": "Missions et agents"
       },
       {
         "n": "Lot 3",
-        "name": "Vérification et valeur",
-        "status": "À venir"
+        "name": "Vérification et valeur"
       },
       {
         "n": "Lot 4",
-        "name": "Sélection des projets",
-        "status": "À venir"
+        "name": "Sélection des projets"
       }
     ]
   },

@@ -7,6 +7,7 @@ import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { build, loadConfig, loadLocales, loadStats } from '../build.mjs';
 import { localize } from '../src/typo.mjs';
+import { formatDay } from '../src/roadmap.mjs';
 
 const ACTION = 'https://example.sibforms.com/serve/TEST';
 let plain;   // build sans formulaire Brevo
@@ -65,6 +66,12 @@ test("aucune chaîne d'interface en dur : tout texte visible vient des locales",
   for (const b of [plain, withForm]) {
     for (const lang of b.config.langs) {
       const known = strings(localize(lang, b.locales[lang]));
+      // Données du dépôt affichées telles quelles : identifiants de mission et dates d'intégration.
+      const r = b.roadmap;
+      const data = new Set([
+        ...r.missions.map((m) => m.id),
+        ...[...r.done.map((m) => m.date), r.asOf].filter(Boolean).map((iso) => formatDay(lang, iso)),
+      ]);
       const pages = Object.values(b.config.routes).map((r) => path.join(r[lang], 'index.html'));
       for (const page of pages) {
         const doc = (await read(b, page)).replace(/<(script|style)\b[\s\S]*?<\/\1>/g, '');
@@ -75,7 +82,7 @@ test("aucune chaîne d'interface en dur : tout texte visible vient des locales",
         // Seule exception : un nombre mis en forme par Intl (« 2,6 M », « 2.6M », « 8 »).
         const isNumber = (text) => /^[\d\s.,\u00a0\u202f]+\s?[kKMB]?$/u.test(text);
         for (const text of [...texts, ...attrs, ...titles]) {
-          if (isNumber(text)) continue;
+          if (isNumber(text) || data.has(text)) continue;
           assert.ok(known.some((k) => k.includes(text)), `${page} : « ${text} » ne vient d'aucune locale ${lang}`);
         }
       }
