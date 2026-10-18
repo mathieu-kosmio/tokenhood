@@ -1,0 +1,24 @@
+schema_version: "2.1"
+missions: [TH-015]
+contribution:
+  kind: production
+  pull_requests: [11]
+contributor: mathieu-kosmio
+agent:
+  client: claude-code
+  client_version: "2.1.299"
+  model_family: claude
+  model: claude-opus-5-5
+period:
+  start: "2026-10-18T06:21:45.127Z"
+  end: "2026-10-18T09:54:32.916Z"
+tokens:
+  input: 182
+  output: 97838
+  cache_creation: 370569
+  cache_read: 17818096
+counted: 468589
+method: client_transcript
+nature: declared
+evidence: "Transcription Claude Code de la session, 93 réponses comptées une fois chacune (tools/usage/claude-code.mjs)."
+notes: "Session Claude Code consacrée à TH-015, comptée en entier jusqu'à la production de ce rapport, y compris un premier essai sur la base th-013-docker reporté ensuite sur main et le rebase sur TH-019. Les derniers échanges (commit, push, description de PR) n'y figurent pas."
