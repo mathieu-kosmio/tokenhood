@@ -14,7 +14,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       # Valeur de test, propre à cet essai : jamais utilisée ailleurs.
-      POSTGRES_PASSWORD: essai-ci-sans-valeur
+      SERVICE_PASSWORD_POSTGRES: essai-ci-sans-valeur
     steps:
       - uses: actions/checkout@v4
       - name: Construire et démarrer (attente des healthchecks)

@@ -1,0 +1,39 @@
+schema_version: "2.1"
+id: TH-018
+version: 1
+lot: 0
+title:
+  fr: "Déployer la plateforme sur Coolify (app. et api.tokenhood.kosm.io)"
+  en: "Deploy the platform on Coolify (app. and api.tokenhood.kosm.io)"
+type: code
+objective: "Publier l'interface web et l'API du monorepo sur Coolify depuis compose.yaml, avec un mot de passe PostgreSQL généré par Coolify et aucun secret saisi à la main."
+scope:
+  paths: [compose.yaml, .github/workflows/image.yml, CLAUDE.md, .tokenhood/missions/TH-018.yaml]
+inputs:
+  paths: [compose.yaml, docs/specs/plan-de-developpement.md]
+  decisions: [ADR-002, DEC-2026-002]
+outputs:
+  kind: pull_request
+acceptance:
+  requirements:
+    - "https://app.tokenhood.kosm.io et https://api.tokenhood.kosm.io/healthz répondent 200 avec un certificat valide"
+    - "Le mot de passe PostgreSQL est généré par Coolify, jamais présent dans le dépôt"
+    - "Le workflow image passe avec la nouvelle variable"
+dependencies:
+  - mission: TH-013
+    type: integrated
+skills: []
+estimate:
+  size: S
+  tokens_eq: null
+  source: porteur
+risk: medium
+attempts: {mode: exclusive}
+execution:
+  max_lease_minutes: 120
+  environment: any
+verification:
+  reviewers: 1
+  prefer_different_model_family: false
+  maintainer_approval: true
+status: in_progress
