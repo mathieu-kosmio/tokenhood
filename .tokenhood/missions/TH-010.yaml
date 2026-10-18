@@ -1,6 +1,6 @@
 schema_version: "2.1"
 id: TH-010
-version: 1
+version: 2
 lot: 0
 title:
   fr: "Protocole pilote et mesure de valeur"
@@ -23,6 +23,7 @@ estimate:
   size: M
   tokens_eq: null          # à produire par l'agent au cadrage
   source: plan
+priority: high
 risk: low
 attempts: {mode: exclusive}
 execution:

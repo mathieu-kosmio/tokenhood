@@ -1,6 +1,6 @@
 schema_version: "2.1"
 id: TH-006
-version: 1
+version: 2
 lot: 0
 title:
   fr: "Audit du code tokenpool, dossier pour ADR-001"
@@ -25,6 +25,7 @@ estimate:
   size: M
   tokens_eq: null          # à produire par l'agent au cadrage
   source: plan
+priority: high
 risk: low
 attempts: {mode: exclusive}
 execution:

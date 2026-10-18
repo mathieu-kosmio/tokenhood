@@ -1,0 +1,43 @@
+schema_version: "2.1"
+id: TH-020
+version: 1
+lot: 0
+title:
+  fr: "Page « Feuille de route » de la landing : timeline des missions et appel à contribuer"
+  en: "Landing roadmap page: mission timeline and call to contribute"
+type: code
+objective: "Publier sur la landing une feuille de route bilingue, générée au build à partir des contrats et du plan, qui montre les missions intégrées par lot, l'état actuel et les prochaines missions ouvertes avec un bouton pour proposer sa contribution."
+scope:
+  paths: [landing/, .tokenhood/missions/, .tokenhood/usage/, .github/workflows/landing.yml, CLAUDE.md]
+inputs:
+  paths: [.tokenhood/missions/, .tokenhood/usage/, docs/specs/plan-de-developpement.md, decisions/, design/tokens.md, design/maquettes/landing.dc.html]
+outputs:
+  kind: pull_request
+acceptance:
+  commands: ["cd landing && npm test"]
+  requirements:
+    - "Page FR et EN, aucune chaîne d'interface en dur hors de landing/locales/, résumé fonctionnel bilingue pour chaque mission du plan"
+    - "Données tirées au build des contrats, du plan, des rapports de consommation et du registre des décisions, sans saisie manuelle des états"
+    - "Missions intégrées datées et groupées par lot, état actuel, puis au plus trois missions ouvertes aux dépendances satisfaites, classées par priorité"
+    - "Chaque mission mise en avant ouvre une discussion GitHub préremplie avec son identifiant"
+    - "Rendu vérifié en largeur bureau et mobile"
+dependencies:
+  - mission: TH-017
+    type: integrated
+  - mission: TH-019
+    type: integrated
+skills: []
+estimate:
+  size: M
+  tokens_eq: null
+  source: porteur
+risk: low
+attempts: {mode: exclusive}
+execution:
+  max_lease_minutes: 240
+  environment: any
+verification:
+  reviewers: 1
+  prefer_different_model_family: false
+  maintainer_approval: true
+status: in_progress
