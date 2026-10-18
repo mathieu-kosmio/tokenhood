@@ -1,9 +1,10 @@
 # Landing (TH-017) : tests du build, puis construction et essai de l'image servie par Coolify.
+# Pas de filtre de chemins sur les PR (TH-015) : un statut requis doit être rapporté sur chaque PR,
+# sinon celles qui ne touchent pas la landing restent bloquées en attente du statut.
 name: landing
 
 on:
   pull_request:
-    paths: ['landing/**', 'design/**', '.tokenhood/**', '.github/workflows/landing.yml']
   push:
     branches: [main]
     paths: ['landing/**', 'design/**', '.tokenhood/**', '.github/workflows/landing.yml']
