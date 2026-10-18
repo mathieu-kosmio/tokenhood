@@ -189,13 +189,19 @@
 .th-hero__art { flex: 1 1 22.5rem; min-width: 0; max-width: 30rem; margin-inline: auto; }
 .th-hero__svg { display: block; width: 100%; height: auto; }
 
-/* Compteur public : chiffres en JetBrains Mono (design/tokens.md), libellés sous les chiffres. */
-.th-stats { display: flex; flex-direction: column; gap: var(--space-2); }
-.th-stats__list { display: flex; flex-wrap: wrap; gap: var(--space-4) var(--space-10); margin: 0; }
-.th-stat { display: flex; flex-direction: column-reverse; gap: var(--space-1); }
-.th-stat dt { font-size: var(--text-sm); color: var(--text-secondary); }
-.th-stat dd { margin: 0; font-family: var(--font-mono); font-size: clamp(1.75rem, 3vw, 2.25rem); line-height: 1.1; color: var(--color-primary); }
-.th-stats__note { margin: 0; max-width: 60ch; font-size: var(--text-xs); color: var(--text-secondary); }
+/* Compteur public dans l'illustration (unités du viewBox 480 × 480) et légende. */
+.th-hero__art { margin-block: 0; }
+.th-art-counter__value {
+  font-family: var(--font-mono);
+  font-weight: var(--weight-medium);
+  font-size: 76px;
+  letter-spacing: -0.03em;
+  fill: var(--kos-papier);
+}
+.th-art-counter__label { font-family: var(--font-body); font-size: 17px; fill: var(--kos-teal-100); }
+.th-art-counter__missions { font-family: var(--font-body); font-size: 16px; fill: var(--kos-teal-200); }
+.th-art-counter__number { font-family: var(--font-mono); font-weight: var(--weight-medium); fill: var(--color-accent); }
+.th-art-caption { margin-top: var(--space-3); font-size: var(--text-xs); line-height: var(--leading-snug); color: var(--text-secondary); }
 
 /* --- Sections ------------------------------------------------------------- */
 

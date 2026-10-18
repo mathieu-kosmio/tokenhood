@@ -67,7 +67,7 @@ test("aucune chaîne d'interface en dur : tout texte visible vient des locales",
       const known = strings(localize(lang, b.locales[lang]));
       const pages = Object.values(b.config.routes).map((r) => path.join(r[lang], 'index.html'));
       for (const page of pages) {
-        const doc = (await read(b, page)).replace(/<(script|style|svg)\b[\s\S]*?<\/\1>/g, '');
+        const doc = (await read(b, page)).replace(/<(script|style)\b[\s\S]*?<\/\1>/g, '');
         const body = doc.slice(doc.indexOf('<body'));
         const texts = [...body.matchAll(/>([^<]+)</g)].map((m) => decode(m[1]).trim()).filter(Boolean);
         const attrs = [...doc.matchAll(/\s(?:aria-label|placeholder|alt|title)="([^"]*)"/g)].map((m) => decode(m[1]));
@@ -167,9 +167,12 @@ test('la hero affiche les tokens déclarés et les missions intégrées du dép�
   for (const doc of [fr, en]) {
     assert.match(doc, new RegExp(`<data value="${stats.tokens}">`));
     assert.match(doc, new RegExp(`<data value="${stats.integrated}">${stats.integrated}</data>`));
+    assert.match(doc, /<text class="th-art-counter__value"[^>]*>[^<]+<\/text>/);
+    assert.match(doc, new RegExp(`<tspan class="th-art-counter__number">${stats.integrated}</tspan>`));
     assert.match(doc, /href="https:\/\/github\.com\/mathieu-kosmio\/tokenhood\/tree\/main\/\.tokenhood\/usage"/);
   }
   assert.match(fr, /<data value="\d+">[\d,]+\u00a0M<\/data>/);
+  assert.match(fr, /<text class="th-art-counter__value"[^>]*>[\d,]+\u00a0M<\/text>/);
   assert.match(en, /<data value="\d+">[\d.]+M<\/data>/);
 });
 
@@ -178,7 +181,7 @@ test('sans rapport de consommation, la hero n\'affiche pas de compteur', async (
   const b = await build({ outDir: await mkdtemp(path.join(tmpdir(), 'th-landing-')), env: {}, repo: empty });
   try {
     assert.equal(b.stats.tokens, 0);
-    assert.doesNotMatch(await read(b, 'index.html'), /th-stats/);
+    assert.doesNotMatch(await read(b, 'index.html'), /th-art-counter|th-art-caption/);
   } finally {
     await rm(b.outDir, { recursive: true, force: true });
     await rm(empty, { recursive: true, force: true });
