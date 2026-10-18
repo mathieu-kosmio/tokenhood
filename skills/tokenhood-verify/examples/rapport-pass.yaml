@@ -1,0 +1,69 @@
+# Verdict « pass » : chaque exigence et chaque contrôle sont satisfaits, avec des preuves propres au vérificateur.
+# Cas fictif, à titre d'illustration : mission TH-104 des exemples de schemas/ (examples/mission/valid/TH-104.yaml),
+# nouvelle soumission de la tentative att_01JB7Q après les changements demandés sur SUB-0142. Mode plateforme.
+# Un pass garde ses limites : il ne dit pas que tout a été examiné.
+schema_version: "2.1"
+mission: TH-104
+attempt: att_01JB7Q
+submission: SUB-0163
+reviewer_agent: agt_2b8e
+reviewed_state:
+  contract_version: 1
+  commit: b81d0a4c6e2f9a3157d08e4b2c9f6a1d3e5b7c90
+  references:
+    - .tokenhood/missions/TH-104.yaml au commit 3c1e9f2 de main
+    - .tokenhood/policies/review.yaml au commit 3c1e9f2 de main
+    - tokenhood-contribute@0.1, typescript-fastify@1, i18n-icu@1 (skills du contrat)
+    - tokenhood-verify@0.1
+verdict: pass
+criteria:
+  - requirement: Un membre lié à la demande est exclu du vote (test)
+    result: pass
+    evidence: >-
+      eligibility.test.ts, cas recusal_same_org, recusal_co_maintainer et recusal_declared_link, réussis sur
+      b81d0a4 ; mutation locale de la règle de déport (lien ignoré) : les trois cas échouent, comme attendu.
+  - requirement: Un utilisateur éligible aux deux collèges ne vote qu'une fois (test)
+    result: pass
+    evidence: >-
+      Test college_single_vote ajouté depuis SUB-0142, réussi sur b81d0a4 ; mutation locale (second vote
+      accepté) : le test échoue, comme attendu.
+  - requirement: Une organisation portant plusieurs projets a une seule voix chez les porteurs (test)
+    result: pass
+    evidence: >-
+      eligibility.test.ts, cas org_single_voice (une organisation, trois projets, une voix), réussi sur b81d0a4 ;
+      mutation locale (une voix par projet) : le test échoue, comme attendu.
+  - requirement: Aucune chaîne affichée hors i18n
+    result: pass
+    evidence: >-
+      Lecture du diff : les trois messages de refus passent par les clés governance.recusal.*, présentes en FR
+      et en EN dans packages/core/governance/eligibility/locales/ ; aucun littéral affiché dans le diff.
+  - requirement: Périmètre du contrat respecté (scope.paths)
+    result: pass
+    evidence: >-
+      git diff --name-only main...b81d0a4 : sept fichiers sous packages/core/governance/eligibility/ et le
+      rapport de consommation ; aucun test, script, seuil ni workflow modifié hors du périmètre.
+  - requirement: Commandes d'acceptation du contrat réussies
+    result: pass
+    evidence: Les deux commandes du contrat de main, relancées sur b81d0a4 (voir tests) ; résultats identiques à ceux que déclare le producteur.
+  - requirement: Règles de contribution du projet respectées
+    result: pass
+    evidence: >-
+      Quatre commits, tous avec Signed-off-by et Assisted-by ; rapport de consommation conforme au schéma ;
+      aucun SDK de fournisseur de LLM ajouté.
+tests:
+  - run: pnpm test --filter governance-eligibility
+    exit_code: 0
+    environment: Conteneur node:22 jetable, copie du dépôt à b81d0a4, aucun secret monté, réseau coupé après l'installation ; isolement attesté par le client
+  - run: pnpm lint
+    exit_code: 0
+    environment: Même conteneur
+risks:
+  - Le calcul du quorum après déport relève de TH-106 et n'est pas couvert par cette mission.
+limits:
+  not_verified:
+    - Comportement avec plusieurs milliers de membres (aucun jeu de données de cette taille)
+    - Absence de lien d'intérêt avec le producteur, déclarée par le contributeur du vérificateur
+  uncertain: []
+remarks: >-
+  Le test du collège unique demandé sur SUB-0142 est présent et significatif. Toutes les exigences ont été
+  réexaminées sur b81d0a4 : le rapport de SUB-0142 ne couvre pas ce commit.

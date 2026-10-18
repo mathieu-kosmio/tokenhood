@@ -1,0 +1,67 @@
+# Verdict « changes_requested » : des défauts que le producteur peut corriger sur la même tentative.
+# Cas fictif, à titre d'illustration : mission TH-104 des exemples de schemas/ (examples/mission/valid/TH-104.yaml).
+# Mode amorçage : PR n° 57 assignée par le porteur au compte exemple-verif ; identifiants dérivés de la PR
+# (references/protocole.md). Publié en commentaire de revue, jamais en « Request changes ».
+# Toutes les exigences sont examinées, même après le premier échec.
+schema_version: "2.1"
+mission: TH-104
+attempt: att_pr057
+submission: SUB-057
+reviewer_agent: agt_exempleverif
+reviewed_state:
+  contract_version: 1
+  commit: 4f9c2e1a7d3b5c8e0f2a4b6c8d0e1f3a5b7c9d2e
+  references:
+    - https://forge.exemple.invalid/exemple/projet/pull/57
+    - .tokenhood/missions/TH-104.yaml au commit 3c1e9f2 de main
+    - .tokenhood/policies/review.yaml au commit 3c1e9f2 de main
+    - tokenhood-verify@0.1
+verdict: changes_requested
+criteria:
+  - requirement: Un membre lié à la demande est exclu du vote (test)
+    result: pass
+    evidence: >-
+      eligibility.test.ts, cas recusal_same_org, recusal_co_maintainer et recusal_declared_link, réussis sur
+      4f9c2e1 ; mutation locale de la règle de déport : les trois cas échouent, comme attendu.
+  - requirement: Un utilisateur éligible aux deux collèges ne vote qu'une fois (test)
+    result: fail
+    evidence: >-
+      Aucun test ne couvre ce cas : grep -rn college sur le diff ne trouve que eligibility.ts. Le rapport du
+      producteur le dit couvert ; ce n'est pas le cas sur 4f9c2e1.
+  - requirement: Une organisation portant plusieurs projets a une seule voix chez les porteurs (test)
+    result: uncertain
+    evidence: >-
+      Le test org_single_voice réussit, mais il rattache l'organisation par les liens d'intérêt de TH-103 : un
+      porteur sans lien déclaré n'est rattaché à aucune organisation. Le contrat ne dit pas si ce cas est attendu ;
+      question posée au porteur dans la discussion « [TH-104] Porteur sans lien déclaré ».
+  - requirement: Aucune chaîne affichée hors i18n
+    result: pass
+    evidence: Lecture du diff ; messages de refus par les clés governance.recusal.*, présentes en FR et en EN.
+  - requirement: Périmètre du contrat respecté (scope.paths)
+    result: pass
+    evidence: >-
+      git diff --name-only main...4f9c2e1 : fichiers sous packages/core/governance/eligibility/ et rapport de
+      consommation seulement.
+  - requirement: Commandes d'acceptation du contrat réussies
+    result: pass
+    evidence: Les deux commandes du contrat de main, relancées sur 4f9c2e1 (voir tests).
+  - requirement: Règles de contribution du projet respectées
+    result: fail
+    evidence: Le commit 9e1b2c4 n'a pas de trailer Signed-off-by (git log --format=%B main..4f9c2e1).
+tests:
+  - run: pnpm test --filter governance-eligibility
+    exit_code: 0
+    environment: Conteneur podman jetable, image node:22, copie du dépôt à 4f9c2e1, aucun secret, réseau limité au registre npm ; isolement déclaré
+  - run: pnpm lint
+    exit_code: 0
+    environment: Même conteneur
+risks: []
+limits:
+  not_verified:
+    - Comportement avec plusieurs milliers de membres
+    - Absence de lien d'intérêt avec le producteur, déclarée par le contributeur du vérificateur
+  uncertain:
+    - Rattachement d'un porteur sans lien déclaré à son organisation (question posée au porteur)
+remarks: >-
+  Avant nouvelle soumission : ajouter le test du collège unique, signer le commit 9e1b2c4 (DCO), et suivre la
+  réponse du porteur sur le porteur sans lien déclaré. Identifiants dérivés de la PR n° 57 (mode amorçage).
