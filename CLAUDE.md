@@ -21,25 +21,15 @@ Principes non négociables :
 
 ## État au 18/10/2026
 
-- Lot 0 (amorçage) en cours ; missions TH-001 à TH-017 publiées, TH-101 (lot 1) ouverte en avance.
+- Lot 0 (amorçage) en cours ; missions TH-001 à TH-017 publiées, 6 intégrées ; TH-101 (lot 1) intégrée en avance.
 - Dépôt public, licence non encore choisie (AGPL-3.0 proposée).
 - Dépôt réglé : description, site, sujets, labels, Discussions activées. Les catégories Clarifications, Décisions, Propositions restent à créer dans l'interface GitHub (aucune API).
-- `main` protégée : PR obligatoire (y compris pour les administrateurs), historique linéaire (fusion en rebase ou squash), conversations résolues, ni force-push ni suppression. Zéro approbation requise tant que le porteur est seul mainteneur ; aucun statut de CI requis avant TH-015.
-- La fusion des PR revient au porteur : l'agent prépare, vérifie et documente, il ne fusionne pas.
+- `main` protégée : PR obligatoire (y compris pour les administrateurs), historique linéaire (fusion en rebase ou squash), conversations résolues, ni force-push ni suppression. Zéro approbation requise tant que le porteur est seul mainteneur ; statuts requis à activer avec TH-015 (workflows `tokenhood`, `ci`, `image`, `landing`).
+- La fusion des PR revient au porteur. Le 18/10/2026, il a autorisé l'agent à fusionner la file en rebase après CI verte ; sans autorisation explicite, l'agent prépare, vérifie et documente, il ne fusionne pas.
 
-### File de PR (ordre de fusion)
+### Intégré sur `main` le 18/10/2026
 
-| PR | Mission | Base | Contenu |
-|---|---|---|---|
-| #1 | TH-017 | `main` | Landing statique FR/EN, publiée sur tokenhood.kosm.io après fusion |
-| #2 | TH-001 | `main` | Spécifications V2.1 dans `docs/specs/` (FR et EN) |
-| #3 | TH-002 | `main` | JSON Schema, exemples, validateur `tools/validate/` |
-| #4 | TH-003 | #3 | Workflow `tokenhood` : validation de `.tokenhood/` et des exemples |
-| #5 | TH-007 | `main` | Dossier d'options et ADR-002 (fusion = adoption) |
-| #6 | TH-101 | #1 | Monorepo pnpm : `apps/api`, `apps/web`, `packages/i18n`, `locales/`, CI |
-| #7 | TH-013 | #6 | Image unique, `compose.yaml`, workflow `image` |
-
-Une PR empilée change de base quand la précédente est fusionnée ; avec une fusion en rebase, la rebaser ensuite sur `main` (`git rebase --onto origin/main <ancienne-base>`).
+TH-001 (spécifications, PR #2), TH-002 (schémas, #3), TH-003 (CI de validation, #4), TH-007 et ADR-002 adoptée (#5), TH-017 (landing, #1), TH-101 (monorepo, #6), TH-013 (image et compose, #7). Ces missions sont à l'état `integrated` ; le retour à 30 jours reste à recueillir.
 
 ## Landing (`landing/`)
 
@@ -73,9 +63,9 @@ Une PR empilée change de base quand la précédente est fusionnée ; avec une f
 
 ## Prochaines étapes
 
-1. Porteur : fusionner la file de PR dans l'ordre ci-dessus ; créer dans Coolify l'application de la landing (`landing/README.md`) puis la ressource Compose de la plateforme.
-2. Porteur : formulaire Brevo (liste « Tokenhood », double opt-in) et `BREVO_FORM_ACTION` ; catégories Discussions ; licence (`LICENSE`, README, `project.yaml`, FAQ de la landing).
-3. Relire les textes de la landing et les pages légales (sous-traitants, conservation), et la traduction EN des spécifications (PR #2).
+1. Porteur : brancher Coolify. Landing : application Dockerfile, base directory `/`, Dockerfile `/landing/Dockerfile`, port 8080, healthcheck `/healthz`, domaine `tokenhood.kosm.io`. Plateforme : ressource Docker Compose sur `compose.yaml`, `POSTGRES_PASSWORD`, domaines `app.` et `api.`. Interface Coolify : http://51.91.166.222:8000.
+2. Porteur : formulaire Brevo et `BREVO_FORM_ACTION` ; catégories Discussions ; licence (`LICENSE`, README, `project.yaml`, FAQ de la landing).
+3. Relire les textes de la landing, les pages légales et la traduction EN des spécifications (statut `machine`).
 4. Missions suivantes : TH-015 (scans et statuts requis), TH-004 et TH-005 (skills), TH-009 (contrats du protocole), TH-006, TH-010, TH-011 ; côté MVP, TH-102 (identité, OAuth GitHub, `packages/db` avec Drizzle) et le stockage S3 laissé hors de TH-013.
 
 ## Conventions de commit
