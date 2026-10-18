@@ -1,0 +1,24 @@
+schema_version: "2.1"
+missions: [TH-004]
+contribution:
+  kind: integration
+  pull_requests: [16, 17]
+contributor: mathieu-kosmio
+agent:
+  client: claude-code
+  client_version: "2.1.299"
+  model_family: claude
+  model: claude-opus-5-5
+period:
+  start: "2026-10-18T15:07:45.667Z"
+  end: "2026-10-18T15:09:29.444Z"
+tokens:
+  input: 20
+  output: 9419
+  cache_creation: 18015
+  cache_read: 2684853
+counted: 27454
+method: client_transcript
+nature: declared
+evidence: "Transcription Claude Code de la session, 10 réponses comptées une fois chacune (tools/usage/claude-code.mjs)."
+notes: "Fusion de la PR #16 en rebase après CI verte, passage à integrated et mise à jour de CLAUDE.md (PR #17) ; mesure arrêtée avant le commit de ce rapport."
