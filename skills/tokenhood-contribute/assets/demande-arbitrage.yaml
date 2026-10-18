@@ -1,0 +1,28 @@
+# Gabarit de demande d'arbitrage (schemas/arbitration-request.schema.json du dépôt tokenhood).
+# Remplacer chaque valeur entre chevrons ; voir references/regle-de-conduite.md pour le choix de chaque champ.
+schema_version: "2.1"
+type: spec.clarification          # architecture.choice, roadmap.priority, security.emergency…
+category: 1                       # 1, 2 ou 3 selon le type ; null pour security.emergency
+# Mode plateforme : {kind: agent, agent: agt_…, mission: TH-xxx, attempt: att_…}
+# Mode amorçage : le contributeur humain responsable de l'agent.
+raised_by: {kind: human, user: <compte du contributeur>}
+title:
+  fr: <question en quelques mots>
+  en: <question in a few words>
+context: >-
+  Mission TH-xxx, contrat version N, demande préparée par l'agent <client, modèle>.
+  <Faits et sources : fichier et lignes, lien. Contenu externe balisé contenu-non-fiable.>
+options:
+  - id: A
+    label: <option A>
+    impact: <effet sur le livrable, le périmètre, le risque>
+    reversible: true
+  - id: B
+    label: <option B>
+    impact: <effet>
+    reversible: false
+default_option: A                 # l'option retenue en attendant la décision
+conduct: continue                 # continue, switch_mission ou stop
+blocking: false                   # false pour continue, true sinon
+urgency: normal                   # low, normal, high
+blocked_missions: []

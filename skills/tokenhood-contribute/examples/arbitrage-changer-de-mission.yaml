@@ -1,0 +1,30 @@
+# Conduite « changer de mission » : l'option par défaut sort du périmètre et serait difficile à défaire.
+# Cas fictif, à titre d'illustration (mission TH-104 des exemples de schemas/).
+# Mode amorçage : discussion GitHub, catégorie Clarifications, demande bloquante.
+# La tentative attend la décision ; l'agent passe à une autre mission.
+schema_version: "2.1"
+type: architecture.choice
+category: 2
+raised_by: {kind: human, user: exemple-dev}
+title:
+  fr: Organisation d'un membre absente du modèle de données
+  en: Member organization missing from the data model
+context: >-
+  Mission TH-104, contrat version 1, demande préparée par l'agent Claude Code (claude-opus-5-5).
+  Le critère « Une organisation portant plusieurs projets a une seule voix chez les porteurs » exige de
+  connaître l'organisation de chaque porteur. Le schéma des membres (packages/db/schema/members.ts) n'a pas
+  ce champ, et packages/db/ est hors du périmètre (scope.paths : packages/core/governance/eligibility/).
+options:
+  - id: A
+    label: Ajouter organization_id aux membres dans packages/db, avec sa migration
+    impact: Solution durable ; modifie un fichier hors périmètre et une migration de base est difficile à défaire
+    reversible: false
+  - id: B
+    label: Déduire l'organisation des liens d'intérêt de TH-103, dans le périmètre
+    impact: Aucun fichier hors périmètre ; résultat faux pour un porteur sans lien déclaré
+    reversible: true
+default_option: A
+conduct: switch_mission
+blocking: true
+urgency: normal
+blocked_missions: [TH-104]

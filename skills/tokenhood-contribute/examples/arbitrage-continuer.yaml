@@ -1,0 +1,27 @@
+# Conduite « continuer » : option par défaut réversible, dans le périmètre et le niveau de risque.
+# Cas fictif, à titre d'illustration (mission TH-104 des exemples de schemas/).
+# Mode plateforme : request_arbitration, demande non bloquante. Le travail continue sur l'option A.
+schema_version: "2.1"
+type: spec.clarification
+category: 1
+raised_by: {kind: agent, agent: agt_7f3c, mission: TH-104, attempt: att_01JD4K}
+title:
+  fr: Message affiché à un membre déporté
+  en: Message shown to a recused member
+context: >-
+  Mission TH-104, contrat version 1. L'exigence « Aucune chaîne affichée hors i18n » impose une clé de
+  traduction pour le refus de vote d'un membre déporté ; le contrat ne dit pas s'il faut une clé par motif
+  de déport (même organisation, co-mainteneur, lien déclaré) ou une clé générique.
+options:
+  - id: A
+    label: Une clé par motif (governance.recusal.same_org, governance.recusal.co_maintainer…)
+    impact: Messages précis ; trois clés à traduire en FR et EN
+    reversible: true
+  - id: B
+    label: Une clé générique avec le motif en argument ICU
+    impact: Une seule clé ; libellés des motifs à traduire à part
+    reversible: true
+default_option: A
+conduct: continue
+blocking: false
+urgency: low
