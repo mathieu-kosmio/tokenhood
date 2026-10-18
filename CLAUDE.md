@@ -29,7 +29,7 @@ Principes non négociables :
 
 ### Intégré sur `main` le 18/10/2026
 
-TH-001 (spécifications, PR #2), TH-002 (schémas, #3), TH-003 (CI de validation, #4), TH-007 et ADR-002 adoptée (#5), TH-017 (landing, #1), TH-101 (monorepo, #6), TH-013 (image et compose, #7). TH-018 (déploiement de la plateforme, #9) : https://app.tokenhood.kosm.io et https://api.tokenhood.kosm.io en ligne, ressource Coolify Docker Compose `gs7mmdb0wzy1d5wgo10h7dib` (projet « Tools & Concepts »), mot de passe PostgreSQL généré par Coolify et retiré des arguments de build. Ces missions sont à l'état `integrated` ; le retour à 30 jours reste à recueillir.
+TH-001 (spécifications, PR #2), TH-002 (schémas, #3), TH-003 (CI de validation, #4), TH-007 et ADR-002 adoptée (#5), TH-017 (landing, #1), TH-101 (monorepo, #6), TH-013 (image et compose, #7). TH-018 (déploiement de la plateforme, #9) : https://app.tokenhood.kosm.io et https://api.tokenhood.kosm.io en ligne, ressource Coolify Docker Compose `gs7mmdb0wzy1d5wgo10h7dib` (projet « Tools & Concepts »), mot de passe PostgreSQL généré par Coolify et retiré des arguments de build. TH-019 (rapport de consommation à chaque contribution et compteur public, #12 et #13). TH-015 (CI de sécurité : gitleaks, Trivy, audits, contrôle d'absence de SDK de LLM, #11) : rendre ses statuts obligatoires sur `main` reste au porteur. Ces missions sont à l'état `integrated` ; le retour à 30 jours reste à recueillir.
 
 ## Landing (`landing/`)
 
