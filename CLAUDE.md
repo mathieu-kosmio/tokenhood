@@ -48,7 +48,7 @@ TH-001 (spécifications, PR #2), TH-002 (schémas, #3), TH-003 (CI de validation
 
 ## Sécurité et statuts requis (TH-015)
 
-- Workflow `security`, à chaque PR et sur `main` : gitleaks sur les commits de la PR (valeurs masquées dans le journal) ; Trivy sur l'image `tokenhood-app` et sur le dépôt (échec sur une vulnérabilité HIGH ou CRITICAL corrigeable) ; `pnpm audit --prod` et `npm audit --omit=dev` pour chaque `package-lock.json` (échec dès `moderate`) ; contrôle d'absence de SDK de fournisseur de LLM, avec son auto-vérification sur une copie du dépôt où `openai` est ajouté.
+- Workflow `security`, à chaque PR et sur `main` : gitleaks sur les commits de la PR (valeurs masquées dans le journal) ; Trivy sur l'image `tokenhood-app` et sur le dépôt (échec sur une vulnérabilité HIGH ou CRITICAL corrigeable, et sur une mauvaise configuration HIGH ou CRITICAL des Dockerfile, comme l'absence de `USER` non root) ; `pnpm audit --prod` et `npm audit --omit=dev` pour chaque `package-lock.json` (échec dès `moderate`) ; contrôle d'absence de SDK de fournisseur de LLM, avec son auto-vérification sur une copie du dépôt où `openai` est ajouté.
 - Images gitleaks et Trivy épinglées par version et par empreinte `sha256` dans `security.yml`, jamais par étiquette mobile (étiquettes de Trivy détournées en mars 2026). Pour les mettre à jour : version publiée depuis au moins deux semaines, empreinte relevée sur le registre.
 - Contrôle LLM en local : `node tools/no-llm-sdk/check.mjs` ; tests : `node --test 'tools/no-llm-sdk/test/*.test.mjs'`. La liste des paquets interdits est en tête de `check.mjs`.
 
