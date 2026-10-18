@@ -10,6 +10,10 @@
       "fr": "/",
       "en": "/en/"
     },
+    "roadmap": {
+      "fr": "/feuille-de-route/",
+      "en": "/en/roadmap/"
+    },
     "legal": {
       "fr": "/mentions-legales/",
       "en": "/en/legal-notice/"
@@ -24,7 +28,16 @@
     "discussions": "https://github.com/mathieu-kosmio/tokenhood/discussions",
     "contributing": "https://github.com/mathieu-kosmio/tokenhood/blob/main/CONTRIBUTING.md",
     "kosmio": "https://kosm.io",
-    "usageReports": "https://github.com/mathieu-kosmio/tokenhood/tree/main/.tokenhood/usage"
+    "usageReports": "https://github.com/mathieu-kosmio/tokenhood/tree/main/.tokenhood/usage",
+    "discussionsNew": "https://github.com/mathieu-kosmio/tokenhood/discussions/new",
+    "missionContract": "https://github.com/mathieu-kosmio/tokenhood/blob/main/.tokenhood/missions/{id}.yaml",
+    "plan": {
+      "fr": "https://github.com/mathieu-kosmio/tokenhood/blob/main/docs/specs/plan-de-developpement.md",
+      "en": "https://github.com/mathieu-kosmio/tokenhood/blob/main/docs/specs/en/plan-de-developpement.md"
+    }
+  },
+  "contribute": {
+    "discussionCategory": "general"
   },
   "form": {
     "provider": "brevo",

@@ -5,10 +5,11 @@ import { createHash } from 'node:crypto';
 import path from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { createRequire } from 'node:module';
-import { parse as parseYaml } from 'yaml';
 import { localize } from './src/typo.mjs';
 import { layout } from './src/layout.mjs';
 import { home } from './src/home.mjs';
+import { roadmapPage } from './src/roadmap.mjs';
+import { loadRoadmap, readYamlDir } from './src/roadmap-data.mjs';
 import { prose, notFound } from './src/prose.mjs';
 
 const ROOT = path.dirname(fileURLToPath(import.meta.url));
@@ -21,7 +22,7 @@ const FONTS = [
   { pkg: '@fontsource-variable/jetbrains-mono', preload: false },
 ];
 const SUBSETS = ['latin', 'latin-ext'];
-const NAMESPACES = ['landing', 'legal'];
+const NAMESPACES = ['landing', 'roadmap', 'legal'];
 
 const hash = (buf) => createHash('sha256').update(buf).digest('hex').slice(0, 10);
 const readJson = async (file) => JSON.parse(await readFile(file, 'utf8'));
@@ -42,18 +43,8 @@ export async function loadConfig(env = process.env) {
 // Chiffres publics tirés du dépôt : tokens déclarés dans .tokenhood/usage/ (champ counted)
 // et missions intégrées dans .tokenhood/missions/.
 export async function loadStats(repo = REPO) {
-  const read = async (dir) => {
-    const full = path.join(repo, dir);
-    let files = [];
-    try {
-      files = (await readdir(full)).filter((f) => /\.ya?ml$/.test(f));
-    } catch {
-      return [];
-    }
-    return Promise.all(files.map(async (f) => parseYaml(await readFile(path.join(full, f), 'utf8'))));
-  };
-  const reports = await read('.tokenhood/usage');
-  const missions = await read('.tokenhood/missions');
+  const reports = await readYamlDir(repo, '.tokenhood/usage');
+  const missions = await readYamlDir(repo, '.tokenhood/missions');
   return {
     tokens: reports.reduce((sum, r) => sum + (Number.isInteger(r?.counted) ? r.counted : 0), 0),
     reports: reports.length,
@@ -112,6 +103,7 @@ export async function build({ outDir = path.join(ROOT, 'dist'), env = process.en
   const config = await loadConfig(env);
   const locales = await loadLocales(config);
   const stats = await loadStats(repo);
+  const roadmap = await loadRoadmap(repo);
 
   await rm(outDir, { recursive: true, force: true });
   await mkdir(path.join(outDir, 'assets'), { recursive: true });
@@ -134,12 +126,15 @@ export async function build({ outDir = path.join(ROOT, 'dist'), env = process.en
     await copyFile(path.join(ROOT, 'public', file), path.join(outDir, file));
   }
 
-  const ctxFor = (lang, page) => ({ lang, page, config, assets, stats, t: localize(lang, locales[lang]) });
+  const ctxFor = (lang, page) => ({ lang, page, config, assets, stats, roadmap, t: localize(lang, locales[lang]) });
   const pages = [];
   for (const lang of config.langs) {
     const r = config.routes;
     let ctx = ctxFor(lang, 'home');
     pages.push(await writePage(outDir, r.home[lang], layout(ctx, { title: ctx.t.meta.title, description: ctx.t.meta.description, body: home(ctx) })));
+    ctx = ctxFor(lang, 'roadmap');
+    const rp = ctx.t.roadmapPage;
+    pages.push(await writePage(outDir, r.roadmap[lang], layout(ctx, { title: rp.metaTitle, description: rp.metaDescription, body: roadmapPage(ctx) })));
     for (const page of ['legal', 'privacy']) {
       ctx = ctxFor(lang, page);
       const doc = ctx.t[page];
@@ -162,11 +157,13 @@ export async function build({ outDir = path.join(ROOT, 'dist'), env = process.en
   );
   await writeFile(path.join(outDir, 'robots.txt'), `User-agent: *\nAllow: /\n\nSitemap: ${config.siteUrl}/sitemap.xml\n`);
 
-  return { outDir, pages, config, locales, stats };
+  return { outDir, pages, config, locales, stats, roadmap };
 }
 
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
-  const { outDir, pages, config } = await build();
+  const { outDir, pages, config, locales, roadmap } = await build();
   console.log(`Landing générée dans ${path.relative(process.cwd(), outDir) || '.'} : ${pages.length} pages.`);
+  const missing = roadmap.missions.filter((m) => config.langs.some((l) => !locales[l].roadmapPage.missions[m.id])).map((m) => m.id);
+  if (missing.length) console.log(`Feuille de route : titre du contrat affiché faute de résumé dans locales/<lang>/roadmap.json pour ${missing.join(', ')}.`);
   console.log(config.form.action ? `Formulaire relié à ${config.form.action}` : 'Formulaire non configuré : repli sur GitHub Discussions.');
 }

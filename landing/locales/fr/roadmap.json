@@ -1,0 +1,176 @@
+{
+  "roadmapPage": {
+    "metaTitle": "Feuille de route · Tokenhood",
+    "metaDescription": "Les missions de Tokenhood, de l'amorçage à la fin du MVP : ce qui est intégré, ce qui se joue aujourd'hui et les prochaines missions ouvertes aux contributeurs.",
+    "eyebrow": "Feuille de route",
+    "title": "Tokenhood se construit avec Tokenhood.",
+    "lead": "Chaque brique est une mission publique : l'agent d'un contributeur la réalise, l'agent d'un autre la vérifie, un humain l'intègre. Voici ce qui tient déjà, ce qui se joue maintenant, et où votre agent peut prendre le relais.",
+    "ctaNext": "Voir les prochaines missions",
+    "ctaRepo": "Suivre le dépôt sur GitHub",
+    "jumpLabel": "Parcourir la feuille de route",
+    "art": {
+      "label": "Cernes de croissance : un anneau par lot, le lot 0 au centre et le lot 4 à l'extérieur. La part tracée de chaque anneau correspond aux missions intégrées ; la flèche montre où en est le projet.",
+      "integrated": "missions intégrées",
+      "of": "sur"
+    },
+    "index": {
+      "label": "Avancement par lot",
+      "of": "sur",
+      "missions": "missions intégrées"
+    },
+    "lots": [
+      {
+        "promise": "Les règles, les formats et l'infrastructure sont posés ; les premières missions réelles passent la revue croisée.",
+        "gate": "Des missions réelles intégrées à la main, cinq contributeurs engagés, licence et hébergement tranchés."
+      },
+      {
+        "promise": "On s'inscrit, on engage sa capacité et on décide ensemble : première version en production.",
+        "gate": "Les questions des agents sont traitées et tracées dans Tokenhood, une décision collective publiée en français et en anglais."
+      },
+      {
+        "promise": "Tokenhood coordonne ses propres missions : réservation, serveur MCP, GitHub App et compagnon local.",
+        "gate": "Parcours complet démontré, limites de chaque client d'agent publiées, plus besoin de tokenpool."
+      },
+      {
+        "promise": "La vérification croisée est outillée et la valeur nette se mesure sur un premier projet externe.",
+        "gate": "Les défauts volontaires sont détectés, et le mainteneur du projet externe juge le bénéfice net positif."
+      },
+      {
+        "promise": "Les projets candidatent, sont admis et signent leur convention en ligne.",
+        "gate": "Un projet admis par le parcours automatisé de bout en bout : fin du MVP."
+      }
+    ],
+    "states": {
+      "done": "Intégrée",
+      "progress": "En cours",
+      "review": "En revue croisée",
+      "open": "Ouverte",
+      "waiting": "En attente",
+      "planned": "Prévue"
+    },
+    "types": {
+      "code": "Code",
+      "docs": "Documentation",
+      "i18n": "Traduction",
+      "design": "Design",
+      "research": "Recherche",
+      "data": "Données",
+      "review": "Revue",
+      "mission": "Rédaction de mission",
+      "skill": "Skill",
+      "governance": "Gouvernance"
+    },
+    "sizes": {
+      "S": "Mission courte",
+      "M": "Mission moyenne",
+      "L": "Mission longue"
+    },
+    "done": {
+      "eyebrow": "Réalisé",
+      "title": "Ce qui tient déjà debout.",
+      "text": "Les missions intégrées sur main, lot par lot, avec leur date d'intégration et les tokens que leurs contributeurs ont déclarés.",
+      "tokens": "tokens",
+      "note": "Date : fin du premier rapport d'intégration de la mission. Tokens : total de ses rapports de consommation ; un rapport commun à plusieurs missions est réparti à parts égales.",
+      "reports": "Voir les rapports",
+      "empty": "Aucune mission n'est encore intégrée : la première arrive bientôt."
+    },
+    "now": {
+      "eyebrow": "Aujourd'hui",
+      "asOf": "État au",
+      "allDone": "Tous les lots sont terminés : le MVP est livré.",
+      "stats": {
+        "done": "missions intégrées",
+        "active": "en cours ou en revue",
+        "open": "missions ouvertes",
+        "tokens": "tokens déclarés"
+      },
+      "activeLabel": "En ce moment"
+    },
+    "next": {
+      "eyebrow": "Ensuite",
+      "title": "Votre agent peut prendre le relais.",
+      "text": "Les missions ouvertes dont les dépendances sont intégrées, par ordre de priorité. « Contribuer » ouvre une discussion publique : présentez votre agent, le porteur vous répond et vous confie la mission.",
+      "contribute": "Contribuer",
+      "contract": "Lire le contrat",
+      "empty": "Aucune mission n'est ouverte en ce moment. De nouvelles missions sont publiées à chaque étape : suivez le dépôt pour les voir passer.",
+      "discussionTitle": "Contribuer à {id}",
+      "discussionBody": "Bonjour,\n\nJe souhaite contribuer à la mission {id} : {summary}\n\nContrat : {contract}\n\nMon agent (client et famille de modèle) :\nCe que je peux y consacrer (tokens, délai) :\nMon expérience utile pour cette mission :\n"
+    },
+    "later": {
+      "eyebrow": "Programme",
+      "title": "Tout ce qui reste à construire.",
+      "text": "L'ordre est fixé par le plan de développement, pas les dates : le rythme dépend de la capacité que les contributeurs engagent.",
+      "remaining": "missions restantes",
+      "gate": "Porte de sortie",
+      "plan": "Lire le plan de développement"
+    },
+    "join": {
+      "title": "Une question avant de vous lancer ?",
+      "text": "Les Discussions du dépôt sont ouvertes à tous : contributeurs, porteurs de projets et curieux. Le guide de contribution détaille le cycle d'une mission, de la réservation au rapport de consommation.",
+      "discussions": "Ouvrir les Discussions",
+      "guide": "Lire le guide de contribution"
+    },
+    "missions": {
+      "TH-001": "Les spécifications V2.1 sont publiques et versionnées, en français et en anglais.",
+      "TH-002": "Missions, tentatives et rapports partagent un format commun, vérifiable par une machine.",
+      "TH-003": "Chaque proposition est contrôlée automatiquement contre ces formats.",
+      "TH-004": "L'agent d'un contributeur sait réaliser une mission en respectant le protocole et les règles de sécurité.",
+      "TH-005": "L'agent vérificateur sait contrôler une mission et rendre un rapport qui dit ce qu'il a vérifié.",
+      "TH-006": "On sait s'il faut reprendre, réécrire ou enrichir tokenpool pour coordonner les agents.",
+      "TH-007": "La pile technique est choisie et justifiée, déployable sur Coolify.",
+      "TH-008": "Ce que Tokenhood garantit, et avec quels clients d'agents, est écrit noir sur blanc.",
+      "TH-009": "Le protocole de coordination est défini par des règles testables, cas limites compris.",
+      "TH-010": "Une méthode mesure si les contributions apportent un bénéfice net aux projets.",
+      "TH-011": "La charte d'amorçage fixe qui décide quoi, en français et en anglais.",
+      "TH-012": "Un premier projet externe est trouvé pour éprouver Tokenhood en conditions réelles.",
+      "TH-013": "La plateforme tient dans une image Docker, prête à déployer.",
+      "TH-014": "Déployer, sauvegarder, restaurer et revenir en arrière suivent une procédure écrite et testée.",
+      "TH-015": "Chaque modification est passée au crible : secrets, vulnérabilités, aucun SDK de modèle d'IA.",
+      "TH-016": "Contribuer suit un mode d'emploi clair : guide, code de conduite, modèle de mission.",
+      "TH-017": "Tokenhood a sa page publique, en français et en anglais.",
+      "TH-018": "La plateforme est en ligne, déployée à chaque intégration.",
+      "TH-019": "Chaque contribution déclare ses tokens, et le total s'affiche publiquement.",
+      "TH-020": "La feuille de route se parcourt en ligne et chaque mission ouverte invite à contribuer.",
+      "TH-101": "Le socle de l'application est posé, bilingue dès la première ligne.",
+      "TH-102": "On se connecte avec son compte GitHub et on choisit ses langues.",
+      "TH-103": "Les liens d'intérêt sont déclarés et écartent d'eux-mêmes les conflits.",
+      "TH-104": "Chacun sait s'il peut voter, et se déporte quand il est concerné.",
+      "TH-105": "Un agent qui bute sur une question peut demander un arbitrage.",
+      "TH-106": "Chaque vote produit un résultat clair, quorum et panel compris.",
+      "TH-107": "Les décisions déléguées et les mandats sont consignés dans un registre.",
+      "TH-108": "Chaque décision est publiée en français et en anglais, et archivée dans le dépôt.",
+      "TH-109": "Les contributeurs déclarent leurs agents et la capacité qu'ils engagent.",
+      "TH-110": "La console de gouvernance et le tableau de bord sont dessinés, accessibles à tous.",
+      "TH-111": "Un tableau de bord montre la capacité promise, la capacité mobilisable et le besoin.",
+      "TH-112": "Les agents posent leurs questions et lisent les décisions directement par MCP.",
+      "TH-113": "Toute l'interface du lot 1 est relue en anglais.",
+      "TH-114": "La plateforme se surveille : journaux, traces, sonde de disponibilité et alertes.",
+      "TH-115": "Chaque fonction d'exploitation a un responsable et un remplaçant, visibles dans la plateforme.",
+      "TH-201": "Les missions vivent dans la plateforme : contrat, versions, dépendances et cycle de vie.",
+      "TH-202": "Un agent réserve une mission sans collision et reprend là où il s'était arrêté.",
+      "TH-203": "Le flux de missions reste à la mesure de ce que chaque projet peut relire.",
+      "TH-204": "Les agents découvrent et réalisent les missions par un serveur MCP.",
+      "TH-205": "Une GitHub App relie les dépôts : missions indexées, PR suivies, intégrations détectées.",
+      "TH-206": "Chaque agent reçoit le bon contexte et les bons skills, versionnés et tracés.",
+      "TH-207": "Un compagnon local borne l'agent et peut l'arrêter proprement.",
+      "TH-208": "La compatibilité de chaque client d'agent est testée et publiée.",
+      "TH-209": "Une issue labellisée devient une mission, sans ressaisie.",
+      "TH-210": "L'historique de l'amorçage quitte tokenpool pour Tokenhood.",
+      "TH-301": "Chaque mission reçoit un vérificateur indépendant, attribué automatiquement.",
+      "TH-302": "Un rapport de vérification dit ce qu'il couvre et tombe si le code change.",
+      "TH-303": "Désaccords et litiges suivent une procédure, complétée par des audits par échantillon.",
+      "TH-304": "Le mainteneur dit, trente jours après, si la contribution lui a vraiment servi.",
+      "TH-305": "Un premier projet externe est admis, sous convention.",
+      "TH-306": "La campagne pilote publie son bilan.",
+      "TH-307": "La réputation se construit sur les contributions acceptées et bien vérifiées.",
+      "TH-308": "Une traduction manquante devient une mission, automatiquement.",
+      "TH-401": "Les projets candidatent et suivent leur dossier en ligne, dans les deux langues.",
+      "TH-402": "L'identité des structures candidates est vérifiée, en accès réservé au comité.",
+      "TH-403": "Un modèle de convention, tiré des pilotes, existe en français et en anglais.",
+      "TH-404": "La convention se génère et se signe en ligne, sur une instance auto-hébergée.",
+      "TH-405": "Un assistant prépare l'arrivée d'un projet admis dans son dépôt.",
+      "TH-406": "Les décisions d'admission et de suspension s'appliquent d'elles-mêmes.",
+      "TH-407": "Un audit de sécurité et d'accessibilité clôt le MVP."
+    }
+  }
+}

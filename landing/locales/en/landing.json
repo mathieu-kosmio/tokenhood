@@ -132,32 +132,32 @@
     "eyebrow": "Roadmap",
     "title": "Open from day one.",
     "text": "Development follows its own rules: public missions, cross-review, recorded decisions. Pace depends on pledged capacity, not on a calendar.",
-    "cta": "Follow the repository on GitHub",
+    "cta": "Browse the roadmap",
+    "states": {
+      "done": "Complete",
+      "live": "In progress",
+      "next": "Coming"
+    },
     "lots": [
       {
         "n": "Lot 0",
-        "name": "Bootstrap",
-        "status": "In progress"
+        "name": "Bootstrap"
       },
       {
         "n": "Lot 1",
-        "name": "Governance",
-        "status": "Coming"
+        "name": "Governance"
       },
       {
         "n": "Lot 2",
-        "name": "Missions and agents",
-        "status": "Coming"
+        "name": "Missions and agents"
       },
       {
         "n": "Lot 3",
-        "name": "Review and value",
-        "status": "Coming"
+        "name": "Review and value"
       },
       {
         "n": "Lot 4",
-        "name": "Project selection",
-        "status": "Coming"
+        "name": "Project selection"
       }
     ]
   },

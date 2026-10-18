@@ -4,9 +4,8 @@ import { html, attr } from './html.mjs';
 import { heroArt, principleIcons, swapSmall } from './icons.mjs';
 import { anchor } from './layout.mjs';
 
-// États de la carte d'exemple et des lots : de la structure, pas du texte.
+// États de la carte d'exemple : de la structure, pas du texte. Ceux des lots viennent du dépôt.
 const CARD_STATES = ['done', 'done', 'done', 'now', 'todo'];
-const LOT_STATES = ['live', 'next', 'next', 'next', 'next'];
 const ROLES = ['contributor', 'maintainer', 'governance'];
 
 const sectionHead = (eyebrow, title) => html`<div class="th-section-head">
@@ -123,20 +122,20 @@ ${t.who.items.map((w, i) => html`<article class="th-who">
 </section>`;
 }
 
-function roadmap({ t, config }) {
+function roadmap({ t, lang, config, roadmap: r }) {
   return html`<section class="th-roadmap-wrap" id="roadmap">
 <div class="th-roadmap">
 <div class="th-roadmap__text">
 <p class="th-eyebrow th-eyebrow--accent">${t.roadmap.eyebrow}</p>
 <h2 class="th-h2">${t.roadmap.title}</h2>
 <p>${t.roadmap.text}</p>
-<a class="th-btn th-btn--accent" href="${config.links.repository}">${t.roadmap.cta}</a>
+<a class="th-btn th-btn--accent" href="${config.routes.roadmap[lang]}">${t.roadmap.cta}</a>
 </div>
 <ol class="th-lots">
 ${t.roadmap.lots.map((l, i) => html`<li class="th-lot">
 <span class="th-lot__n">${l.n}</span>
 <span class="th-lot__name">${l.name}</span>
-<span class="th-pill th-pill--${LOT_STATES[i]}">${l.status}</span>
+<span class="th-pill th-pill--${r.lots[i].state}">${t.roadmap.states[r.lots[i].state]}</span>
 </li>`)}
 </ol>
 </div>

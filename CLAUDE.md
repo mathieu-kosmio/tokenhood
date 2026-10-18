@@ -21,7 +21,7 @@ Principes non négociables :
 
 ## État au 18/10/2026
 
-- Lot 0 (amorçage) en cours ; missions TH-001 à TH-019 publiées, 10 intégrées ; TH-101 (lot 1) intégrée en avance.
+- Lot 0 (amorçage) en cours ; missions TH-001 à TH-020 publiées, 10 intégrées ; TH-101 (lot 1) intégrée en avance. TH-020 (page « Feuille de route » de la landing) en cours ; TH-006, TH-009 et TH-010 portent `priority: high` (missions mises en avant sur la feuille de route).
 - Dépôt public, licence non encore choisie (AGPL-3.0 proposée).
 - Dépôt réglé : description, site, sujets, labels, Discussions activées. Les catégories Clarifications, Décisions, Propositions restent à créer dans l'interface GitHub (aucune API).
 - `main` protégée : PR obligatoire (y compris pour les administrateurs), historique linéaire (fusion en rebase ou squash), conversations résolues, ni force-push ni suppression. Zéro approbation requise tant que le porteur est seul mainteneur ; depuis le 18/10/2026, les 10 statuts de CI listés plus bas sont requis et la branche doit être à jour avec `main` avant fusion.
@@ -37,6 +37,7 @@ TH-001 (spécifications, PR #2), TH-002 (schémas, #3), TH-003 (CI de validation
 - Commandes : `cd landing && npm ci && npm test` ; `npm run build && npm run serve` pour prévisualiser sur le port 4173.
 - Textes : `landing/locales/<lang>/*.json` uniquement ; le test refuse toute chaîne visible absente des locales et toute divergence de structure FR/EN.
 - Formulaire : Brevo hébergé, URL dans la variable de build `BREVO_FORM_ACTION` ; sans elle, repli sur GitHub Discussions.
+- Feuille de route (`/feuille-de-route/`, `/en/roadmap/`, TH-020) : générée au build depuis le plan de développement, les contrats, les rapports de consommation et `decisions/` ; résumé fonctionnel FR/EN de chaque mission dans `landing/locales/<lang>/roadmap.json` ; au plus trois prochaines missions (`open`, dépendances satisfaites, classées par `priority`), chacune avec un bouton « Contribuer » vers une discussion GitHub préremplie. Règles détaillées dans `landing/README.md`.
 
 ## Plateforme (monorepo, ADR-002)
 
