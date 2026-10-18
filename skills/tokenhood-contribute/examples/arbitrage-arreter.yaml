@@ -1,0 +1,30 @@
+# Conduite « arrêter » : la question touche la sécurité.
+# Cas fictif, à titre d'illustration (mission TH-104 des exemples de schemas/).
+# Transmise par un canal privé (signalement de vulnérabilité ou message au porteur), jamais publiée.
+# La valeur du secret n'est recopiée nulle part : seul son emplacement est donné.
+# La tentative est libérée ; l'agent ne reprend qu'avec une nouvelle réservation après la décision.
+schema_version: "2.1"
+type: security.emergency
+category: null
+raised_by: {kind: agent, agent: agt_7f3c, mission: TH-104, attempt: att_01JD4K}
+title:
+  fr: Jeton d'accès en clair dans une entrée de la mission
+  en: Plain-text access token in a mission input
+context: >-
+  Mission TH-104, contrat version 1. Le fichier docs/guide-deploiement.md, entrée de la mission, contient à la
+  ligne 42 une chaîne au format d'un jeton d'accès personnel GitHub, ajoutée par le commit 3f9c2ab.
+  Valeur non recopiée. Travail arrêté, rien poussé depuis la découverte, tentative libérée.
+options:
+  - id: A
+    label: Révoquer le jeton, retirer la ligne par un commit, reprendre la mission
+    impact: Jeton inutilisable ; il reste lisible dans l'historique
+    reversible: true
+  - id: B
+    label: Révoquer le jeton et réécrire l'historique du dépôt
+    impact: Jeton absent de l'historique ; toutes les branches et forks sont à rebaser
+    reversible: false
+default_option: A
+conduct: stop
+blocking: true
+urgency: high
+blocked_missions: [TH-104]
