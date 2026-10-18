@@ -44,7 +44,7 @@ TH-001 (spécifications, PR #2), TH-002 (schémas, #3), TH-003 (CI de validation
 - `pnpm install`, puis `pnpm check` (lint, build, typecheck, tests) ; `pnpm dev:api`, `pnpm dev:web`.
 - `locales/fr.json` et `locales/en.json` (ICU) : seule source des chaînes de l'API et du web ; parité des clés et des arguments vérifiée à chaque build.
 - Scripts d'installation des dépendances refusés (`allowBuilds`) ; politique d'âge minimal des versions de pnpm à respecter (épingler une version plus ancienne plutôt qu'ajouter une exception).
-- Image : `Dockerfile` à la racine (api et web), `compose.yaml` (api, web, PostgreSQL) ; essai en CI par le workflow `image` (Docker indisponible sur le poste du porteur).
+- Image : `Dockerfile` à la racine (api et web), `compose.yaml` (api, web, PostgreSQL) ; essai en CI par le workflow `image` (Docker indisponible sur le poste du porteur). L'étape d'exécution ne garde que `node` : npm, corepack et yarn de l'image de base en sont retirés (vulnérabilités de leurs dépendances embarquées).
 
 ## Sécurité et statuts requis (TH-015)
 
