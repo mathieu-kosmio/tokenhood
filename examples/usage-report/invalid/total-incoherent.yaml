@@ -1,0 +1,12 @@
+# Invalide : counted doit valoir input + cache_creation + output (contrôle sémantique).
+schema_version: "2.1"
+missions: [TH-104]
+contribution: {kind: production, pull_requests: [42]}
+contributor: exemple-dev
+agent: {client: claude-code, model_family: claude}
+period: {start: "2026-10-24T13:02:11Z", end: "2026-10-24T14:41:50Z"}
+tokens: {input: 1204, output: 86250, cache_creation: 412300, cache_read: 9812400}
+counted: 10312154
+method: client_transcript
+nature: declared
+evidence: "Les lectures de cache ont été comptées à tort."

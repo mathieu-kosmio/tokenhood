@@ -39,6 +39,10 @@ La feuille servie concatène, dans l'ordre : les `@font-face`, `design/kosmio.cs
 - **Aucune ressource tierce au chargement** : polices auto-hébergées, pas de cookie, pas de mesure d'audience, pas de style ni de script en ligne (la CSP les refuse).
 - Couleurs, rayons, rythme : tokens Kosmio uniquement (`design/tokens.md`).
 
+## Compteur de la hero
+
+Le build additionne le champ `counted` des rapports de consommation de `.tokenhood/usage/` et compte les missions `integrated` ou `closed` de `.tokenhood/missions/`. Les chiffres sont figés à chaque déploiement : un nouveau rapport fusionné sur `main` redéploie la landing (chemins surveillés : `landing/**`, `design/**`, `.tokenhood/**`). Sans rapport, le compteur n'apparaît pas.
+
 ## Formulaire d'inscription (Brevo)
 
 Tant qu'aucune URL d'action n'est fournie, le bloc « Rejoindre » renvoie vers GitHub Discussions. Pour l'activer :
@@ -63,7 +67,7 @@ Le build refuse toute URL qui n'est pas en `https://*.sibforms.com`, seule desti
 | Domaine | `https://tokenhood.kosm.io` |
 | Healthcheck | chemin `/healthz`, port `8080` |
 | Variable de build | `BREVO_FORM_ACTION` (cocher « Build Variable ») |
-| Watch paths (facultatif) | `landing/**`, `design/**` |
+| Watch paths | `landing/**`, `design/**`, `.tokenhood/**` |
 
 Le build Docker exécute les tests avant de générer le site : une régression bloque le déploiement. L'image tourne en utilisateur non root et ne contient aucun secret.
 

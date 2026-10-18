@@ -1,0 +1,12 @@
+# Invalide : une estimation ne peut pas se présenter comme une mesure, et la période doit être datée.
+schema_version: "2.1"
+missions: [TH-104]
+contribution: {kind: verification}
+contributor: exemple-dev
+agent: {client: codex-cli, model_family: gpt}
+period: {start: hier, end: "2026-10-24T14:41:50Z"}
+tokens: {input: 0, output: 20000, cache_creation: 0, cache_read: 0}
+counted: 20000
+method: estimate
+nature: measured
+evidence: "Estimation à la louche."

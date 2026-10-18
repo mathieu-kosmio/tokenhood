@@ -5,6 +5,7 @@ import { createHash } from 'node:crypto';
 import path from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { createRequire } from 'node:module';
+import { parse as parseYaml } from 'yaml';
 import { localize } from './src/typo.mjs';
 import { layout } from './src/layout.mjs';
 import { home } from './src/home.mjs';
@@ -36,6 +37,28 @@ export async function loadConfig(env = process.env) {
     }
   }
   return config;
+}
+
+// Chiffres publics tirés du dépôt : tokens déclarés dans .tokenhood/usage/ (champ counted)
+// et missions intégrées dans .tokenhood/missions/.
+export async function loadStats(repo = REPO) {
+  const read = async (dir) => {
+    const full = path.join(repo, dir);
+    let files = [];
+    try {
+      files = (await readdir(full)).filter((f) => /\.ya?ml$/.test(f));
+    } catch {
+      return [];
+    }
+    return Promise.all(files.map(async (f) => parseYaml(await readFile(path.join(full, f), 'utf8'))));
+  };
+  const reports = await read('.tokenhood/usage');
+  const missions = await read('.tokenhood/missions');
+  return {
+    tokens: reports.reduce((sum, r) => sum + (Number.isInteger(r?.counted) ? r.counted : 0), 0),
+    reports: reports.length,
+    integrated: missions.filter((m) => ['integrated', 'closed'].includes(m?.status)).length,
+  };
 }
 
 export async function loadLocales(config) {
@@ -85,9 +108,10 @@ async function writePage(outDir, route, content) {
   return path.posix.join(route, 'index.html');
 }
 
-export async function build({ outDir = path.join(ROOT, 'dist'), env = process.env } = {}) {
+export async function build({ outDir = path.join(ROOT, 'dist'), env = process.env, repo = REPO } = {}) {
   const config = await loadConfig(env);
   const locales = await loadLocales(config);
+  const stats = await loadStats(repo);
 
   await rm(outDir, { recursive: true, force: true });
   await mkdir(path.join(outDir, 'assets'), { recursive: true });
@@ -110,7 +134,7 @@ export async function build({ outDir = path.join(ROOT, 'dist'), env = process.en
     await copyFile(path.join(ROOT, 'public', file), path.join(outDir, file));
   }
 
-  const ctxFor = (lang, page) => ({ lang, page, config, assets, t: localize(lang, locales[lang]) });
+  const ctxFor = (lang, page) => ({ lang, page, config, assets, stats, t: localize(lang, locales[lang]) });
   const pages = [];
   for (const lang of config.langs) {
     const r = config.routes;
@@ -138,7 +162,7 @@ export async function build({ outDir = path.join(ROOT, 'dist'), env = process.en
   );
   await writeFile(path.join(outDir, 'robots.txt'), `User-agent: *\nAllow: /\n\nSitemap: ${config.siteUrl}/sitemap.xml\n`);
 
-  return { outDir, pages, config, locales };
+  return { outDir, pages, config, locales, stats };
 }
 
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {

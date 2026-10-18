@@ -26,6 +26,9 @@ jobs:
       - name: Tests du validateur
         working-directory: tools/validate
         run: npm test
+      - name: Tests de l'outil de mesure des tokens
+        working-directory: tools/usage
+        run: npm test
       - name: Valider le manifeste, les politiques, les missions et les exemples
         run: node tools/validate/validate.mjs .
       - name: Vérifier que la validation échoue sur une mission invalide

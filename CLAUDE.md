@@ -71,3 +71,4 @@ TH-001 (spécifications, PR #2), TH-002 (schémas, #3), TH-003 (CI de validation
 ## Conventions de commit
 
 - DCO : `git commit -s` ; trailer `Assisted-by: <client/modèle>`.
+- **Rapport de consommation à chaque contribution** (`contributions.usage_report: required`) : un fichier `.tokenhood/usage/<date>-<mission>-<kind>.yaml` conforme à `schemas/usage-report.schema.json`, joint à la PR. Avec Claude Code : `node tools/usage/claude-code.mjs --transcript ~/.claude/projects/<dossier>/<session>.jsonl --mission TH-xxx --kind production --contributor <compte> --pr <n>` (fenêtres `--since`/`--until`/`--exclude` si la session couvre plusieurs missions). `counted` = input + cache_creation + output ; les lectures de cache sont déclarées mais non comptées. La CI refuse une mission intégrée sans rapport ; la landing affiche le total.

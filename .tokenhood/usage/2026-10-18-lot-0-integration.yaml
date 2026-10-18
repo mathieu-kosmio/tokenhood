@@ -1,0 +1,24 @@
+schema_version: "2.1"
+missions: [TH-001, TH-002, TH-003, TH-007, TH-013, TH-017, TH-101]
+contribution:
+  kind: integration
+  pull_requests: [1, 2, 3, 4, 5, 6, 7, 8]
+contributor: mathieu-kosmio
+agent:
+  client: claude-code
+  client_version: "2.1.299"
+  model_family: claude
+  model: claude-opus-5-5
+period:
+  start: "2026-10-18T08:17:33.950Z"
+  end: "2026-10-18T08:41:11.542Z"
+tokens:
+  input: 116
+  output: 33134
+  cache_creation: 643103
+  cache_read: 35610692
+counted: 676353
+method: client_transcript
+nature: declared
+evidence: "Transcription Claude Code de la session, 56 réponses comptées une fois chacune (tools/usage/claude-code.mjs)."
+notes: "Rapport rétroactif (TH-019) : tokens de la session de l'agent du porteur, répartis entre missions par fenêtres de la transcription, bornées par les commits de chaque mission."

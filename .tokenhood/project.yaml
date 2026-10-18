@@ -30,3 +30,6 @@ contributions:
   require_human_merge: true
   dco: true
   ai_attribution_trailer: Assisted-by
+  usage_report: required      # chaque contribution renvoie ses tokens utilisés (schemas/usage-report.schema.json)
+usage:
+  directory: .tokenhood/usage/

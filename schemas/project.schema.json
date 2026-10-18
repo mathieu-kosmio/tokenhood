@@ -4,17 +4,39 @@
   "title": "Tokenhood · manifeste du projet",
   "description": "Fichier .tokenhood/project.yaml d'un projet sous convention. Référence : docs/specs/annexes-formats.md.",
   "type": "object",
-  "required": ["schema_version", "project", "missions", "policies", "flow_limits", "contributions"],
+  "required": [
+    "schema_version",
+    "project",
+    "missions",
+    "policies",
+    "flow_limits",
+    "contributions"
+  ],
   "additionalProperties": false,
   "properties": {
-    "schema_version": { "$ref": "common.schema.json#/$defs/schemaVersion" },
+    "schema_version": {
+      "$ref": "common.schema.json#/$defs/schemaVersion"
+    },
     "project": {
       "type": "object",
-      "required": ["id", "name", "license", "languages", "repository", "contract"],
+      "required": [
+        "id",
+        "name",
+        "license",
+        "languages",
+        "repository",
+        "contract"
+      ],
       "additionalProperties": false,
       "properties": {
-        "id": { "type": "string", "pattern": "^[a-z0-9][a-z0-9-]{1,62}$" },
-        "name": { "type": "string", "minLength": 1 },
+        "id": {
+          "type": "string",
+          "pattern": "^[a-z0-9][a-z0-9-]{1,62}$"
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
         "license": {
           "description": "Identifiant SPDX, ou TBD tant que la gouvernance n'a pas tranché.",
           "type": "string",
@@ -24,39 +46,78 @@
           "type": "array",
           "minItems": 1,
           "uniqueItems": true,
-          "items": { "$ref": "common.schema.json#/$defs/lang" }
+          "items": {
+            "$ref": "common.schema.json#/$defs/lang"
+          }
         },
         "repository": {
           "type": "object",
-          "required": ["provider", "url"],
+          "required": [
+            "provider",
+            "url"
+          ],
           "additionalProperties": false,
           "properties": {
-            "provider": { "enum": ["github", "gitlab", "forgejo"] },
-            "url": { "type": "string", "format": "uri", "pattern": "^https://" }
+            "provider": {
+              "enum": [
+                "github",
+                "gitlab",
+                "forgejo"
+              ]
+            },
+            "url": {
+              "type": "string",
+              "format": "uri",
+              "pattern": "^https://"
+            }
           }
         },
         "contract": {
           "type": "object",
-          "required": ["id", "status"],
+          "required": [
+            "id",
+            "status"
+          ],
           "additionalProperties": false,
           "properties": {
-            "id": { "type": "string", "pattern": "^CTR-[0-9]{4}-[0-9]{3}$" },
-            "status": { "enum": ["bootstrap", "active", "suspended", "ended"] }
+            "id": {
+              "type": "string",
+              "pattern": "^CTR-[0-9]{4}-[0-9]{3}$"
+            },
+            "status": {
+              "enum": [
+                "bootstrap",
+                "active",
+                "suspended",
+                "ended"
+              ]
+            }
           }
         }
       }
     },
     "missions": {
       "type": "object",
-      "required": ["directory"],
+      "required": [
+        "directory"
+      ],
       "additionalProperties": false,
       "properties": {
-        "directory": { "$ref": "common.schema.json#/$defs/relativePath" },
+        "directory": {
+          "$ref": "common.schema.json#/$defs/relativePath"
+        },
         "import_from_issues": {
           "type": "object",
-          "required": ["label"],
+          "required": [
+            "label"
+          ],
           "additionalProperties": false,
-          "properties": { "label": { "type": "string", "minLength": 1 } }
+          "properties": {
+            "label": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
         }
       }
     },
@@ -64,48 +125,103 @@
       "type": "object",
       "additionalProperties": false,
       "properties": {
-        "directory": { "$ref": "common.schema.json#/$defs/relativePath" },
+        "directory": {
+          "$ref": "common.schema.json#/$defs/relativePath"
+        },
         "platform": {
           "type": "array",
-          "items": { "type": "string", "pattern": "^[a-z0-9][a-z0-9-]*(@[0-9]+(\\.[0-9]+){0,2})?$" }
+          "items": {
+            "type": "string",
+            "pattern": "^[a-z0-9][a-z0-9-]*(@[0-9]+(\\.[0-9]+){0,2})?$"
+          }
         }
       }
     },
     "policies": {
       "type": "object",
-      "required": ["security", "review"],
+      "required": [
+        "security",
+        "review"
+      ],
       "additionalProperties": false,
       "properties": {
-        "security": { "$ref": "common.schema.json#/$defs/relativePath" },
-        "review": { "$ref": "common.schema.json#/$defs/relativePath" }
+        "security": {
+          "$ref": "common.schema.json#/$defs/relativePath"
+        },
+        "review": {
+          "$ref": "common.schema.json#/$defs/relativePath"
+        }
       }
     },
     "flow_limits": {
       "description": "Plafonds de flux du projet (docs/specs/valeur-nette.md).",
       "type": "object",
-      "required": ["max_in_production", "max_awaiting_review_or_integration"],
+      "required": [
+        "max_in_production",
+        "max_awaiting_review_or_integration"
+      ],
       "additionalProperties": false,
       "properties": {
-        "max_in_production": { "type": "integer", "minimum": 1 },
-        "max_awaiting_review_or_integration": { "type": "integer", "minimum": 1 }
+        "max_in_production": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "max_awaiting_review_or_integration": {
+          "type": "integer",
+          "minimum": 1
+        }
       }
     },
     "feedback": {
       "type": "object",
       "additionalProperties": false,
       "properties": {
-        "after_integration_days": { "type": "integer", "minimum": 1 }
+        "after_integration_days": {
+          "type": "integer",
+          "minimum": 1
+        }
       }
     },
     "contributions": {
       "type": "object",
-      "required": ["direct_push", "require_human_merge"],
+      "required": [
+        "direct_push",
+        "require_human_merge"
+      ],
       "additionalProperties": false,
       "properties": {
-        "direct_push": { "const": false },
-        "require_human_merge": { "const": true },
-        "dco": { "type": "boolean" },
-        "ai_attribution_trailer": { "type": "string", "pattern": "^[A-Z][A-Za-z-]*$" }
+        "direct_push": {
+          "const": false
+        },
+        "require_human_merge": {
+          "const": true
+        },
+        "dco": {
+          "type": "boolean"
+        },
+        "ai_attribution_trailer": {
+          "type": "string",
+          "pattern": "^[A-Z][A-Za-z-]*$"
+        },
+        "usage_report": {
+          "description": "required : chaque contribution renvoie un rapport de consommation (schemas/usage-report.schema.json), et toute mission intégrée en a au moins un.",
+          "enum": [
+            "required",
+            "optional"
+          ]
+        }
+      }
+    },
+    "usage": {
+      "type": "object",
+      "required": [
+        "directory"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "directory": {
+          "$ref": "common.schema.json#/$defs/relativePath"
+        }
       }
     }
   }

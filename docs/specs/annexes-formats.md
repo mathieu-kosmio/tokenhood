@@ -154,6 +154,31 @@ conduct: continue               # continue | switch_mission | stop
 blocking: false
 ```
 
+**Rapport de consommation** (`.tokenhood/usage/2026-10-24-TH-104-production.yaml`, renvoyé à chaque contribution ; outil `report_usage` après l'amorçage)
+
+```yaml
+schema_version: "2.1"
+missions: [TH-104]
+contribution:
+  kind: production              # production | verification | drafting | integration
+  pull_requests: [42]
+  attempt: att_01JB7Q
+contributor: exemple-dev
+agent:
+  client: claude-code
+  client_version: "2.1.299"
+  model_family: claude
+  model: claude-opus-5-5
+period: {start: "2026-10-24T13:02:11Z", end: "2026-10-24T14:41:50Z"}
+tokens: {input: 1204, output: 86250, cache_creation: 412300, cache_read: 9812400}
+counted: 499754                 # input + cache_creation + output ; lectures de cache non comptées
+method: client_transcript       # client_transcript | provider_api | client_counter | estimate
+nature: declared                # declared | measured | estimated
+evidence: Transcription Claude Code de la session, réponses comptées une fois chacune.
+```
+
+Le manifeste rend ce rapport obligatoire (`contributions.usage_report: required`) : la CI refuse une mission intégrée sans rapport. La somme des champs `counted` est publiée comme total des tokens offerts, avec sa nature.
+
 ---
 
 ← [Risques et questions ouvertes](risques-et-questions-ouvertes.md) · [Sommaire](README.md) · [Sources](sources.md) →

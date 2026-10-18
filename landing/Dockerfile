@@ -9,6 +9,7 @@ WORKDIR /repo/landing
 COPY landing/package.json landing/package-lock.json ./
 RUN npm ci --ignore-scripts --no-audit --no-fund
 COPY design/ /repo/design/
+COPY .tokenhood/ /repo/.tokenhood/
 COPY landing/ ./
 ARG BREVO_FORM_ACTION=""
 RUN npm test && BREVO_FORM_ACTION="$BREVO_FORM_ACTION" npm run build

@@ -5,7 +5,7 @@ import assert from 'node:assert/strict';
 import { mkdtemp, readFile, rm, stat } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
-import { build, loadConfig, loadLocales } from '../build.mjs';
+import { build, loadConfig, loadLocales, loadStats } from '../build.mjs';
 import { localize } from '../src/typo.mjs';
 
 const ACTION = 'https://example.sibforms.com/serve/TEST';
@@ -72,7 +72,10 @@ test("aucune chaîne d'interface en dur : tout texte visible vient des locales",
         const texts = [...body.matchAll(/>([^<]+)</g)].map((m) => decode(m[1]).trim()).filter(Boolean);
         const attrs = [...doc.matchAll(/\s(?:aria-label|placeholder|alt|title)="([^"]*)"/g)].map((m) => decode(m[1]));
         const titles = [...doc.matchAll(/<title>([^<]*)<\/title>/g)].map((m) => decode(m[1]));
+        // Seule exception : un nombre mis en forme par Intl (« 2,6 M », « 2.6M », « 8 »).
+        const isNumber = (text) => /^[\d\s.,\u00a0\u202f]+\s?[kKMB]?$/u.test(text);
         for (const text of [...texts, ...attrs, ...titles]) {
+          if (isNumber(text)) continue;
           assert.ok(known.some((k) => k.includes(text)), `${page} : « ${text} » ne vient d'aucune locale ${lang}`);
         }
       }
@@ -153,5 +156,31 @@ test('les alternatives hreflang sont réciproques', async () => {
         assert.match(doc, new RegExp(`hreflang="${other}" href="${config.siteUrl}${byLang[other]}"`));
       }
     }
+  }
+});
+
+test('la hero affiche les tokens déclarés et les missions intégrées du dépôt', async () => {
+  const stats = await loadStats();
+  assert.ok(stats.tokens > 0 && stats.reports > 0 && stats.integrated > 0, JSON.stringify(stats));
+  const fr = await read(plain, 'index.html');
+  const en = await read(plain, 'en/index.html');
+  for (const doc of [fr, en]) {
+    assert.match(doc, new RegExp(`<data value="${stats.tokens}">`));
+    assert.match(doc, new RegExp(`<data value="${stats.integrated}">${stats.integrated}</data>`));
+    assert.match(doc, /href="https:\/\/github\.com\/mathieu-kosmio\/tokenhood\/tree\/main\/\.tokenhood\/usage"/);
+  }
+  assert.match(fr, /<data value="\d+">[\d,]+\u00a0M<\/data>/);
+  assert.match(en, /<data value="\d+">[\d.]+M<\/data>/);
+});
+
+test('sans rapport de consommation, la hero n\'affiche pas de compteur', async () => {
+  const empty = await mkdtemp(path.join(tmpdir(), 'th-repo-vide-'));
+  const b = await build({ outDir: await mkdtemp(path.join(tmpdir(), 'th-landing-')), env: {}, repo: empty });
+  try {
+    assert.equal(b.stats.tokens, 0);
+    assert.doesNotMatch(await read(b, 'index.html'), /th-stats/);
+  } finally {
+    await rm(b.outDir, { recursive: true, force: true });
+    await rm(empty, { recursive: true, force: true });
   }
 });

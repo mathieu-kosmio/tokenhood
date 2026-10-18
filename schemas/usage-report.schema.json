@@ -1,0 +1,88 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://tokenhood.kosm.io/schemas/2.1/usage-report.schema.json",
+  "title": "Tokenhood · rapport de consommation d'une contribution",
+  "description": "Renvoyé à chaque contribution (production, vérification, cadrage, intégration) : les tokens réellement utilisés, leur méthode de mesure et leur nature. Fichier .tokenhood/usage/<date>-<mission>-<kind>.yaml pendant l'amorçage, outil report_usage ensuite. Référence : docs/specs/annexes-formats.md, docs/specs/capacite.md.",
+  "type": "object",
+  "required": ["schema_version", "missions", "contribution", "contributor", "agent", "period", "tokens", "counted", "method", "nature", "evidence"],
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": { "$ref": "common.schema.json#/$defs/schemaVersion" },
+    "missions": {
+      "description": "Mission ou missions servies par cette contribution.",
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": { "$ref": "common.schema.json#/$defs/missionId" }
+    },
+    "contribution": {
+      "type": "object",
+      "required": ["kind"],
+      "additionalProperties": false,
+      "properties": {
+        "kind": { "enum": ["production", "verification", "drafting", "integration"] },
+        "pull_requests": { "type": "array", "items": { "type": "integer", "minimum": 1 } },
+        "attempt": { "$ref": "common.schema.json#/$defs/attemptId" },
+        "submission": { "$ref": "common.schema.json#/$defs/submissionId" }
+      }
+    },
+    "contributor": {
+      "description": "Identifiant public du contributeur responsable de l'agent (compte de forge).",
+      "type": "string",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9-]{0,38}$"
+    },
+    "agent": {
+      "type": "object",
+      "required": ["client", "model_family"],
+      "additionalProperties": false,
+      "properties": {
+        "client": { "type": "string", "pattern": "^[a-z0-9][a-z0-9-]*$" },
+        "client_version": { "type": "string", "minLength": 1 },
+        "model_family": { "enum": ["claude", "gpt", "gemini", "mistral", "llama", "qwen", "deepseek", "other"] },
+        "model": { "type": "string", "minLength": 1 }
+      }
+    },
+    "period": {
+      "type": "object",
+      "required": ["start", "end"],
+      "additionalProperties": false,
+      "properties": {
+        "start": { "type": "string", "format": "date-time" },
+        "end": { "type": "string", "format": "date-time" }
+      }
+    },
+    "tokens": {
+      "description": "Décompte brut par catégorie, conservé pour un futur barème en tokens-équivalents.",
+      "type": "object",
+      "required": ["input", "output", "cache_creation", "cache_read"],
+      "additionalProperties": false,
+      "properties": {
+        "input": { "type": "integer", "minimum": 0 },
+        "output": { "type": "integer", "minimum": 0 },
+        "cache_creation": { "type": "integer", "minimum": 0 },
+        "cache_read": { "type": "integer", "minimum": 0 }
+      }
+    },
+    "counted": {
+      "description": "Tokens comptés comme offerts : input + cache_creation + output. Les lectures de cache sont conservées mais non comptées.",
+      "type": "integer",
+      "minimum": 0
+    },
+    "method": {
+      "description": "client_transcript : journal local du client ; provider_api : console ou API du fournisseur ; client_counter : compteur affiché par le client ; estimate : estimation.",
+      "enum": ["client_transcript", "provider_api", "client_counter", "estimate"]
+    },
+    "nature": {
+      "description": "Nature du chiffre (docs/specs/gouvernance.md) : déclaré par le contributeur, mesuré par la plateforme, ou estimé.",
+      "enum": ["declared", "measured", "estimated"]
+    },
+    "evidence": { "type": "string", "minLength": 1 },
+    "notes": { "type": "string" }
+  },
+  "allOf": [
+    {
+      "if": { "properties": { "method": { "const": "estimate" } }, "required": ["method"] },
+      "then": { "properties": { "nature": { "const": "estimated" } } }
+    }
+  ]
+}
