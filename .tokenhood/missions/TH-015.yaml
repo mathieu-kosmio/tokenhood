@@ -8,7 +8,7 @@ title:
 type: code
 objective: "Mettre en place tests, gitleaks, Trivy, audit des dépendances et contrôle d'absence de SDK de LLM ; le déploiement automatique est assuré par le porteur."
 scope:
-  paths: [.github/workflows/]
+  paths: [.github/workflows/, tools/no-llm-sdk/, CLAUDE.md, .tokenhood/missions/TH-015.yaml]
 inputs:
   paths: [docs/specs/plan-de-developpement.md, docs/specs/securite-et-conformite.md]
 outputs:
@@ -34,4 +34,4 @@ verification:
   reviewers: 1
   prefer_different_model_family: false
   maintainer_approval: true
-status: open
+status: in_progress

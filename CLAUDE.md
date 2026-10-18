@@ -24,7 +24,7 @@ Principes non négociables :
 - Lot 0 (amorçage) en cours ; missions TH-001 à TH-017 publiées, 6 intégrées ; TH-101 (lot 1) intégrée en avance.
 - Dépôt public, licence non encore choisie (AGPL-3.0 proposée).
 - Dépôt réglé : description, site, sujets, labels, Discussions activées. Les catégories Clarifications, Décisions, Propositions restent à créer dans l'interface GitHub (aucune API).
-- `main` protégée : PR obligatoire (y compris pour les administrateurs), historique linéaire (fusion en rebase ou squash), conversations résolues, ni force-push ni suppression. Zéro approbation requise tant que le porteur est seul mainteneur ; statuts requis à activer avec TH-015 (workflows `tokenhood`, `ci`, `image`, `landing`).
+- `main` protégée : PR obligatoire (y compris pour les administrateurs), historique linéaire (fusion en rebase ou squash), conversations résolues, ni force-push ni suppression. Zéro approbation requise tant que le porteur est seul mainteneur ; statuts requis à activer par le porteur après la fusion de TH-015 (liste dans « Sécurité et statuts requis »).
 - La fusion des PR revient au porteur. Le 18/10/2026, il a autorisé l'agent à fusionner la file en rebase après CI verte ; sans autorisation explicite, l'agent prépare, vérifie et documente, il ne fusionne pas.
 
 ### Intégré sur `main` le 18/10/2026
@@ -46,6 +46,26 @@ TH-001 (spécifications, PR #2), TH-002 (schémas, #3), TH-003 (CI de validation
 - Scripts d'installation des dépendances refusés (`allowBuilds`) ; politique d'âge minimal des versions de pnpm à respecter (épingler une version plus ancienne plutôt qu'ajouter une exception).
 - Image : `Dockerfile` à la racine (api et web), `compose.yaml` (api, web, PostgreSQL) ; essai en CI par le workflow `image` (Docker indisponible sur le poste du porteur).
 
+## Sécurité et statuts requis (TH-015)
+
+- Workflow `security`, à chaque PR et sur `main` : gitleaks sur les commits de la PR (valeurs masquées dans le journal) ; Trivy sur l'image `tokenhood-app` et sur le dépôt (échec sur une vulnérabilité HIGH ou CRITICAL corrigeable) ; `pnpm audit --prod` et `npm audit --omit=dev` pour chaque `package-lock.json` (échec dès `moderate`) ; contrôle d'absence de SDK de fournisseur de LLM, avec son auto-vérification sur une copie du dépôt où `openai` est ajouté.
+- Images gitleaks et Trivy épinglées par version et par empreinte `sha256` dans `security.yml`, jamais par étiquette mobile (étiquettes de Trivy détournées en mars 2026). Pour les mettre à jour : version publiée depuis au moins deux semaines, empreinte relevée sur le registre.
+- Contrôle LLM en local : `node tools/no-llm-sdk/check.mjs` ; tests : `node --test 'tools/no-llm-sdk/test/*.test.mjs'`. La liste des paquets interdits est en tête de `check.mjs`.
+
+Statuts à rendre obligatoires sur `main` (réglage de la protection de branche, source GitHub Actions) :
+
+| Workflow | Statuts (noms des jobs) |
+|---|---|
+| `tokenhood` | `validation .tokenhood` |
+| `ci` | `monorepo` |
+| `image` | `compose` |
+| `landing` | `test`, `image` |
+| `security` | `gitleaks`, `trivy-image`, `trivy-repo`, `deps-audit`, `no-llm-sdk` |
+
+- Ne les rendre obligatoires **qu'après la fusion de TH-015 sur `main`** : un statut requis qu'aucun workflow de la PR ne produit la laisse bloquée (« Expected — Waiting for status to be reported »). Une PR ouverte avant cette fusion doit être rebasée sur `main` pour recevoir les jobs de `security`.
+- Aucun workflow requis ne filtre les PR par chemins (`paths:`), sinon les PR hors de ces chemins attendent le statut indéfiniment ; `landing` tourne donc sur toutes les PR.
+- Renommer un job renomme son statut : mettre à jour la protection de `main` dans la foulée. Ce réglage revient au porteur, jamais à l'agent.
+
 ## Déploiement
 
 - Coolify, déploiement automatique à chaque commit sur `main` (mis en place par Mathieu).
@@ -66,7 +86,8 @@ TH-001 (spécifications, PR #2), TH-002 (schémas, #3), TH-003 (CI de validation
 1. Plateforme en ligne sur app. et api.tokenhood.kosm.io (TH-018) ; landing sur tokenhood.kosm.io. Interface Coolify : http://51.91.166.222:8000, projet « Tools & Concepts ».
 2. Porteur : formulaire Brevo et `BREVO_FORM_ACTION` ; catégories Discussions ; licence (`LICENSE`, README, `project.yaml`, FAQ de la landing).
 3. Relire les textes de la landing, les pages légales et la traduction EN des spécifications (statut `machine`).
-4. Missions suivantes : TH-015 (scans et statuts requis), TH-004 et TH-005 (skills), TH-009 (contrats du protocole), TH-006, TH-010, TH-011 ; côté MVP, TH-102 (identité, OAuth GitHub, `packages/db` avec Drizzle) et le stockage S3 laissé hors de TH-013.
+4. TH-015 (scans) en revue ; après sa fusion, le porteur rend obligatoires les statuts listés plus haut.
+5. Missions suivantes : TH-004 et TH-005 (skills), TH-009 (contrats du protocole), TH-006, TH-010, TH-011 ; côté MVP, TH-102 (identité, OAuth GitHub, `packages/db` avec Drizzle) et le stockage S3 laissé hors de TH-013.
 
 ## Conventions de commit
 
