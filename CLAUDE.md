@@ -50,7 +50,7 @@ TH-001 (spécifications, PR #2), TH-002 (schémas, #3), TH-003 (CI de validation
 
 - Coolify, déploiement automatique à chaque commit sur `main` (mis en place par Mathieu).
 - Page publique au démarrage : `tokenhood.kosm.io`. Landing : build pack Dockerfile, base directory `/`, Dockerfile `/landing/Dockerfile`, port 8080, healthcheck `/healthz`.
-- Plateforme : ressource Coolify Docker Compose depuis `compose.yaml`, domaines `app.` (web:3000) et `api.` (api:3000), variable secrète `POSTGRES_PASSWORD`.
+- Plateforme : ressource Coolify Docker Compose depuis `compose.yaml`, domaines `app.tokenhood.kosm.io` (web:3000) et `api.tokenhood.kosm.io` (api:3000), mot de passe PostgreSQL généré par Coolify (`SERVICE_PASSWORD_POSTGRES`). DNS : enregistrements A chez Gandi vers 51.91.166.222.
 - Plus de push direct sur `main` (protection active) : PR, CI au vert, revue croisée, approbation du porteur.
 
 ## Design
@@ -63,7 +63,7 @@ TH-001 (spécifications, PR #2), TH-002 (schémas, #3), TH-003 (CI de validation
 
 ## Prochaines étapes
 
-1. Porteur : brancher Coolify. Landing : application Dockerfile, base directory `/`, Dockerfile `/landing/Dockerfile`, port 8080, healthcheck `/healthz`, domaine `tokenhood.kosm.io`. Plateforme : ressource Docker Compose sur `compose.yaml`, `POSTGRES_PASSWORD`, domaines `app.` et `api.`. Interface Coolify : http://51.91.166.222:8000.
+1. Plateforme en ligne sur app. et api.tokenhood.kosm.io (TH-018) ; landing sur tokenhood.kosm.io. Interface Coolify : http://51.91.166.222:8000, projet « Tools & Concepts ».
 2. Porteur : formulaire Brevo et `BREVO_FORM_ACTION` ; catégories Discussions ; licence (`LICENSE`, README, `project.yaml`, FAQ de la landing).
 3. Relire les textes de la landing, les pages légales et la traduction EN des spécifications (statut `machine`).
 4. Missions suivantes : TH-015 (scans et statuts requis), TH-004 et TH-005 (skills), TH-009 (contrats du protocole), TH-006, TH-010, TH-011 ; côté MVP, TH-102 (identité, OAuth GitHub, `packages/db` avec Drizzle) et le stockage S3 laissé hors de TH-013.

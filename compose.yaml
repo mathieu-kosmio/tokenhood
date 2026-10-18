@@ -1,8 +1,9 @@
 # Compose de référence de la plateforme (TH-013), utilisé tel quel par Coolify (ressource Docker Compose).
 # Aucun port publié : le proxy de Coolify atteint les services sur le réseau interne.
 # Domaines à déclarer dans Coolify : app. -> web:3000, api. -> api:3000.
-# Secret requis : POSTGRES_PASSWORD (variable d'environnement de la ressource, jamais dans le dépôt).
-# En local : docker compose -f compose.yaml -f compose.local.yaml up --build
+# Secret : SERVICE_PASSWORD_POSTGRES. Coolify le génère et le conserve lui-même (variable magique) ;
+# en local ou en CI, le fournir dans l'environnement. Jamais dans le dépôt.
+# En local : SERVICE_PASSWORD_POSTGRES=<valeur> docker compose -f compose.yaml -f compose.local.yaml up --build
 
 name: tokenhood
 
@@ -16,7 +17,7 @@ x-app: &app
     NODE_ENV: production
     PORT: '3000'
     LOG_LEVEL: ${LOG_LEVEL:-info}
-    DATABASE_URL: postgres://tokenhood:${POSTGRES_PASSWORD:?POSTGRES_PASSWORD est requis}@postgres:5432/tokenhood
+    DATABASE_URL: postgres://tokenhood:${SERVICE_PASSWORD_POSTGRES}@postgres:5432/tokenhood
 
 services:
   api:
@@ -45,7 +46,7 @@ services:
     environment:
       POSTGRES_DB: tokenhood
       POSTGRES_USER: tokenhood
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD est requis}
+      POSTGRES_PASSWORD: ${SERVICE_PASSWORD_POSTGRES}
     volumes:
       - pgdata:/var/lib/postgresql/data
     healthcheck:
