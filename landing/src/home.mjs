@@ -18,20 +18,29 @@ const sectionHead = (eyebrow, title) => html`<div class="th-section-head">
 const LOCALE = { fr: 'fr-FR', en: 'en-US' };
 const compact = (lang, n) => new Intl.NumberFormat(LOCALE[lang], { notation: 'compact', maximumFractionDigits: 1 }).format(n);
 
-function stats(ctx) {
+// Compteur public intégré à l'illustration : chiffre en grand dans le coin libre (bas droit),
+// légende avec la nature du chiffre sous l'image. Le SVG reste décoratif pour les lecteurs
+// d'écran : les mêmes chiffres sont lus dans la légende.
+function counter(ctx) {
   const { t, lang, config, stats: s } = ctx;
-  if (!s?.tokens) return '';
-  return html`<div class="th-stats">
-<dl class="th-stats__list" aria-label="${t.hero.statsLabel}">
-<div class="th-stat"><dt>${t.hero.statTokens}</dt><dd><data value="${s.tokens}">${compact(lang, s.tokens)}</data></dd></div>
-<div class="th-stat"><dt>${t.hero.statMissions}</dt><dd><data value="${s.integrated}">${s.integrated}</data></dd></div>
-</dl>
-<p class="th-stats__note">${t.hero.statNote} <a href="${config.links.usageReports}">${t.hero.statLink}</a></p>
-</div>`;
+  if (!s?.tokens) return { svg: '', caption: '' };
+  const tokens = compact(lang, s.tokens);
+  return {
+    svg: html`<g class="th-art-counter" aria-hidden="true">
+<text class="th-art-counter__value" x="444" y="414" text-anchor="end">${tokens}</text>
+<text class="th-art-counter__label" x="444" y="442" text-anchor="end">${t.hero.statTokens}</text>
+<text class="th-art-counter__missions" x="444" y="464" text-anchor="end"><tspan class="th-art-counter__number">${s.integrated}</tspan> <tspan>${t.hero.statMissions}</tspan></text>
+</g>`,
+    caption: html`<figcaption class="th-art-caption">
+<span class="sr-only"><data value="${s.tokens}">${tokens}</data> <span>${t.hero.statTokens}</span> <data value="${s.integrated}">${s.integrated}</data> <span>${t.hero.statMissions}</span></span>
+${t.hero.statNote} <a href="${config.links.usageReports}">${t.hero.statLink}</a>
+</figcaption>`,
+  };
 }
 
 function hero(ctx) {
   const { t } = ctx;
+  const art = counter(ctx);
   return html`<section class="th-hero">
 <div class="th-hero__inner">
 <div class="th-hero__text">
@@ -42,10 +51,9 @@ function hero(ctx) {
 <a class="th-btn th-btn--primary" href="${anchor(ctx, 'join')}" data-th-role="contributor">${t.hero.cta1}</a>
 <a class="th-btn th-btn--outline" href="${anchor(ctx, 'who')}">${t.hero.cta2}</a>
 </div>
-${stats(ctx)}
 <p class="th-hero__note">${swapSmall(20)}<span>${t.hero.note}</span></p>
 </div>
-<div class="th-hero__art">${heroArt(t.hero.artLabel)}</div>
+<figure class="th-hero__art">${heroArt(t.hero.artLabel, art.svg)}${art.caption}</figure>
 </div>
 </section>`;
 }
