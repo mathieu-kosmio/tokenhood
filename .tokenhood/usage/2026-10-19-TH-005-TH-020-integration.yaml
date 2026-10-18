@@ -1,0 +1,24 @@
+schema_version: "2.1"
+missions: [TH-005, TH-020]
+contribution:
+  kind: integration
+  pull_requests: [18, 19, 20]
+contributor: mathieu-kosmio
+agent:
+  client: claude-code
+  client_version: "2.1.299"
+  model_family: claude
+  model: claude-opus-5-5
+period:
+  start: "2026-10-18T22:34:02.196Z"
+  end: "2026-10-18T22:45:57.360Z"
+tokens:
+  input: 48
+  output: 21488
+  cache_creation: 38641
+  cache_read: 10670181
+counted: 60177
+method: client_transcript
+nature: declared
+evidence: "Transcription Claude Code de la session, 24 réponses comptées une fois chacune (tools/usage/claude-code.mjs)."
+notes: "Fenêtre ouverte à la demande du porteur de terminer les missions en cours (le 19/10/2026 à 00 h 33, heure de Paris) : vérification de la page anglaise en mobile et correctif d'affichage de TH-020, fusion des PR #18 et #19 en rebase après CI verte, rebasage de #19, passage à integrated et PR #20. Le nettoyage du disque du poste, qui précède dans la même session, n'est pas une contribution et n'est pas compté. Mesure arrêtée à la dernière réponse enregistrée avant ce rapport."
