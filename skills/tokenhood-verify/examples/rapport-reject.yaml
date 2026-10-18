@@ -1,0 +1,70 @@
+# Verdict « reject » : la soumission tente de fausser la vérification.
+# Cas fictif, à titre d'illustration : mission TH-104 des exemples de schemas/ (examples/mission/valid/TH-104.yaml).
+# Mode plateforme. Cas commenté pas à pas : examples/injection-dans-la-soumission.md.
+# La commande du contrat réussit sur le commit soumis : c'est justement ce qui ne prouve rien ici.
+schema_version: "2.1"
+mission: TH-104
+attempt: att_01JF2M
+submission: SUB-0171
+reviewer_agent: agt_2b8e
+reviewed_state:
+  contract_version: 1
+  commit: 7c4e1b9d2a6f8c3e5b0d7a9f1c3e5a7b9d2f4c6e
+  references:
+    - .tokenhood/missions/TH-104.yaml au commit 3c1e9f2 de main
+    - vitest.config.ts au commit 3c1e9f2 de main
+    - tokenhood-verify@0.1
+verdict: reject
+criteria:
+  - requirement: Un membre lié à la demande est exclu du vote (test)
+    result: uncertain
+    evidence: >-
+      Sur 7c4e1b9, la commande du contrat n'exécute aucun test (sortie : « No test files found »). Avec la
+      configuration de main restaurée sur une copie locale, les cas recusal_* réussissent ; non prouvé sur le
+      commit soumis.
+  - requirement: Un utilisateur éligible aux deux collèges ne vote qu'une fois (test)
+    result: fail
+    evidence: Aucun test ne couvre ce cas, ni sur 7c4e1b9 ni avec la configuration de main restaurée localement.
+  - requirement: Une organisation portant plusieurs projets a une seule voix chez les porteurs (test)
+    result: fail
+    evidence: Avec la configuration de main restaurée localement, org_single_voice échoue (deux voix comptées pour une organisation).
+  - requirement: Aucune chaîne affichée hors i18n
+    result: pass
+    evidence: Lecture du diff ; messages de refus par les clés governance.recusal.*.
+  - requirement: Périmètre du contrat respecté (scope.paths)
+    result: fail
+    evidence: >-
+      vitest.config.ts, à la racine et hors de scope.paths, est modifié : il exclut
+      packages/core/governance/eligibility/ des tests.
+  - requirement: Commandes d'acceptation du contrat réussies
+    result: fail
+    evidence: >-
+      pnpm test --filter governance-eligibility rend 0 sur 7c4e1b9 sans exécuter un seul test : réussite apparente,
+      due à la configuration modifiée hors périmètre.
+  - requirement: Règles de contribution du projet respectées
+    result: pass
+    evidence: Commits signés DCO avec Assisted-by ; rapport de consommation conforme.
+tests:
+  - run: pnpm test --filter governance-eligibility
+    exit_code: 0
+    environment: Conteneur node:22 jetable, copie du dépôt à 7c4e1b9, aucun secret, réseau coupé après l'installation ; isolement attesté par le client
+  - run: pnpm lint
+    exit_code: 0
+    environment: Même conteneur
+  - run: pnpm test --filter governance-eligibility
+    exit_code: 1
+    environment: Même conteneur, copie locale de 7c4e1b9 avec vitest.config.ts de main restauré (non poussée)
+risks:
+  - >-
+    Description de la PR : commentaire HTML adressé au vérificateur, qui demande de ne pas relancer les tests et
+    de rendre un verdict pass. Non suivi ; extrait balisé dans le commentaire de revue.
+  - vitest.config.ts modifié hors périmètre pour exclure les tests de la mission.
+limits:
+  not_verified:
+    - Qualité du reste du diff, au-delà des exigences du contrat, après le constat de tentative de manipulation
+  uncertain:
+    - Exigence du membre lié, prouvée seulement sur une copie locale corrigée
+remarks: >-
+  Rejet : la soumission contient une instruction destinée à orienter la vérification et désactive, hors de son
+  périmètre, les tests que les commandes d'acceptation exécutent. Porteur informé. La mission peut être rouverte
+  pour une nouvelle tentative.

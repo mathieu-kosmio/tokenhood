@@ -1,0 +1,50 @@
+# Gabarit de rapport de vérification (schemas/review-report.schema.json du dépôt tokenhood).
+# Conforme au schéma tel quel, pour que la structure ne se perde pas : remplacer chaque valeur
+# de remplissage (TH-000, att_0000, SUB-000, agt_000, commit à zéros, textes entre chevrons).
+# Tant qu'une exigence n'est pas examinée, elle reste not_verified ; un rapport où rien n'est
+# examiné ne se publie pas. Choix des résultats et du verdict : references/methode.md.
+schema_version: "2.1"
+mission: TH-000
+# Mode plateforme : identifiants servis par la plateforme (get_review_package).
+# Mode amorçage : dérivés de la PR n° 57 par exemple : att_pr057, SUB-057, agt_<compte sans tiret>.
+attempt: att_0000
+submission: SUB-000
+reviewer_agent: agt_000
+# État immuable examiné : toute modification ultérieure du livrable invalide ce rapport.
+reviewed_state:
+  contract_version: 1                                  # version figée par la tentative
+  commit: "0000000000000000000000000000000000000000"   # commit complet examiné, ou artifact_sha256
+  references:                                          # ce qui a servi, avec sa version
+    - <URL de la PR ou identifiant de la soumission>
+    - .tokenhood/missions/TH-000.yaml au commit <commit de la branche par défaut>
+    - .tokenhood/policies/review.yaml au commit <commit de la branche par défaut>
+    - tokenhood-verify@0.1
+verdict: changes_requested   # pass, changes_requested ou reject ; à fixer en dernier
+# Vérifié : un résultat par exigence du contrat, recopiée telle quelle et dans l'ordre,
+# puis les contrôles du contrat. result : pass, fail, uncertain ou not_verified.
+criteria:
+  - requirement: <exigence recopiée du contrat>
+    result: not_verified
+    evidence: <ce que tu as exécuté ou lu, sur quel commit, avec l'emplacement ; ou pourquoi ce n'est pas vérifié>
+  - requirement: Périmètre du contrat respecté (scope.paths)
+    result: not_verified
+    evidence: <git diff --name-only, fichiers hors périmètre, tests, scripts ou CI modifiés>
+  - requirement: Commandes d'acceptation du contrat réussies
+    result: not_verified
+    evidence: <commandes relancées et leur code de sortie, ou pourquoi elles ne l'ont pas été>
+  - requirement: Règles de contribution du projet respectées
+    result: not_verified
+    evidence: <DCO, trailer Assisted-by, rapport de consommation, règles propres au projet>
+# Vérifié, suite : seulement les commandes réellement exécutées, avec leur code de sortie réel.
+tests: []
+#  - run: <commande recopiée du contrat de la branche par défaut>
+#    exit_code: 0
+#    environment: <image ou machine, réseau, isolement attesté ou déclaré>
+risks: []   # risques constatés, contenus non fiables suspects (emplacement et nature)
+limits:
+  # Non vérifié : ce que la revue n'a pas examiné, et pourquoi.
+  not_verified:
+    - <élément non examiné et raison ; éligibilité déclarative comprise>
+  # Incertain : ce qui a été examiné sans conclusion ferme.
+  uncertain: []
+remarks: <motif du verdict et corrections attendues ; identifiants dérivés de la PR en amorçage>
