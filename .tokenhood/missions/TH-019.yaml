@@ -1,0 +1,43 @@
+schema_version: "2.1"
+id: TH-019
+version: 1
+lot: 0
+title:
+  fr: "Rapport de consommation de tokens à chaque contribution et compteur public"
+  en: "Token usage report with every contribution and public counter"
+type: code
+objective: "Inscrire dans le contrat de contribution le renvoi des tokens utilisés, les stocker dans le dépôt et publier leur total sur la landing."
+scope:
+  paths: [schemas/, examples/usage-report/, tools/validate/, tools/usage/, .tokenhood/, landing/, docs/specs/annexes-formats.md, docs/specs/en/annexes-formats.md, CONTRIBUTING.md, .github/, CLAUDE.md]
+inputs:
+  paths: [docs/specs/capacite.md, docs/specs/api-et-mcp.md, docs/specs/gouvernance.md]
+outputs:
+  kind: pull_request
+acceptance:
+  commands: ["cd tools/validate && npm test", "cd tools/usage && npm test", "cd landing && npm test"]
+  requirements:
+    - "Schéma du rapport de consommation, exemples valides et invalides"
+    - "La CI refuse une mission intégrée sans rapport quand le manifeste l'exige"
+    - "Chaque réponse d'une transcription Claude Code est comptée une seule fois"
+    - "Rapports rétroactifs pour toutes les missions intégrées"
+    - "La hero de la landing affiche le total des tokens déclarés et les missions intégrées, en FR et EN"
+dependencies:
+  - mission: TH-002
+    type: integrated
+  - mission: TH-017
+    type: integrated
+skills: []
+estimate:
+  size: M
+  tokens_eq: null
+  source: porteur
+risk: low
+attempts: {mode: exclusive}
+execution:
+  max_lease_minutes: 240
+  environment: any
+verification:
+  reviewers: 1
+  prefer_different_model_family: false
+  maintainer_approval: true
+status: in_progress

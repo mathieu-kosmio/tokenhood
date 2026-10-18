@@ -3,10 +3,10 @@ name: landing
 
 on:
   pull_request:
-    paths: ['landing/**', 'design/**', '.github/workflows/landing.yml']
+    paths: ['landing/**', 'design/**', '.tokenhood/**', '.github/workflows/landing.yml']
   push:
     branches: [main]
-    paths: ['landing/**', 'design/**', '.github/workflows/landing.yml']
+    paths: ['landing/**', 'design/**', '.tokenhood/**', '.github/workflows/landing.yml']
 
 permissions:
   contents: read

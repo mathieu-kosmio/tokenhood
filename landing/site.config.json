@@ -1,17 +1,30 @@
 {
   "siteUrl": "https://tokenhood.kosm.io",
   "defaultLang": "fr",
-  "langs": ["fr", "en"],
+  "langs": [
+    "fr",
+    "en"
+  ],
   "routes": {
-    "home": { "fr": "/", "en": "/en/" },
-    "legal": { "fr": "/mentions-legales/", "en": "/en/legal-notice/" },
-    "privacy": { "fr": "/confidentialite/", "en": "/en/privacy/" }
+    "home": {
+      "fr": "/",
+      "en": "/en/"
+    },
+    "legal": {
+      "fr": "/mentions-legales/",
+      "en": "/en/legal-notice/"
+    },
+    "privacy": {
+      "fr": "/confidentialite/",
+      "en": "/en/privacy/"
+    }
   },
   "links": {
     "repository": "https://github.com/mathieu-kosmio/tokenhood",
     "discussions": "https://github.com/mathieu-kosmio/tokenhood/discussions",
     "contributing": "https://github.com/mathieu-kosmio/tokenhood/blob/main/CONTRIBUTING.md",
-    "kosmio": "https://kosm.io"
+    "kosmio": "https://kosm.io",
+    "usageReports": "https://github.com/mathieu-kosmio/tokenhood/tree/main/.tokenhood/usage"
   },
   "form": {
     "provider": "brevo",

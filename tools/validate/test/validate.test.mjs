@@ -39,6 +39,8 @@ const EXPECTED = {
   'arbitration-request/invalid/continuer-en-bloquant.yaml': ['/blocking'],
   'policy-security/invalid/secrets-montes.yaml': ['/execution/secrets_mounted', '/forbidden'],
   'policy-review/invalid/revue-facultative.yaml': ['/cross_review/required', '/approval/merge_by'],
+  'usage-report/invalid/total-incoherent.yaml': ['/counted'],
+  'usage-report/invalid/estimation-mesuree.yaml': ['/nature', '/period/start'],
 };
 
 test('les exemples invalides échouent pour la raison attendue', async () => {
@@ -82,6 +84,28 @@ test('incohérences entre missions détectées', async () => {
     has('TH-003.yaml /id « TH-099 » ne correspond pas au nom du fichier');
     has('TH-004.yaml /dependencies mission(s) inconnue(s) : TH-404');
     has('TH-005.yaml YAML');
+  } finally {
+    await rm(root, { recursive: true, force: true });
+  }
+});
+
+test('une mission intégrée sans rapport de consommation est refusée quand le contrat l\'exige', async () => {
+  const root = await fakeRepo({
+    'TH-001.yaml': { id: 'TH-001', extra: 'status: integrated\n' },
+    'TH-002.yaml': { id: 'TH-002', extra: 'status: integrated\n' },
+  });
+  try {
+    const manifest = path.join(root, '.tokenhood/project.yaml');
+    const text = await readFile(manifest, 'utf8');
+    if (!text.includes('usage_report: required')) {
+      await writeFile(manifest, text.replace('  ai_attribution_trailer:', '  usage_report: required\n  ai_attribution_trailer:'));
+    }
+    await mkdir(path.join(root, '.tokenhood/usage'), { recursive: true });
+    const report = (await readFile(path.join(ROOT, 'examples/usage-report/valid/production.yaml'), 'utf8')).replace('missions: [TH-104]', 'missions: [TH-001]');
+    await writeFile(path.join(root, '.tokenhood/usage/2026-10-24-TH-001-production.yaml'), report);
+    const all = failures(await validateRepository(root, validators)).flatMap((r) => r.errors);
+    assert.ok(all.some((e) => e.includes('sans rapport de consommation : TH-002')), JSON.stringify(all));
+    assert.ok(!all.some((e) => e.includes('TH-001,')), JSON.stringify(all));
   } finally {
     await rm(root, { recursive: true, force: true });
   }

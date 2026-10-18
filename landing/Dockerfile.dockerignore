@@ -3,6 +3,8 @@
 *
 !design/kosmio.css
 !design/tokenhood.css
+!.tokenhood/missions/
+!.tokenhood/usage/
 !landing/
 landing/node_modules
 landing/dist

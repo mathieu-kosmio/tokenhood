@@ -14,6 +14,22 @@ const sectionHead = (eyebrow, title) => html`<div class="th-section-head">
 <h2 class="th-h2">${title}</h2>
 </div>`;
 
+// Nombres au format de la langue : 2,6 M en français, 2.6M en anglais.
+const LOCALE = { fr: 'fr-FR', en: 'en-US' };
+const compact = (lang, n) => new Intl.NumberFormat(LOCALE[lang], { notation: 'compact', maximumFractionDigits: 1 }).format(n);
+
+function stats(ctx) {
+  const { t, lang, config, stats: s } = ctx;
+  if (!s?.tokens) return '';
+  return html`<div class="th-stats">
+<dl class="th-stats__list" aria-label="${t.hero.statsLabel}">
+<div class="th-stat"><dt>${t.hero.statTokens}</dt><dd><data value="${s.tokens}">${compact(lang, s.tokens)}</data></dd></div>
+<div class="th-stat"><dt>${t.hero.statMissions}</dt><dd><data value="${s.integrated}">${s.integrated}</data></dd></div>
+</dl>
+<p class="th-stats__note">${t.hero.statNote} <a href="${config.links.usageReports}">${t.hero.statLink}</a></p>
+</div>`;
+}
+
 function hero(ctx) {
   const { t } = ctx;
   return html`<section class="th-hero">
@@ -26,6 +42,7 @@ function hero(ctx) {
 <a class="th-btn th-btn--primary" href="${anchor(ctx, 'join')}" data-th-role="contributor">${t.hero.cta1}</a>
 <a class="th-btn th-btn--outline" href="${anchor(ctx, 'who')}">${t.hero.cta2}</a>
 </div>
+${stats(ctx)}
 <p class="th-hero__note">${swapSmall(20)}<span>${t.hero.note}</span></p>
 </div>
 <div class="th-hero__art">${heroArt(t.hero.artLabel)}</div>

@@ -21,6 +21,7 @@ export const KINDS = {
   'arbitration-request': 'arbitration-request.schema.json',
   'policy-security': 'policy-security.schema.json',
   'policy-review': 'policy-review.schema.json',
+  'usage-report': 'usage-report.schema.json',
 };
 
 export async function loadValidators(root = DEFAULT_ROOT) {
@@ -58,6 +59,15 @@ const SEMANTIC = {
     d.verdict !== 'pass' && d.criteria.every((c) => c.result === 'pass') && d.remarks === undefined
       ? ['/verdict un verdict défavorable sans critère en échec doit être motivé dans remarks']
       : [],
+  'usage-report': (d) => {
+    const errors = [];
+    const { input, output, cache_creation: creation } = d.tokens;
+    if (d.counted !== input + creation + output) {
+      errors.push(`/counted ${d.counted} ≠ input + cache_creation + output (${input + creation + output})`);
+    }
+    if (d.period.end < d.period.start) errors.push('/period la fin précède le début');
+    return errors;
+  },
   mission: (d) => {
     const errors = [];
     const est = d.estimate?.tokens_eq;
@@ -147,6 +157,25 @@ export async function validateRepository(root = DEFAULT_ROOT, validators) {
     if (unknown.length) report.find((r) => r.file === path.relative(root, file)).errors.push(`/dependencies mission(s) inconnue(s) : ${unknown.join(', ')}`);
     graph.set(id, deps.filter((d) => missions.has(d)));
   }
+  // Rapports de consommation : un fichier par contribution, obligatoire si le manifeste l'exige.
+  const usageDir = path.join(root, manifest?.usage?.directory ?? '.tokenhood/usage/');
+  const reported = new Set();
+  for (const file of await yamlFiles(usageDir)) {
+    const errors = await validateFile(validators, 'usage-report', file);
+    const { data } = await readYaml(file);
+    for (const id of data?.missions ?? []) {
+      if (!missions.has(id)) errors.push(`/missions mission inconnue : ${id}`);
+      if (['production', 'integration'].includes(data?.contribution?.kind)) reported.add(id);
+    }
+    add(file, errors);
+  }
+  if (manifest?.contributions?.usage_report === 'required') {
+    const missing = [...missions.values()]
+      .filter(({ data }) => ['integrated', 'closed'].includes(data.status) && !reported.has(data.id))
+      .map(({ data }) => data.id);
+    if (missing.length) add(usageDir, [`mission(s) intégrée(s) sans rapport de consommation : ${missing.join(', ')}`]);
+  }
+
   const cycle = findCycle(graph);
   if (cycle) add(missionsDir, [`cycle de dépendances : ${cycle.join(' → ')}`]);
   return report;

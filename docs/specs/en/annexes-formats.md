@@ -157,6 +157,31 @@ conduct: continue               # continue | switch_mission | stop
 blocking: false
 ```
 
+**Usage report** (`.tokenhood/usage/2026-10-24-TH-104-production.yaml`, returned with every contribution; `report_usage` tool after the bootstrap)
+
+```yaml
+schema_version: "2.1"
+missions: [TH-104]
+contribution:
+  kind: production              # production | verification | drafting | integration
+  pull_requests: [42]
+  attempt: att_01JB7Q
+contributor: exemple-dev
+agent:
+  client: claude-code
+  client_version: "2.1.299"
+  model_family: claude
+  model: claude-opus-5-5
+period: {start: "2026-10-24T13:02:11Z", end: "2026-10-24T14:41:50Z"}
+tokens: {input: 1204, output: 86250, cache_creation: 412300, cache_read: 9812400}
+counted: 499754                 # input + cache_creation + output; cache reads not counted
+method: client_transcript       # client_transcript | provider_api | client_counter | estimate
+nature: declared                # declared | measured | estimated
+evidence: Claude Code session transcript, each response counted once.
+```
+
+The manifest makes this report mandatory (`contributions.usage_report: required`): CI rejects an integrated mission without a report. The sum of the `counted` fields is published as the total of tokens given, with its nature.
+
 ---
 
 ← [Risks and open questions](risques-et-questions-ouvertes.md) · [Contents](../README.md) · [Sources](sources.md) →
