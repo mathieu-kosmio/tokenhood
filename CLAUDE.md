@@ -21,15 +21,15 @@ Principes non négociables :
 
 ## État au 18/10/2026
 
-- Lot 0 (amorçage) en cours ; missions TH-001 à TH-017 publiées, 6 intégrées ; TH-101 (lot 1) intégrée en avance.
+- Lot 0 (amorçage) en cours ; missions TH-001 à TH-019 publiées, 10 intégrées ; TH-101 (lot 1) intégrée en avance.
 - Dépôt public, licence non encore choisie (AGPL-3.0 proposée).
 - Dépôt réglé : description, site, sujets, labels, Discussions activées. Les catégories Clarifications, Décisions, Propositions restent à créer dans l'interface GitHub (aucune API).
 - `main` protégée : PR obligatoire (y compris pour les administrateurs), historique linéaire (fusion en rebase ou squash), conversations résolues, ni force-push ni suppression. Zéro approbation requise tant que le porteur est seul mainteneur ; depuis le 18/10/2026, les 10 statuts de CI listés plus bas sont requis et la branche doit être à jour avec `main` avant fusion.
-- La fusion des PR revient au porteur. Le 18/10/2026, il a autorisé l'agent à fusionner la file en rebase après CI verte ; sans autorisation explicite, l'agent prépare, vérifie et documente, il ne fusionne pas.
+- La fusion des PR revient au porteur. Le 18/10/2026, il a autorisé l'agent à fusionner la file en rebase après CI verte, puis, au cas par cas, TH-004 (PR #16) et son passage à `integrated` ; sans autorisation explicite, l'agent prépare, vérifie et documente, il ne fusionne pas.
 
 ### Intégré sur `main` le 18/10/2026
 
-TH-001 (spécifications, PR #2), TH-002 (schémas, #3), TH-003 (CI de validation, #4), TH-007 et ADR-002 adoptée (#5), TH-017 (landing, #1), TH-101 (monorepo, #6), TH-013 (image et compose, #7). TH-018 (déploiement de la plateforme, #9) : https://app.tokenhood.kosm.io et https://api.tokenhood.kosm.io en ligne, ressource Coolify Docker Compose `gs7mmdb0wzy1d5wgo10h7dib` (projet « Tools & Concepts »), mot de passe PostgreSQL généré par Coolify et retiré des arguments de build. TH-019 (rapport de consommation à chaque contribution et compteur public, #12 et #13). TH-015 (CI de sécurité : gitleaks, Trivy, audits, contrôle d'absence de SDK de LLM, #11) : rendre ses statuts obligatoires sur `main` reste au porteur. Ces missions sont à l'état `integrated` ; le retour à 30 jours reste à recueillir.
+TH-001 (spécifications, PR #2), TH-002 (schémas, #3), TH-003 (CI de validation, #4), TH-007 et ADR-002 adoptée (#5), TH-017 (landing, #1), TH-101 (monorepo, #6), TH-013 (image et compose, #7). TH-018 (déploiement de la plateforme, #9) : https://app.tokenhood.kosm.io et https://api.tokenhood.kosm.io en ligne, ressource Coolify Docker Compose `gs7mmdb0wzy1d5wgo10h7dib` (projet « Tools & Concepts »), mot de passe PostgreSQL généré par Coolify et retiré des arguments de build. TH-019 (rapport de consommation à chaque contribution et compteur public, #12 et #13). TH-015 (CI de sécurité : gitleaks, Trivy, audits, contrôle d'absence de SDK de LLM, #11), statuts requis sur `main` depuis le 18/10/2026. TH-004 (skill `tokenhood-contribute` v0, #16). Ces missions sont à l'état `integrated` ; le retour à 30 jours reste à recueillir.
 
 ## Landing (`landing/`)
 
@@ -66,6 +66,14 @@ Statuts obligatoires sur `main` depuis le 18/10/2026 (protection de branche, sou
 - Aucun workflow requis ne filtre les PR par chemins (`paths:`), sinon les PR hors de ces chemins attendent le statut indéfiniment ; `landing` tourne donc sur toutes les PR.
 - Renommer, ajouter ou supprimer un job requis change la liste des statuts : mettre à jour la protection de `main` dans la foulée. Ce réglage revient au porteur ; l'agent ne l'applique qu'avec son autorisation explicite (`gh api -X PUT repos/mathieu-kosmio/tokenhood/branches/main/protection`, règle de permission ajoutée par le porteur le 18/10/2026).
 
+## Skills plateforme (`skills/`)
+
+- `skills/tokenhood-contribute/` (TH-004, version 0.1.0, en français ; référence à lister dans une mission : `tokenhood-contribute@0.1`) : protocole de l'agent contributeur en mode amorçage et plateforme, règle de conduite `continue` / `switch_mission` / `stop`, règles de sécurité et balise `<contenu-non-fiable source="…">`. Le `README.md` du skill explique l'installation.
+- Tests : `(cd tools/validate && npm ci)` puis `node --test 'skills/tokenhood-contribute/tests/*.test.mjs'`. Ils ne tournent pas encore en CI.
+- Le skill n'est pas actif dans ce dépôt (aucun lien dans `.claude/skills/`).
+- Questions ouvertes de la PR #16, conduite `continue` : skill en français seul (traduction EN par une mission `i18n`) ; réservation en amorçage par une discussion « Réservation TH-xxx » faute d'issue de mission ; `raised_by: {kind: human}` pour une demande d'arbitrage en amorçage.
+- TH-005 (`skills/tokenhood-verify/`) est en cours dans une autre session, sur le même modèle.
+
 ## Déploiement
 
 - Coolify, déploiement automatique à chaque commit sur `main` (mis en place par Mathieu).
@@ -86,8 +94,8 @@ Statuts obligatoires sur `main` depuis le 18/10/2026 (protection de branche, sou
 1. Plateforme en ligne sur app. et api.tokenhood.kosm.io (TH-018) ; landing sur tokenhood.kosm.io. Interface Coolify : http://51.91.166.222:8000, projet « Tools & Concepts ».
 2. Porteur : formulaire Brevo et `BREVO_FORM_ACTION` ; catégories Discussions ; licence (`LICENSE`, README, `project.yaml`, FAQ de la landing).
 3. Relire les textes de la landing, les pages légales et la traduction EN des spécifications (statut `machine`).
-4. TH-015 (scans) en revue ; après sa fusion, le porteur rend obligatoires les statuts listés plus haut.
-5. Missions suivantes : TH-004 et TH-005 (skills), TH-009 (contrats du protocole), TH-006, TH-010, TH-011 ; côté MVP, TH-102 (identité, OAuth GitHub, `packages/db` avec Drizzle) et le stockage S3 laissé hors de TH-013.
+4. Suites de TH-004, à décider par le porteur : trancher les trois questions de la PR #16 ; exécuter les tests des skills dans le workflow `tokenhood` ; activer le skill dans le dépôt (lien `.claude/skills/tokenhood-contribute`) ; ajouter `tokenhood-contribute@0.1` au champ `skills` des missions ouvertes, avec incrément de leur version.
+5. Missions suivantes : TH-005 (skill `tokenhood-verify`, en cours), TH-009 (contrats du protocole), TH-006, TH-010, TH-011 ; côté MVP, TH-102 (identité, OAuth GitHub, `packages/db` avec Drizzle) et le stockage S3 laissé hors de TH-013.
 
 ## Conventions de commit
 
