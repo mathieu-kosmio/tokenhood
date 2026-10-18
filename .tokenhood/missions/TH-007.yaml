@@ -34,4 +34,4 @@ verification:
   reviewers: 1
   prefer_different_model_family: false
   maintainer_approval: true
-status: in_progress
+status: integrated
