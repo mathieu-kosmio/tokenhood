@@ -24,7 +24,7 @@ Principes non négociables :
 - Lot 0 (amorçage) en cours ; missions TH-001 à TH-017 publiées, 6 intégrées ; TH-101 (lot 1) intégrée en avance.
 - Dépôt public, licence non encore choisie (AGPL-3.0 proposée).
 - Dépôt réglé : description, site, sujets, labels, Discussions activées. Les catégories Clarifications, Décisions, Propositions restent à créer dans l'interface GitHub (aucune API).
-- `main` protégée : PR obligatoire (y compris pour les administrateurs), historique linéaire (fusion en rebase ou squash), conversations résolues, ni force-push ni suppression. Zéro approbation requise tant que le porteur est seul mainteneur ; statuts requis à activer par le porteur après la fusion de TH-015 (liste dans « Sécurité et statuts requis »).
+- `main` protégée : PR obligatoire (y compris pour les administrateurs), historique linéaire (fusion en rebase ou squash), conversations résolues, ni force-push ni suppression. Zéro approbation requise tant que le porteur est seul mainteneur ; depuis le 18/10/2026, les 10 statuts de CI listés plus bas sont requis et la branche doit être à jour avec `main` avant fusion.
 - La fusion des PR revient au porteur. Le 18/10/2026, il a autorisé l'agent à fusionner la file en rebase après CI verte ; sans autorisation explicite, l'agent prépare, vérifie et documente, il ne fusionne pas.
 
 ### Intégré sur `main` le 18/10/2026
@@ -52,7 +52,7 @@ TH-001 (spécifications, PR #2), TH-002 (schémas, #3), TH-003 (CI de validation
 - Images gitleaks et Trivy épinglées par version et par empreinte `sha256` dans `security.yml`, jamais par étiquette mobile (étiquettes de Trivy détournées en mars 2026). Pour les mettre à jour : version publiée depuis au moins deux semaines, empreinte relevée sur le registre.
 - Contrôle LLM en local : `node tools/no-llm-sdk/check.mjs` ; tests : `node --test 'tools/no-llm-sdk/test/*.test.mjs'`. La liste des paquets interdits est en tête de `check.mjs`.
 
-Statuts à rendre obligatoires sur `main` (réglage de la protection de branche, source GitHub Actions) :
+Statuts obligatoires sur `main` depuis le 18/10/2026 (protection de branche, source GitHub Actions, app 15368, branche à jour exigée) :
 
 | Workflow | Statuts (noms des jobs) |
 |---|---|
@@ -62,9 +62,9 @@ Statuts à rendre obligatoires sur `main` (réglage de la protection de branche,
 | `landing` | `test`, `image` |
 | `security` | `gitleaks`, `trivy-image`, `trivy-repo`, `deps-audit`, `no-llm-sdk` |
 
-- Ne les rendre obligatoires **qu'après la fusion de TH-015 sur `main`** : un statut requis qu'aucun workflow de la PR ne produit la laisse bloquée (« Expected — Waiting for status to be reported »). Une PR ouverte avant cette fusion doit être rebasée sur `main` pour recevoir les jobs de `security`.
+- Un statut requis qu'aucun workflow de la PR ne produit la laisse bloquée (« Expected — Waiting for status to be reported ») : une PR ouverte sur une base antérieure à TH-015 doit être rebasée sur `main`.
 - Aucun workflow requis ne filtre les PR par chemins (`paths:`), sinon les PR hors de ces chemins attendent le statut indéfiniment ; `landing` tourne donc sur toutes les PR.
-- Renommer un job renomme son statut : mettre à jour la protection de `main` dans la foulée. Ce réglage revient au porteur, jamais à l'agent.
+- Renommer, ajouter ou supprimer un job requis change la liste des statuts : mettre à jour la protection de `main` dans la foulée. Ce réglage revient au porteur ; l'agent ne l'applique qu'avec son autorisation explicite (`gh api -X PUT repos/mathieu-kosmio/tokenhood/branches/main/protection`, règle de permission ajoutée par le porteur le 18/10/2026).
 
 ## Déploiement
 
