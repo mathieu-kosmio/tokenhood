@@ -17,7 +17,7 @@ Principes non négociables :
 
 - Spécifications V2.1 : `docs/specs/` (versées par TH-001, PR #2) ; source : https://claude.ai/code/artifact/70f6540c-17f9-4d27-95dd-8b33017cf7d2
 - Plan de développement (56 missions, 5 lots) : https://claude.ai/code/artifact/c4fd5cb0-43b3-487d-a5a8-b98bf86c0a94
-- Décisions : `decisions/` (DEC-2026-001 direction artistique, DEC-2026-002 déploiement, DEC-2026-003 landing, ADR-002 stack proposée par TH-007)
+- Décisions : `decisions/` (DEC-2026-001 direction artistique, DEC-2026-002 déploiement, DEC-2026-003 landing, DEC-2026-004 choix d'amorçage du skill contribute, ADR-002 stack proposée par TH-007)
 
 ## État au 19/10/2026
 
@@ -74,10 +74,11 @@ Statuts obligatoires sur `main` depuis le 18/10/2026 (protection de branche, sou
 ## Skills plateforme (`skills/`)
 
 - `skills/tokenhood-contribute/` (TH-004, version 0.1.0, en français ; référence à lister dans une mission : `tokenhood-contribute@0.1`) : protocole de l'agent contributeur en mode amorçage et plateforme, règle de conduite `continue` / `switch_mission` / `stop`, règles de sécurité et balise `<contenu-non-fiable source="…">`. Le `README.md` du skill explique l'installation.
-- Tests : `(cd tools/validate && npm ci)` puis `node --test 'skills/tokenhood-contribute/tests/*.test.mjs'`. Ils ne tournent pas encore en CI.
-- Le skill n'est pas actif dans ce dépôt (aucun lien dans `.claude/skills/`).
-- Questions ouvertes de la PR #16, conduite `continue` : skill en français seul (traduction EN par une mission `i18n`) ; réservation en amorçage par une discussion « Réservation TH-xxx » faute d'issue de mission ; `raised_by: {kind: human}` pour une demande d'arbitrage en amorçage.
-- `skills/tokenhood-verify/` (TH-005, version 0.1.0, en français ; référence : `tokenhood-verify@0.1`) : protocole de l'agent vérificateur, éligibilité, rapport à périmètre déclaré (vérifié, non vérifié, incertain) conforme à `schemas/review-report.schema.json`, invalidation après modification, ni fusion ni approbation. Tests : `node --test 'skills/tokenhood-verify/tests/*.test.mjs'` (après l'installation du validateur), pas encore en CI.
+- Choix retenus pour TH-004 en amorçage (PR #16, confirmés le 19/10/2026 par DEC-2026-004) : skill en français seul (traduction EN par une mission `i18n`) ; réservation par une discussion « Réservation TH-xxx » faute d'issue de mission ; `raised_by: {kind: human}` pour une demande d'arbitrage.
+- Les missions ouvertes déclarent `skills: [tokenhood-contribute@0.1]` ; une nouvelle mission le déclare aussi. Les contrats déjà intégrés gardent `skills: []`.
+- `skills/tokenhood-verify/` (TH-005, version 0.1.0, en français ; référence : `tokenhood-verify@0.1`) : protocole de l'agent vérificateur, éligibilité, rapport à périmètre déclaré (vérifié, non vérifié, incertain) conforme à `schemas/review-report.schema.json`, invalidation après modification, ni fusion ni approbation.
+- Les deux skills sont actifs dans ce dépôt : liens `.claude/skills/<nom>` vers `skills/<nom>` (`.claude/` est exclu localement : `git add -f` pour un nouveau lien). Le workflow `tokenhood` exige un lien par dossier de `skills/`.
+- Tests : `(cd tools/validate && npm ci --ignore-scripts)` puis `node --test 'skills/*/tests/*.test.mjs'` ; ils tournent en CI dans le job `validation .tokenhood`.
 - Choix retenus pour TH-005 en amorçage (PR #18) : identifiants dérivés de la PR (`att_pr057`, `SUB-057`, `agt_<compte sans tiret>`) ; revue GitHub de type commentaire seulement, verdict dans le rapport YAML ; rapport de consommation du vérificateur dans une PR distincte ; trois contrôles fixes ajoutés aux `criteria` (périmètre, commandes d'acceptation, règles de contribution) ; le vérificateur décline faute de moyens plutôt que de rendre un verdict ; skill en français seul. À revoir avec TH-009 et TH-301.
 
 ## Déploiement
@@ -100,8 +101,7 @@ Statuts obligatoires sur `main` depuis le 18/10/2026 (protection de branche, sou
 1. Plateforme en ligne sur app. et api.tokenhood.kosm.io (TH-018) ; landing sur tokenhood.kosm.io. Interface Coolify : http://51.91.166.222:8000, projet « Tools & Concepts ».
 2. Porteur : formulaire Brevo et `BREVO_FORM_ACTION` ; catégories Discussions (puis `contribute.discussionCategory` de `landing/site.config.json`, `general` en attendant) ; licence (`LICENSE`, README, `project.yaml`, FAQ de la landing) ; watch paths Coolify de la landing complétés par `docs/specs/plan-de-developpement.md` et `decisions/**`.
 3. Relire les textes de la landing, les pages légales et la traduction EN des spécifications (statut `machine`).
-4. Suites de TH-004 et TH-005, à décider par le porteur : trancher les trois questions de la PR #16 ; exécuter les tests des deux skills dans le workflow `tokenhood` ; activer les skills dans le dépôt (liens `.claude/skills/tokenhood-contribute` et `.claude/skills/tokenhood-verify`) ; ajouter `tokenhood-contribute@0.1` au champ `skills` des missions ouvertes, avec incrément de leur version.
-5. Missions suivantes, mises en avant sur la feuille de route : TH-006 (audit de tokenpool), TH-009 (contrats du protocole), TH-010 (protocole pilote) ; puis TH-011 ; côté MVP, TH-102 (identité, OAuth GitHub, `packages/db` avec Drizzle) et le stockage S3 laissé hors de TH-013.
+4. Missions suivantes, mises en avant sur la feuille de route : TH-006 (audit de tokenpool), TH-009 (contrats du protocole), TH-010 (protocole pilote) ; puis TH-011 ; côté MVP, TH-102 (identité, OAuth GitHub, `packages/db` avec Drizzle) et le stockage S3 laissé hors de TH-013.
 
 ## Conventions de commit
 
