@@ -1,6 +1,6 @@
 schema_version: "2.1"
 id: TH-009
-version: 2
+version: 3
 lot: 0
 title:
   fr: "Contrats exécutables du protocole"
@@ -20,7 +20,7 @@ acceptance:
 dependencies:
   - mission: TH-002
     type: integrated
-skills: []                 # tokenhood-contribute@0.1 dès TH-004
+skills: [tokenhood-contribute@0.1]
 estimate:
   size: L
   tokens_eq: null          # à produire par l'agent au cadrage

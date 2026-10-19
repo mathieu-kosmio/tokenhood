@@ -1,4 +1,5 @@
 # TH-003 : validation par parseur et par schéma de .tokenhood/ et des exemples, à chaque PR.
+# Suites de TH-004 et TH-005 : tests des skills de skills/ (ils réutilisent le validateur).
 name: tokenhood
 
 on:
@@ -29,6 +30,20 @@ jobs:
       - name: Tests de l'outil de mesure des tokens
         working-directory: tools/usage
         run: npm test
+      - name: Tests des skills (tokenhood-contribute, tokenhood-verify)
+        run: node --test 'skills/*/tests/*.test.mjs'
+      - name: Vérifier que chaque skill est activé dans le dépôt (.claude/skills)
+        run: |
+          for dir in skills/*/; do
+            name=$(basename "$dir")
+            if [ "$(readlink ".claude/skills/$name")" != "../../skills/$name" ]; then
+              echo "Lien .claude/skills/$name absent ou incorrect (attendu : ../../skills/$name)"; exit 1
+            fi
+          done
+          for link in .claude/skills/*; do
+            [ -f "$link/SKILL.md" ] || { echo "Lien cassé : $link"; exit 1; }
+          done
+          ls -l .claude/skills
       - name: Valider le manifeste, les politiques, les missions et les exemples
         run: node tools/validate/validate.mjs .
       - name: Vérifier que la validation échoue sur une mission invalide

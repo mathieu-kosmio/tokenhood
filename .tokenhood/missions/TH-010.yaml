@@ -1,6 +1,6 @@
 schema_version: "2.1"
 id: TH-010
-version: 2
+version: 3
 lot: 0
 title:
   fr: "Protocole pilote et mesure de valeur"
@@ -18,7 +18,7 @@ acceptance:
     - "Questionnaire à 30 jours en trois questions"
     - "Gabarit du rapport de campagne"
 dependencies: []
-skills: []                 # tokenhood-contribute@0.1 dès TH-004
+skills: [tokenhood-contribute@0.1]
 estimate:
   size: M
   tokens_eq: null          # à produire par l'agent au cadrage

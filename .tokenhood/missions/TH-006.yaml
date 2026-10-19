@@ -1,6 +1,6 @@
 schema_version: "2.1"
 id: TH-006
-version: 2
+version: 3
 lot: 0
 title:
   fr: "Audit du code tokenpool, dossier pour ADR-001"
@@ -20,7 +20,7 @@ acceptance:
     - "Sources citées"
     - "Aucune décision prise par l'agent"
 dependencies: []
-skills: []                 # tokenhood-contribute@0.1 dès TH-004
+skills: [tokenhood-contribute@0.1]
 estimate:
   size: M
   tokens_eq: null          # à produire par l'agent au cadrage
