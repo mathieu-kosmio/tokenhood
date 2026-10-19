@@ -1,0 +1,24 @@
+schema_version: "2.1"
+missions: [TH-004, TH-005]
+contribution:
+  kind: integration
+  pull_requests: [21]
+contributor: mathieu-kosmio
+agent:
+  client: claude-code
+  client_version: "2.1.299"
+  model_family: claude
+  model: claude-opus-5-5
+period:
+  start: "2026-10-19T15:26:18.817Z"
+  end: "2026-10-19T19:08:00.025Z"
+tokens:
+  input: 86
+  output: 29351
+  cache_creation: 192736
+  cache_read: 5622562
+counted: 222173
+method: client_transcript
+nature: declared
+evidence: "Transcription Claude Code de la session, 43 réponses comptées une fois chacune (tools/usage/claude-code.mjs)."
+notes: "Session entière comptée : point sur la prochaine tâche (le 19/10/2026 vers 17 h 30, heure de Paris), puis, sur demande du porteur, suites de TH-004 et TH-005 (tests des skills en CI, liens .claude/skills, skill déclaré dans les huit missions ouvertes, DEC-2026-004) et ouverture de la PR #21. Mesure arrêtée à la dernière réponse enregistrée avant ce rapport."
