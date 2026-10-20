@@ -14,7 +14,6 @@
 </script>
 
 <svelte:head>
-  <title>{t('app.name')} · {t('app.tagline')}</title>
   <meta name="description" content={t('home.lead')} />
 </svelte:head>
 
@@ -34,15 +33,27 @@
       >
       <span aria-hidden="true">{t('app.name').toLowerCase()}</span>
     </a>
-    <nav class="th-lang" aria-label={t('lang.label')}>
-      {#each LANGS as lang (lang)}
-        <!-- Lien de requête seule : reste sur la page courante, le chemin de base est conservé. -->
-        <!-- eslint-disable-next-line svelte/no-navigation-without-resolve -->
-        <a href="?lang={lang}" hreflang={lang} {lang} aria-current={lang === data.lang ? 'true' : undefined}
-          >{t(`lang.${lang}`)}</a
-        >
-      {/each}
-    </nav>
+    <div class="th-header__tools">
+      <nav class="th-session" aria-label={t('identity.account.title')}>
+        {#if data.user}
+          <a class="kos-nav__lien" href={resolve('/account')}>{t('identity.nav.account')}</a>
+          <form method="POST" action={resolve('/logout')}>
+            <button class="kos-nav__lien th-link-button" type="submit">{t('identity.nav.logout')}</button>
+          </form>
+        {:else}
+          <a class="kos-nav__lien" href={resolve('/login')}>{t('identity.nav.login')}</a>
+        {/if}
+      </nav>
+      <nav class="th-lang" aria-label={t('lang.label')}>
+        {#each LANGS as lang (lang)}
+          <!-- Lien de requête seule : reste sur la page courante, le chemin de base est conservé. -->
+          <!-- eslint-disable-next-line svelte/no-navigation-without-resolve -->
+          <a href="?lang={lang}" hreflang={lang} {lang} aria-current={lang === data.lang ? 'true' : undefined}
+            >{t(`lang.${lang}`)}</a
+          >
+        {/each}
+      </nav>
+    </div>
   </div>
 </header>
 
