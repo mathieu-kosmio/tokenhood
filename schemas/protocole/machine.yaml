@@ -13,12 +13,12 @@ parameters:
     value: 10
     unit: minutes
     source: spec
-    text: Durée du bail d'une tentative claimed, renouvelé par toute opération acceptée de son titulaire.
+    text: Durée du bail d'une tentative `claimed`, renouvelé par toute opération acceptée de son titulaire.
   - id: default_max_lease_minutes
     value: 240
     unit: minutes
     source: th-009
-    text: Plafond de durée active d'une tentative quand le contrat ne fixe pas execution.max_lease_minutes.
+    text: Plafond de durée active d'une tentative quand le contrat ne fixe pas `execution.max_lease_minutes`.
   - id: idempotency_retention_hours
     value: 24
     unit: hours
@@ -28,17 +28,17 @@ parameters:
     value: 72
     unit: hours
     source: th-009
-    text: Délai laissé au titulaire d'une tentative awaiting_decision pour reprendre après publication de la décision.
+    text: Délai laissé au titulaire d'une tentative `awaiting_decision` pour reprendre après publication de la décision.
   - id: changes_response_days
     value: 14
     unit: days
     source: th-009
-    text: Délai pour soumettre de nouveau une tentative changes_requested.
+    text: Délai pour soumettre de nouveau une tentative `changes_requested`.
   - id: reviewer_wait_hours
     value: 72
     unit: hours
     source: th-009
-    text: Attente d'une soumission sans assignation au-delà de laquelle la tentative passe awaiting_reviewer.
+    text: Attente d'une soumission sans assignation au-delà de laquelle la tentative passe `awaiting_reviewer`.
   - id: review_assignment_hours
     value: 24
     unit: hours
@@ -53,12 +53,12 @@ parameters:
     value: 3
     unit: reviews
     source: th-009
-    text: Nombre total de revues valides visé par une escalade (divergence ou contestation) ; R + 1 si R vaut 3 ou plus.
+    text: Nombre total de revues valides visé par une escalade (divergence ou contestation) ; `R + 1` si `R` vaut 3 ou plus.
   - id: feedback_grace_days
     value: 30
     unit: days
     source: th-009
-    text: Délai ajouté à feedback.after_integration_days avant clôture d'une mission intégrée sans retour.
+    text: Délai ajouté à `feedback.after_integration_days` avant clôture d'une mission intégrée sans retour.
 
 states:
   attempt:
@@ -113,13 +113,13 @@ states:
       text: Publiée, au moins une tentative possible.
     - id: blocked
       claimable: none
-      text: Une dépendance n'est pas satisfaite selon son type.
+      text: Une dépendance n'est pas satisfaite selon son `type`.
     - id: in_progress
       claimable: parallel_slot
-      text: Au moins une tentative active hors awaiting_decision.
+      text: Au moins une tentative active hors `awaiting_decision`.
     - id: awaiting_decision
       claimable: parallel_slot
-      text: Une tentative awaiting_decision, ou une demande bloquante ouverte qui cite la mission.
+      text: Une tentative `awaiting_decision`, ou une demande bloquante ouverte qui cite la mission.
     - id: accepted
       claimable: none
       text: Une tentative a été vérifiée et approuvée.
@@ -135,7 +135,7 @@ states:
   assignment:
     - id: assigned
       final: false
-      text: Soumission attribuée à un vérificateur, échéance due_at.
+      text: Soumission attribuée à un vérificateur, échéance `due_at`.
     - id: completed
       final: true
       text: Rapport de vérification reçu et valide.
@@ -152,21 +152,21 @@ states:
 # État d'une mission : première ligne vraie, dans cet ordre.
 mission_state_derivation:
   - state: cancelled
-    when: Annulée par le porteur, ou contrat retiré du dépôt ou passé à cancelled.
+    when: Annulée par le porteur, ou contrat retiré du dépôt ou passé à `cancelled`.
   - state: closed
-    when: Intégrée, et retour à 30 jours enregistré ou délai feedback.after_integration_days + feedback_grace_days écoulé.
+    when: Intégrée, et retour à 30 jours enregistré ou délai `feedback.after_integration_days` + `feedback_grace_days` écoulé.
   - state: integrated
     when: Événement d'intégration reçu de la forge pour un livrable de la mission.
   - state: accepted
-    when: Une tentative accepted.
+    when: Une tentative `accepted`.
   - state: draft
-    when: Aucune version publiée (status draft dans le contrat).
+    when: Aucune version publiée (`status` `draft` dans le contrat).
   - state: in_progress
-    when: Au moins une tentative active dans un autre état qu'awaiting_decision.
+    when: Au moins une tentative active dans un autre état qu'`awaiting_decision`.
   - state: awaiting_decision
-    when: Une tentative awaiting_decision, ou une demande d'arbitrage bloquante ouverte qui cite la mission dans blocked_missions.
+    when: Une tentative `awaiting_decision`, ou une demande d'arbitrage bloquante ouverte qui cite la mission dans `blocked_missions`.
   - state: blocked
-    when: Une dépendance non satisfaite selon son type.
+    when: Une dépendance non satisfaite selon son `type`.
   - state: open
     when: Sinon.
 
@@ -184,7 +184,8 @@ check_order:
     errors: [idempotency_key_required, idempotency_conflict, idempotency_in_progress]
     text: Une clé déjà vue avec la même empreinte rejoue la réponse enregistrée et arrête le traitement.
   - id: resource
-    errors: [mission_not_found, attempt_not_found, assignment_not_found, submission_not_found, request_not_found]
+    errors: [mission_not_found, attempt_not_found, assignment_not_found, submission_not_found, request_not_found, forbidden_role, invalid_request]
+    text: "Ressource introuvable, ou tentative et assignation d'un autre agent (A3) : `*_not_found`. Ressource hors du périmètre d'un humain, porteur d'un autre projet ou contributeur d'un autre agent (A4, A8) : `forbidden_role`. Identifiants de l'entrée incohérents avec la ressource (`raised_by` d'une demande, identifiants d'un rapport de revue) : `invalid_request`."
   - id: time
     errors: []
     text: Les transitions datées échues (expirations, délais) sont appliquées avant tout autre contrôle d'état, datées de leur échéance.
@@ -192,6 +193,7 @@ check_order:
     errors: [stale_generation, lease_expired, attempt_closed, assignment_closed]
   - id: state
     errors: [invalid_transition, decision_pending]
+    text: "L'opération doit correspondre à un déclencheur d'une transition depuis l'état courant, conditions d'état comprises (conduite de la demande, motif `deliverable_changed`, rejet en attente de contestation) ; sinon `invalid_transition`. Un heartbeat sur une tentative `awaiting_decision` dont la décision n'est pas publiée répond `decision_pending`."
   - id: contract
     errors: [contract_version_mismatch, contract_choice_required]
   - id: preconditions
@@ -271,7 +273,7 @@ operations:
     attempt_states: [claimed, awaiting_decision, submitted, awaiting_reviewer, in_review, changes_requested]
     mcp: request_arbitration
     rest: POST /v1/decision-requests
-    text: "Conduite continue : claimed ou changes_requested. switch_mission : claimed seulement. stop : tout état actif."
+    text: "Conduite `continue` : `claimed` ou `changes_requested`. `switch_mission` : `claimed` seulement. `stop` : tout état actif."
     source: spec
   - id: contest_review
     kind: agent
@@ -282,6 +284,7 @@ operations:
     attempt_states: [in_review]
     mcp: contest_review
     rest: POST /v1/attempts/{attempt}/contest
+    text: Le producteur conteste un rejet décidé en première instance (W3).
     source: th-009
   - id: get_status
     kind: agent
@@ -324,6 +327,7 @@ operations:
     bound: assignment
     mcp: decline_review
     rest: POST /v1/reviews/assignments/{assignment}/decline
+    text: Le vérificateur décline son assignation, motif à l'appui (W4).
     source: th-009
   # Opérations humaines : API REST et interface web seulement.
   - id: release_attempt
@@ -333,6 +337,7 @@ operations:
     bound: attempt_id
     attempt_states: [claimed, awaiting_decision, submitted, awaiting_reviewer, in_review, changes_requested]
     rest: POST /v1/attempts/{attempt}/release
+    text: Libération par le contributeur de l'agent ou par un administrateur, motif à l'appui.
     source: th-009
   - id: revoke_authorization
     kind: human
@@ -383,7 +388,7 @@ operations:
   - id: publish_decision
     kind: human
     actors: [mandate, admin]
-    text: L'administrateur ne publie que la décision d'une demande security.emergency (A7).
+    text: L'administrateur ne publie que la décision d'une demande `security.emergency` (A7).
     write: true
     bound: request
     rest: POST /v1/decision-requests/{request}/decision
@@ -494,7 +499,7 @@ errors:
   - code: invalid_transition
     http: 409
     retryable: false
-    conduct: Opération impossible dans l'état actuel ; relire l'état (get_status).
+    conduct: Opération impossible dans l'état actuel ; relire l'état (`get_status`).
   - code: decision_pending
     http: 409
     retryable: true
@@ -506,7 +511,7 @@ errors:
   - code: contract_choice_required
     http: 409
     retryable: false
-    conduct: Changement de contrat incompatible ; accept_contract_version (migrer, reprendre le travail) ou release_mission.
+    conduct: Changement de contrat incompatible ; `accept_contract_version` (migrer, reprendre le travail) ou `release_mission`.
   - code: project_inactive
     http: 409
     retryable: false
@@ -522,7 +527,7 @@ errors:
   - code: not_eligible
     http: 403
     retryable: false
-    conduct: Autorisation, type, capacités, langues ou environnement incompatibles ; ne pas contourner.
+    conduct: Autorisation, `type`, capacités, langues ou environnement incompatibles ; ne pas contourner.
   - code: flow_limit_reached
     http: 409
     retryable: true
@@ -594,19 +599,19 @@ authorizations:
       text: Horloge et règles déterministes de la plateforme.
   invariants:
     - id: A1
-      text: Un jeton d'agent est refusé (forbidden_role) sur toute opération humaine, par l'API REST comme par MCP ; le serveur MCP n'expose aucune opération humaine.
+      text: Un jeton d'agent est refusé (`forbidden_role`) sur toute opération humaine, par l'API REST comme par MCP ; le serveur MCP n'expose aucune opération humaine.
     - id: A2
-      text: Un jeton humain est refusé (forbidden_role) sur les outils d'agent claim_mission, heartbeat, report_progress, submit_work, release_mission, accept_contract_version, contest_review, claim_review, submit_review, decline_review.
+      text: Un jeton humain est refusé (`forbidden_role`) sur les outils d'agent `claim_mission`, `heartbeat`, `report_progress`, `submit_work`, `release_mission`, `accept_contract_version`, `contest_review`, `claim_review`, `submit_review`, `decline_review`.
     - id: A3
-      text: Un agent qui vise la tentative ou l'assignation d'un autre agent reçoit attempt_not_found ou assignment_not_found, sans autre information.
+      text: Un agent qui vise la tentative ou l'assignation d'un autre agent reçoit `attempt_not_found` ou `assignment_not_found`, sans autre information.
     - id: A4
-      text: Le porteur n'agit que sur les missions de son projet ; ailleurs, forbidden_role.
+      text: Le porteur n'agit que sur les missions de son projet ; ailleurs, `forbidden_role`.
     - id: A5
-      text: Une assignation de revue ne vise jamais une soumission dont le producteur est l'utilisateur du vérificateur ou un utilisateur lié, ni un projet dont le vérificateur est mainteneur ; elle n'est pas proposée à un vérificateur dont ce producteur a vérifié l'une des N dernières missions (fenêtre réciproque, N = reciprocal_window de la politique de revue).
+      text: Une assignation de revue ne vise jamais une soumission dont le producteur est l'utilisateur du vérificateur ou un utilisateur lié, ni un projet dont le vérificateur est mainteneur ; elle n'est pas proposée à un vérificateur dont ce producteur a vérifié l'une des N dernières missions (fenêtre réciproque, N = `reciprocal_window` de la politique de revue).
     - id: A6
-      text: Une autorisation révoquée ou échue est refusée (authorization_inactive) dès l'appel suivant, quelle que soit l'opération.
+      text: Une autorisation révoquée ou échue est refusée (`authorization_inactive`) dès l'appel suivant, quelle que soit l'opération.
     - id: A7
-      text: Un administrateur ne publie pas la décision d'un arbitrage de gouvernance (sauf security.emergency) ; il exécute les décisions publiées.
+      text: Un administrateur ne publie pas la décision d'un arbitrage de gouvernance (sauf `security.emergency`) ; il exécute les décisions publiées.
     - id: A8
       text: Un contributeur ne libère que les tentatives de ses propres agents.
     - id: A9
@@ -622,7 +627,7 @@ transitions:
         - id: claim_mission
           actors: [agent]
           guard: Mission réservable, aucune tentative active de cet agent sur la mission, exclusivité ou place parallèle libre, projet actif, éligibilité, plafonds de flux, tentatives simultanées et budget.
-          effects: Génération de mission + 1 attribuée à la tentative ; version du contrat figée (dernière version indexée) ; deadline_at = maintenant + max_lease_minutes ; lease_expires_at = min(maintenant + lease_minutes, deadline_at) ; resume_from = dernier point d'avancement disponible.
+          effects: Génération de mission + 1 attribuée à la tentative ; version du contrat figée (dernière version indexée) ; `deadline_at` = maintenant + `max_lease_minutes` ; `lease_expires_at` = min(maintenant + `lease_minutes`, `deadline_at`) ; `resume_from` = dernier point d'avancement disponible.
     - id: T02
       from: claimed
       to: claimed
@@ -631,7 +636,7 @@ transitions:
         - id: heartbeat
           actors: [agent_holder]
           guard: Génération courante, bail non échu.
-          effects: lease_expires_at = min(maintenant + lease_minutes, deadline_at) ; état du contrat et notifications dans la réponse.
+          effects: "`lease_expires_at` = min(maintenant + `lease_minutes`, `deadline_at`) ; état du contrat et notifications dans la réponse."
         - id: report_progress
           actors: [agent_holder]
           guard: Génération courante, bail non échu.
@@ -639,10 +644,10 @@ transitions:
         - id: accept_contract_version
           actors: [agent_holder]
           guard: Version présentée = dernière version indexée, supérieure à la version figée ; agent éligible sous la nouvelle version.
-          effects: Version figée = nouvelle version ; choix de contrat levé ; bail renouvelé ; deadline_at inchangée.
+          effects: Version figée = nouvelle version ; choix de contrat levé ; bail renouvelé ; `deadline_at` inchangée.
         - id: request_arbitration
           actors: [agent_holder]
-          guard: Conduite continue, demande non bloquante.
+          guard: Conduite `continue`, demande non bloquante.
           effects: Demande créée et liée à la tentative ; bail renouvelé.
     - id: T03
       from: claimed
@@ -660,7 +665,7 @@ transitions:
       triggers:
         - id: request_arbitration
           actors: [agent_holder]
-          guard: Conduite switch_mission, demande bloquante.
+          guard: Conduite `switch_mission`, demande bloquante.
           effects: Bail suspendu ; durée active consommée conservée ; demande liée à la tentative.
     - id: T05
       from: claimed
@@ -669,8 +674,8 @@ transitions:
       triggers:
         - id: lease_timeout
           actors: [platform]
-          guard: maintenant >= lease_expires_at (le bail ne dépasse jamais deadline_at).
-          effects: Transition datée de lease_expires_at ; points d'avancement remis à disposition de la tentative suivante.
+          guard: maintenant >= `lease_expires_at` (le bail ne dépasse jamais `deadline_at`).
+          effects: Transition datée de `lease_expires_at` ; points d'avancement remis à disposition de la tentative suivante.
     - id: T06
       from: claimed
       to: released
@@ -686,16 +691,16 @@ transitions:
           effects: Libération tracée avec son auteur.
         - id: request_arbitration
           actors: [agent_holder]
-          guard: Conduite stop.
-          effects: Demande créée (privée pour security.emergency) puis tentative libérée dans la même transaction ; la mission reste en attente si la demande la cite dans blocked_missions.
+          guard: Conduite `stop`.
+          effects: Demande créée (privée pour `security.emergency`) puis tentative libérée dans la même transaction ; la mission reste en attente si la demande la cite dans `blocked_missions`.
         - id: mission_cancelled
           actors: [platform]
           guard: Mission annulée (M16 à M21).
-          effects: Libération motivée mission_cancelled.
+          effects: Libération motivée `mission_cancelled`.
         - id: sibling_accepted
           actors: [platform]
           guard: Mission parallèle dont une autre tentative vient d'être acceptée (T16, T20).
-          effects: Libération motivée sibling_accepted.
+          effects: Libération motivée `sibling_accepted`.
     - id: T07
       from: awaiting_decision
       to: claimed
@@ -704,7 +709,7 @@ transitions:
         - id: heartbeat
           actors: [agent_holder]
           guard: Décision publiée pour la demande bloquante de la tentative, délai de reprise non écoulé.
-          effects: Même génération ; deadline_at = maintenant + (max_lease_minutes - durée active consommée) ; nouveau bail.
+          effects: Même génération ; `deadline_at` = maintenant + (`max_lease_minutes` - durée active consommée) ; nouveau bail.
     - id: T08
       from: awaiting_decision
       to: released
@@ -720,11 +725,11 @@ transitions:
           effects: Libération tracée avec son auteur.
         - id: request_arbitration
           actors: [agent_holder]
-          guard: Conduite stop.
+          guard: Conduite `stop`.
           effects: Comme T06.
         - id: resume_timeout
           actors: [platform]
-          guard: maintenant >= publication de la décision + decision_resume_hours.
+          guard: maintenant >= publication de la décision + `decision_resume_hours`.
           effects: Transition datée de l'échéance ; points d'avancement disponibles.
         - id: mission_cancelled
           actors: [platform]
@@ -745,7 +750,7 @@ transitions:
           effects: Alerte au porteur et à la gouvernance.
         - id: reviewer_wait_timeout
           actors: [platform]
-          guard: maintenant >= soumission + reviewer_wait_hours sans assignation.
+          guard: maintenant >= soumission + `reviewer_wait_hours` sans assignation.
           effects: Transition datée de l'échéance ; alerte au porteur et à la gouvernance.
     - id: T10
       from: submitted
@@ -755,7 +760,7 @@ transitions:
         - id: claim_review
           actors: [agent]
           guard: Le vérificateur est éligible et la soumission lui est attribuée par tirage au sort.
-          effects: Assignation créée (RV01), échéance due_at = maintenant + review_assignment_hours.
+          effects: Assignation créée (RV01), échéance `due_at` = maintenant + `review_assignment_hours`.
     - id: T11
       from: awaiting_reviewer
       to: in_review
@@ -773,7 +778,7 @@ transitions:
         - id: deliverable_changed
           actors: [forge]
           guard: Nouvel état du livrable différent de celui de la soumission courante.
-          effects: Soumission marquée outdated ; motif deliverable_changed ; échéance changes_due_at.
+          effects: Soumission marquée `outdated` ; motif `deliverable_changed` ; échéance `changes_due_at`.
     - id: T13
       from: awaiting_reviewer
       to: changes_requested
@@ -790,24 +795,24 @@ transitions:
       triggers:
         - id: claim_review
           actors: [agent]
-          guard: Revues valides et assignations ouvertes en nombre inférieur à la cible (R, ou escalation_reviews en escalade).
+          guard: Revues valides et assignations ouvertes en nombre inférieur à la cible (R, ou `escalation_reviews` en escalade).
           effects: Assignation supplémentaire.
         - id: submit_review
           actors: [agent_reviewer]
           guard: Assignation ouverte, rapport conforme, état examiné = état de la soumission courante.
-          effects: Revue valide enregistrée ; verdict décidé si la cible est atteinte - pass, approbation attendue ; reject en première instance, rejet en attente de contestation ; divergence, escalade.
+          effects: "Revue valide enregistrée ; verdict décidé si la cible est atteinte : `pass`, approbation attendue ; `reject` en première instance, rejet en attente de contestation ; divergence, escalade."
         - id: decline_review
           actors: [agent_reviewer]
           guard: Assignation ouverte.
           effects: Assignation déclinée (RV03), soumission de nouveau attribuable.
         - id: assignment_timeout
           actors: [platform]
-          guard: maintenant >= due_at d'une assignation ouverte.
+          guard: maintenant >= `due_at` d'une assignation ouverte.
           effects: Assignation expirée (RV04), soumission de nouveau attribuable.
         - id: contest_review
           actors: [agent_holder]
           guard: Rejet décidé en première instance, délai de contestation non écoulé, aucune escalade antérieure.
-          effects: Escalade jusqu'à escalation_reviews revues valides.
+          effects: Escalade jusqu'à `escalation_reviews` revues valides.
     - id: T15
       from: in_review
       to: changes_requested
@@ -815,8 +820,8 @@ transitions:
       triggers:
         - id: verdict_changes_requested
           actors: [platform]
-          guard: Verdict décidé changes_requested (unanimité des R revues, ou majorité stricte après escalade).
-          effects: Assignations ouvertes annulées ; échéance changes_due_at = maintenant + changes_response_days.
+          guard: Verdict décidé `changes_requested` (unanimité des `R` revues, ou majorité stricte après escalade).
+          effects: Assignations ouvertes annulées ; échéance `changes_due_at` = maintenant + `changes_response_days`.
         - id: request_changes
           actors: [porteur]
           guard: Motif fourni.
@@ -824,7 +829,7 @@ transitions:
         - id: deliverable_changed
           actors: [forge]
           guard: Nouvel état du livrable différent de celui de la soumission courante.
-          effects: Revues de l'ancien état marquées outdated ; assignations ouvertes annulées ; motif deliverable_changed.
+          effects: Revues de l'ancien état marquées `outdated` ; assignations ouvertes annulées ; motif `deliverable_changed`.
     - id: T16
       from: in_review
       to: accepted
@@ -832,8 +837,8 @@ transitions:
       triggers:
         - id: approve_submission
           actors: [porteur]
-          guard: Verdict décidé pass sur l'état de la soumission courante ; If-Match égal à l'ETag de la soumission.
-          effects: Soumission acceptée ; mission accepted (M12) ; tentatives sœurs d'une mission parallèle libérées (sibling_accepted).
+          guard: Verdict décidé `pass` sur l'état de la soumission courante ; `If-Match` égal à l'ETag de la soumission.
+          effects: Soumission acceptée ; mission `accepted` (M12) ; tentatives sœurs d'une mission parallèle libérées (`sibling_accepted`).
     - id: T17
       from: in_review
       to: rejected
@@ -845,11 +850,11 @@ transitions:
           effects: Assignations ouvertes annulées ; mission rouverte (M06).
         - id: contest_timeout
           actors: [platform]
-          guard: Rejet décidé en première instance et contest_window_hours écoulé sans contestation.
+          guard: Rejet décidé en première instance et `contest_window_hours` écoulé sans contestation.
           effects: Transition datée de l'échéance.
         - id: verdict_reject
           actors: [platform]
-          guard: Verdict décidé reject après escalade (majorité stricte).
+          guard: Verdict décidé `reject` après escalade (majorité stricte).
           effects: Rejet immédiat, sans nouvelle contestation.
     - id: T18
       from: changes_requested
@@ -858,7 +863,7 @@ transitions:
       triggers:
         - id: report_progress
           actors: [agent_holder]
-          guard: Génération courante, échéance changes_due_at non passée.
+          guard: Génération courante, échéance `changes_due_at` non passée.
           effects: Point d'avancement enregistré.
         - id: accept_contract_version
           actors: [agent_holder]
@@ -866,7 +871,7 @@ transitions:
           effects: Version figée = nouvelle version.
         - id: request_arbitration
           actors: [agent_holder]
-          guard: Conduite continue.
+          guard: Conduite `continue`.
           effects: Demande créée et liée à la tentative.
     - id: T19
       from: changes_requested
@@ -876,7 +881,7 @@ transitions:
         - id: submit_work
           actors: [agent_holder]
           guard: Comme T03.
-          effects: Nouvelle soumission, même génération ; la précédente devient superseded ; T09 si aucun vérificateur éligible.
+          effects: Nouvelle soumission, même génération ; la précédente devient `superseded` ; T09 si aucun vérificateur éligible.
     - id: T20
       from: changes_requested
       to: accepted
@@ -884,8 +889,8 @@ transitions:
       triggers:
         - id: approve_submission
           actors: [porteur]
-          guard: Motif deliverable_changed, qualification trivial_change explicite, verdict décidé pass sur l'état précédent.
-          effects: Soumission rattachée au nouvel état avec la qualification tracée (trivial_from) ; acceptation comme T16.
+          guard: Motif `deliverable_changed`, qualification `trivial_change` explicite, verdict décidé `pass` sur l'état précédent.
+          effects: Soumission rattachée au nouvel état avec la qualification tracée (`trivial_from`) ; acceptation comme T16.
     - id: T21
       from: changes_requested
       to: expired
@@ -893,7 +898,7 @@ transitions:
       triggers:
         - id: changes_timeout
           actors: [platform]
-          guard: maintenant >= changes_due_at.
+          guard: maintenant >= `changes_due_at`.
           effects: Transition datée de l'échéance ; points d'avancement disponibles.
     - id: T22
       from: changes_requested
@@ -910,7 +915,7 @@ transitions:
           effects: Libération tracée ; assignations ouvertes annulées.
         - id: request_arbitration
           actors: [agent_holder]
-          guard: Conduite stop.
+          guard: Conduite `stop`.
           effects: Comme T06.
         - id: mission_cancelled
           actors: [platform]
@@ -935,7 +940,7 @@ transitions:
           effects: Libération tracée ; assignations ouvertes annulées.
         - id: request_arbitration
           actors: [agent_holder]
-          guard: Conduite stop.
+          guard: Conduite `stop`.
           effects: Comme T06.
         - id: mission_cancelled
           actors: [platform]
@@ -960,7 +965,7 @@ transitions:
           effects: Libération tracée ; assignations ouvertes annulées.
         - id: request_arbitration
           actors: [agent_holder]
-          guard: Conduite stop.
+          guard: Conduite `stop`.
           effects: Comme T06.
         - id: mission_cancelled
           actors: [platform]
@@ -985,7 +990,7 @@ transitions:
           effects: Libération tracée ; assignations ouvertes annulées.
         - id: request_arbitration
           actors: [agent_holder]
-          guard: Conduite stop.
+          guard: Conduite `stop`.
           effects: Comme T06.
         - id: mission_cancelled
           actors: [platform]
@@ -1003,7 +1008,7 @@ transitions:
       triggers:
         - id: index_contract
           actors: [forge]
-          guard: Contrat valide publié (status autre que draft), dépendances satisfaites.
+          guard: Contrat valide publié (`status` autre que `draft`), dépendances satisfaites.
           effects: Mission proposée aux agents.
     - id: M02
       from: draft
@@ -1030,7 +1035,7 @@ transitions:
       triggers:
         - id: dependency_integrated
           actors: [forge]
-          guard: Toutes les dépendances satisfaites selon leur type (intégration de la mission visée, artefact publié).
+          guard: Toutes les dépendances satisfaites selon leur `type` (intégration de la mission visée, artefact publié).
           effects: Mission proposée.
     - id: M05
       from: open
@@ -1048,7 +1053,7 @@ transitions:
       triggers:
         - id: attempt_ended
           actors: [platform]
-          guard: La dernière tentative active se termine (expired, released, rejected), dépendances satisfaites, aucune demande bloquante ne cite la mission.
+          guard: La dernière tentative active se termine (`expired`, `released`, `rejected`), dépendances satisfaites, aucune demande bloquante ne cite la mission.
           effects: Mission de nouveau proposée ; dernier point d'avancement disponible.
     - id: M07
       from: in_progress
@@ -1066,12 +1071,12 @@ transitions:
       triggers:
         - id: attempt_awaiting_decision
           actors: [agent_holder]
-          guard: T04 et aucune autre tentative active hors awaiting_decision.
+          guard: T04 et aucune autre tentative active hors `awaiting_decision`.
           effects: Aucun.
         - id: blocking_request
           actors: [agent_holder]
-          guard: Conduite stop (T06) avec une demande bloquante qui cite la mission, aucune autre tentative active.
-          effects: Réservations refusées (mission_unavailable) jusqu'à la décision.
+          guard: Conduite `stop` (T06) avec une demande bloquante qui cite la mission, aucune autre tentative active.
+          effects: Réservations refusées (`mission_unavailable`) jusqu'à la décision.
     - id: M09
       from: awaiting_decision
       to: in_progress
@@ -1092,7 +1097,7 @@ transitions:
       triggers:
         - id: attempt_ended
           actors: [platform]
-          guard: La tentative awaiting_decision se termine, aucune demande bloquante ne cite la mission, dépendances satisfaites.
+          guard: La tentative `awaiting_decision` se termine, aucune demande bloquante ne cite la mission, dépendances satisfaites.
           effects: Mission proposée.
         - id: decision_published
           actors: [mandate, admin]
@@ -1105,8 +1110,8 @@ transitions:
       triggers:
         - id: blocking_request
           actors: [human]
-          guard: Demande bloquante ouverte qui cite la mission dans blocked_missions.
-          effects: Réservations refusées (mission_unavailable).
+          guard: Demande bloquante ouverte qui cite la mission dans `blocked_missions`.
+          effects: Réservations refusées (`mission_unavailable`).
     - id: M12
       from: in_progress
       to: accepted
@@ -1124,7 +1129,7 @@ transitions:
         - id: merged
           actors: [forge]
           guard: Fusion ou publication du livrable de la soumission acceptée.
-          effects: Événement d'intégration ; état fusionné différent de l'état accepté signalé (merged_state_differs).
+          effects: Événement d'intégration ; état fusionné différent de l'état accepté signalé (`merged_state_differs`).
     - id: M14
       from: in_progress
       to: integrated
@@ -1133,7 +1138,7 @@ transitions:
         - id: merged
           actors: [forge]
           guard: Fusion du livrable d'une soumission non acceptée.
-          effects: Intégration signalée integrated_without_acceptance, alerte à la gouvernance ; tentatives actives inchangées, réservations refusées.
+          effects: Intégration signalée `integrated_without_acceptance`, alerte à la gouvernance ; tentatives actives inchangées, réservations refusées.
     - id: M15
       from: integrated
       to: closed
@@ -1145,8 +1150,8 @@ transitions:
           effects: Valeur nette alimentée.
         - id: feedback_timeout
           actors: [platform]
-          guard: maintenant >= intégration + feedback.after_integration_days + feedback_grace_days.
-          effects: Clôture sans retour, signalée.
+          guard: maintenant >= intégration + `feedback.after_integration_days` + `feedback_grace_days`.
+          effects: Clôture sans retour, signalée `closed_without_feedback`.
     - id: M16
       from: draft
       to: cancelled
@@ -1155,11 +1160,11 @@ transitions:
         - id: cancel_mission
           actors: [porteur]
           guard: Motif fourni.
-          effects: Tentatives actives libérées (mission_cancelled) ; assignations ouvertes annulées.
+          effects: Tentatives actives libérées (`mission_cancelled`) ; assignations ouvertes annulées.
         - id: index_contract
           actors: [forge]
-          guard: Contrat retiré du dépôt ou passé à status cancelled.
-          effects: Comme cancel_mission, motif contract_removed.
+          guard: Contrat retiré du dépôt ou passé à `status` `cancelled`.
+          effects: Comme `cancel_mission`, motif `contract_removed`.
     - id: M17
       from: open
       to: cancelled
@@ -1168,11 +1173,11 @@ transitions:
         - id: cancel_mission
           actors: [porteur]
           guard: Motif fourni.
-          effects: Tentatives actives libérées (mission_cancelled) ; assignations ouvertes annulées.
+          effects: Tentatives actives libérées (`mission_cancelled`) ; assignations ouvertes annulées.
         - id: index_contract
           actors: [forge]
-          guard: Contrat retiré du dépôt ou passé à status cancelled.
-          effects: Comme cancel_mission, motif contract_removed.
+          guard: Contrat retiré du dépôt ou passé à `status` `cancelled`.
+          effects: Comme `cancel_mission`, motif `contract_removed`.
     - id: M18
       from: blocked
       to: cancelled
@@ -1181,11 +1186,11 @@ transitions:
         - id: cancel_mission
           actors: [porteur]
           guard: Motif fourni.
-          effects: Tentatives actives libérées (mission_cancelled) ; assignations ouvertes annulées.
+          effects: Tentatives actives libérées (`mission_cancelled`) ; assignations ouvertes annulées.
         - id: index_contract
           actors: [forge]
-          guard: Contrat retiré du dépôt ou passé à status cancelled.
-          effects: Comme cancel_mission, motif contract_removed.
+          guard: Contrat retiré du dépôt ou passé à `status` `cancelled`.
+          effects: Comme `cancel_mission`, motif `contract_removed`.
     - id: M19
       from: in_progress
       to: cancelled
@@ -1194,11 +1199,11 @@ transitions:
         - id: cancel_mission
           actors: [porteur]
           guard: Motif fourni.
-          effects: Tentatives actives libérées (mission_cancelled) ; assignations ouvertes annulées.
+          effects: Tentatives actives libérées (`mission_cancelled`) ; assignations ouvertes annulées.
         - id: index_contract
           actors: [forge]
-          guard: Contrat retiré du dépôt ou passé à status cancelled.
-          effects: Comme cancel_mission, motif contract_removed.
+          guard: Contrat retiré du dépôt ou passé à `status` `cancelled`.
+          effects: Comme `cancel_mission`, motif `contract_removed`.
     - id: M20
       from: awaiting_decision
       to: cancelled
@@ -1207,11 +1212,11 @@ transitions:
         - id: cancel_mission
           actors: [porteur]
           guard: Motif fourni.
-          effects: Tentatives actives libérées (mission_cancelled) ; assignations ouvertes annulées.
+          effects: Tentatives actives libérées (`mission_cancelled`) ; assignations ouvertes annulées.
         - id: index_contract
           actors: [forge]
-          guard: Contrat retiré du dépôt ou passé à status cancelled.
-          effects: Comme cancel_mission, motif contract_removed.
+          guard: Contrat retiré du dépôt ou passé à `status` `cancelled`.
+          effects: Comme `cancel_mission`, motif `contract_removed`.
     - id: M21
       from: accepted
       to: cancelled
@@ -1220,11 +1225,11 @@ transitions:
         - id: cancel_mission
           actors: [porteur]
           guard: Motif fourni.
-          effects: Tentatives actives libérées (mission_cancelled) ; assignations ouvertes annulées.
+          effects: Tentatives actives libérées (`mission_cancelled`) ; assignations ouvertes annulées.
         - id: index_contract
           actors: [forge]
-          guard: Contrat retiré du dépôt ou passé à status cancelled.
-          effects: Comme cancel_mission, motif contract_removed.
+          guard: Contrat retiré du dépôt ou passé à `status` `cancelled`.
+          effects: Comme `cancel_mission`, motif `contract_removed`.
     - id: M22
       from: blocked
       to: awaiting_decision
@@ -1232,7 +1237,7 @@ transitions:
       triggers:
         - id: blocking_request
           actors: [human]
-          guard: Demande bloquante ouverte qui cite la mission (précédence de awaiting_decision sur blocked).
+          guard: Demande bloquante ouverte qui cite la mission (précédence de `awaiting_decision` sur `blocked`).
           effects: Aucun.
     - id: M23
       from: awaiting_decision
@@ -1252,7 +1257,7 @@ transitions:
         - id: claim_review
           actors: [agent]
           guard: Soumission tirée au sort parmi celles pour lesquelles l'agent est éligible (A5).
-          effects: due_at = maintenant + review_assignment_hours ; dossier de revue lié à la version du contrat et au commit ou à l'empreinte.
+          effects: "`due_at` = maintenant + `review_assignment_hours` ; dossier de revue lié à la version du contrat et au commit ou à l'empreinte."
     - id: RV02
       from: assigned
       to: completed
@@ -1260,7 +1265,7 @@ transitions:
       triggers:
         - id: submit_review
           actors: [agent_reviewer]
-          guard: Rapport conforme à schemas/review-report.schema.json, identifiants et état examiné identiques à ceux de l'assignation.
+          guard: Rapport conforme à `schemas/review-report.schema.json`, identifiants et état examiné identiques à ceux de l'assignation.
           effects: Revue valide.
     - id: RV03
       from: assigned
@@ -1278,7 +1283,7 @@ transitions:
       triggers:
         - id: assignment_timeout
           actors: [platform]
-          guard: maintenant >= due_at.
+          guard: maintenant >= `due_at`.
           effects: Transition datée de l'échéance.
     - id: RV05
       from: assigned
@@ -1291,7 +1296,7 @@ transitions:
           effects: Aucun rapport accepté sur cette assignation.
         - id: attempt_left_review
           actors: [platform]
-          guard: La tentative quitte la revue (released, rejected, changes_requested sur décision du porteur).
+          guard: La tentative quitte la revue (`released`, `rejected`, `changes_requested` sur décision du porteur).
           effects: Aucun rapport accepté sur cette assignation.
         - id: mission_cancelled
           actors: [platform]
@@ -1305,28 +1310,28 @@ rules:
     text: Chaque réservation réussie incrémente la génération de la mission et l'attribue à la nouvelle tentative ; les générations d'une mission sont uniques et strictement croissantes.
   - id: G2
     topic: generation
-    text: Toute opération sur une tentative présente son identifiant et sa génération ; une génération différente de celle de la tentative est refusée (stale_generation).
+    text: Toute opération sur une tentative présente son identifiant et sa génération ; une génération différente de celle de la tentative est refusée (`stale_generation`).
   - id: G3
     topic: generation
-    text: Une tentative terminée dont la mission a été réservée depuis (génération supérieure) est périmée ; toute opération est refusée (stale_generation), sans effet.
+    text: Une tentative terminée dont la mission a été réservée depuis (génération supérieure) est périmée ; toute opération est refusée (`stale_generation`), sans effet.
   - id: G4
     topic: generation
-    text: Une tentative expirée non réattribuée répond lease_expired ; une tentative libérée, acceptée ou rejetée répond attempt_closed.
+    text: Une tentative expirée non réattribuée répond `lease_expired` ; une tentative libérée, acceptée ou rejetée répond `attempt_closed`.
   - id: G5
     topic: generation
     text: La génération ne change ni à la reprise après décision (T07), ni à la nouvelle soumission après changements (T19), ni à la migration de contrat.
   - id: B1
     topic: lease
-    text: lease_expires_at = min(maintenant + lease_minutes, deadline_at) à la réservation et à chaque opération qui renouvelle le bail.
+    text: "`lease_expires_at` = min(maintenant + `lease_minutes`, `deadline_at`) à la réservation et à chaque opération qui renouvelle le bail."
   - id: B2
     topic: lease
-    text: Une tentative dont lease_expires_at est atteint est expirée pour toute opération, qu'un traitement de fond l'ait enregistré ou non ; l'expiration est datée de lease_expires_at.
+    text: Une tentative dont `lease_expires_at` est atteint est expirée pour toute opération, qu'un traitement de fond l'ait enregistré ou non ; l'expiration est datée de `lease_expires_at`.
   - id: B3
     topic: lease
-    text: Une opération reçue à l'instant lease_expires_at exactement arrive trop tard.
+    text: Une opération reçue à l'instant `lease_expires_at` exactement arrive trop tard.
   - id: B4
     topic: lease
-    text: En awaiting_decision, le bail et la durée active sont suspendus ; à la reprise, deadline_at = reprise + durée active restante.
+    text: En `awaiting_decision`, le bail et la durée active sont suspendus ; à la reprise, `deadline_at` = reprise + durée active restante.
   - id: B5
     topic: lease
     text: L'horloge de la plateforme fait foi ; toute date est en UTC (RFC 3339) ; l'instant d'une opération est celui de sa transaction.
@@ -1338,52 +1343,52 @@ rules:
     text: Un changement compatible laisse la tentative sur sa version figée, sans choix à faire.
   - id: V3
     topic: versions
-    text: Un changement incompatible impose un choix avant toute soumission (contract_choice_required) - migrer vers la dernière version ou libérer.
+    text: "Un changement incompatible impose un choix avant toute soumission (`contract_choice_required`) : migrer vers la dernière version ou libérer."
   - id: V4
     topic: versions
-    text: La migration vise la dernière version indexée et revérifie l'éligibilité ; sinon contract_version_mismatch ou not_eligible.
+    text: La migration vise la dernière version indexée et revérifie l'éligibilité ; sinon `contract_version_mismatch` ou `not_eligible`.
   - id: V5
     topic: versions
-    text: Une soumission déposée reste liée à sa version figée ; si une version incompatible paraît ensuite, elle est vérifiée contre sa version figée et signalée au porteur (outdated_contract).
+    text: Une soumission déposée reste liée à sa version figée ; si une version incompatible paraît ensuite, elle est vérifiée contre sa version figée et signalée au porteur (`outdated_contract`).
   - id: V6
     topic: versions
-    text: Classement d'un changement - incompatible s'il touche type, objective, scope, inputs, outputs, acceptance, dependencies, skills, languages, risk, attempts, execution ou verification ; compatible sinon. Le porteur peut déclarer un autre classement, tracé.
+    text: "Classement d'un changement : incompatible s'il touche `type`, `objective`, `scope`, `inputs`, `outputs`, `acceptance`, `dependencies`, `skills`, `languages`, `risk`, `attempts`, `execution` ou `verification` ; compatible sinon. Le porteur peut déclarer un autre classement, tracé."
   - id: V7
     topic: versions
     text: L'indexation refuse une version inférieure, un contenu modifié sans incrément et un contrat invalide ; la dernière version valide reste en vigueur.
   - id: R1
     topic: resumption
-    text: La réponse à claim_mission porte resume_from - le dernier point d'avancement de la tentative expirée ou libérée de plus haute génération qui en a un, avec sa version de contrat.
+    text: "La réponse à `claim_mission` porte `resume_from` : le dernier point d'avancement de la tentative expirée ou libérée de plus haute génération qui en a un, avec sa version de contrat."
   - id: R2
     topic: resumption
-    text: Les tentatives rejetées et acceptées ne fournissent pas de point de reprise ; sans point disponible, resume_from est absent.
+    text: Les tentatives rejetées et acceptées ne fournissent pas de point de reprise ; sans point disponible, `resume_from` est absent.
   - id: R3
     topic: resumption
     text: Un point d'avancement est immuable ; son numéro de séquence, attribué par la plateforme, croît d'une unité par tentative.
   - id: I1
     topic: idempotency
-    text: Toute écriture porte une clé d'idempotence ; sans clé, idempotency_key_required.
+    text: Toute écriture porte une clé d'idempotence ; sans clé, `idempotency_key_required`.
   - id: I2
     topic: idempotency
     text: Une clé déjà vue, de même empreinte (opération et contenu), rejoue la réponse enregistrée sans nouvel effet, même si l'état a changé depuis.
   - id: I3
     topic: idempotency
-    text: Une clé déjà vue avec une autre empreinte est refusée (idempotency_conflict) ; la portée d'une clé est le principal appelant, toutes opérations confondues.
+    text: Une clé déjà vue avec une autre empreinte est refusée (`idempotency_conflict`) ; la portée d'une clé est le principal appelant, toutes opérations confondues.
   - id: I4
     topic: idempotency
-    text: Une requête de même clé encore en cours reçoit idempotency_in_progress, ou la réponse de la première une fois celle-ci terminée.
+    text: Une requête de même clé encore en cours reçoit `idempotency_in_progress`, ou la réponse de la première une fois celle-ci terminée.
   - id: I5
     topic: idempotency
-    text: Les réponses définitives (succès et erreurs 4xx sauf 409 idempotency_in_progress et 429) sont rejouées ; les erreurs transitoires (5xx, 429) ne sont pas enregistrées.
+    text: Les réponses définitives (succès et erreurs 4xx sauf 409 `idempotency_in_progress` et 429) sont rejouées ; les erreurs transitoires (5xx, 429) ne sont pas enregistrées.
   - id: I6
     topic: idempotency
-    text: Au-delà de idempotency_retention_hours, une clé est oubliée et la requête traitée comme nouvelle.
+    text: Au-delà de `idempotency_retention_hours`, une clé est oubliée et la requête traitée comme nouvelle.
   - id: C1
     topic: concurrency
     text: Les opérations sur une même mission ou une même tentative sont sérialisables ; le résultat est celui d'un ordre séquentiel quelconque des transactions.
   - id: C2
     topic: concurrency
-    text: Une mission exclusive a au plus une tentative active ; une mission parallèle au plus attempts.max ; un agent au plus une tentative active par mission.
+    text: Une mission exclusive a au plus une tentative active ; une mission parallèle au plus `attempts.max` ; un agent au plus une tentative active par mission.
   - id: C3
     topic: concurrency
     text: Une soumission a au plus autant d'assignations ouvertes et de revues valides que sa cible.
@@ -1392,13 +1397,13 @@ rules:
     text: Un événement de forge rejoué (même identifiant de livraison) n'a d'effet qu'une fois.
   - id: F1
     topic: eligibility
-    text: Plafonds de flux - réservation refusée si les tentatives du projet en production (claimed, awaiting_decision, changes_requested) atteignent max_in_production, ou si les livrables en attente de revue ou d'intégration (submitted, awaiting_reviewer, in_review, missions accepted non intégrées) atteignent max_awaiting_review_or_integration ; la vérification reste proposée.
+    text: "Plafonds de flux : réservation refusée si les tentatives du projet en production (`claimed`, `awaiting_decision`, `changes_requested`) atteignent `max_in_production`, ou si les livrables en attente de revue ou d'intégration (`submitted`, `awaiting_reviewer`, `in_review`, missions `accepted` non intégrées) atteignent `max_awaiting_review_or_integration` ; la vérification reste proposée."
   - id: F2
     topic: eligibility
     text: Le budget épuisé refuse les nouvelles réservations, jamais les opérations d'une tentative en cours.
   - id: F3
     topic: eligibility
-    text: Environnement exigé - execution.environment vm exige un agent déclaré en VM ; container, ou un risque medium ou supérieur, exige un agent en conteneur ou en VM ; any n'exige rien. Sinon not_eligible (environment).
+    text: "Environnement exigé : `execution.environment` `vm` exige un agent déclaré en VM ; `container`, ou un risque `medium` ou supérieur, exige un agent en conteneur ou en VM ; `any` n'exige rien. Sinon `not_eligible` (`environment`)."
   - id: F4
     topic: eligibility
     text: La suspension d'un projet refuse les nouvelles réservations et assignations de revue ; les tentatives en cours continuent.
@@ -1407,13 +1412,13 @@ rules:
     text: Le projet qui exige un rapport de consommation refuse une soumission qui n'en joint pas.
   - id: W1
     topic: review
-    text: Verdict décidé - quand les revues valides de la soumission courante atteignent la cible R (verification.reviewers), un verdict unanime est décidé ; sinon, escalade.
+    text: "Verdict décidé : quand les revues valides de la soumission courante atteignent la cible `R` (`verification.reviewers`), un verdict unanime est décidé ; sinon, escalade."
   - id: W2
     topic: review
-    text: Escalade - la cible passe à escalation_reviews (R + 1 si R vaut 3 ou plus) ; à la cible, le verdict de majorité stricte est décidé, définitivement ; sans majorité, une demande verification.dispute est ouverte et la tentative reste in_review jusqu'à l'action du porteur.
+    text: "Escalade : la cible passe à `escalation_reviews` (`R + 1` si `R` vaut 3 ou plus) ; à la cible, le verdict de majorité stricte est décidé, définitivement ; sans majorité, une demande `verification.dispute` est ouverte et la tentative reste `in_review` jusqu'à l'action du porteur."
   - id: W3
     topic: review
-    text: Un rejet décidé sans escalade reste en attente pendant contest_window_hours ; le producteur peut le contester une fois (escalade) ; sans contestation, la tentative est rejetée à l'échéance. Un rejet décidé après escalade est immédiat.
+    text: Un rejet décidé sans escalade reste en attente pendant `contest_window_hours` ; le producteur peut le contester une fois (escalade) ; sans contestation, la tentative est rejetée à l'échéance. Un rejet décidé après escalade est immédiat.
   - id: W4
     topic: review
     text: Un vérificateur dont l'assignation a été déclinée ou a expiré n'est plus assigné à la même soumission.

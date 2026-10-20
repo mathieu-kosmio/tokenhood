@@ -1236,7 +1236,7 @@ cases:
         expect: {result: ok}
 
   - id: CT-036
-    title: Indexation refusée - régression, version inchangée, contrat invalide
+    title: "Indexation refusée : régression, version inchangée, contrat invalide"
     covers: []
     rules: [V7, C4]
     given:
@@ -1445,7 +1445,7 @@ cases:
         expect: {result: ok, response: {attempt: {generation: 2, resume_from: {attempt: att_0001, checkpoint: {sequence: 1}}}}}
 
   - id: CT-042
-    title: Arrêt pour une question de sécurité - libération immédiate, mission en attente
+    title: "Arrêt pour une question de sécurité : libération immédiate, mission en attente"
     covers: ["T06:request_arbitration", "M08:blocking_request", "M10:decision_published"]
     rules: [A7]
     given:
@@ -1572,7 +1572,7 @@ cases:
 
   # ---------------------------------------------------------------- Soumission et vérification
   - id: CT-046
-    title: Parcours nominal - soumission, revue, approbation
+    title: "Parcours nominal : soumission, revue, approbation"
     covers: ["T03:submit_work", "T10:claim_review", "RV01:claim_review", "T14:submit_review", "RV02:submit_review", "T16:approve_submission", "M12:attempt_accepted"]
     rules: [V5]
     given:
@@ -2476,7 +2476,7 @@ cases:
         expect: {result: error, error: attempt_closed}
 
   - id: CT-066
-    title: Acceptation dans une mission parallèle - tentatives sœurs libérées
+    title: "Acceptation dans une mission parallèle : tentatives sœurs libérées"
     covers: ["T16:approve_submission", "M12:attempt_accepted", "T06:sibling_accepted", "T08:sibling_accepted", "T22:sibling_accepted", "T23:sibling_accepted", "T24:sibling_accepted", "T25:sibling_accepted", "RV05:attempt_left_review"]
     rules: [C2]
     given:
@@ -2524,7 +2524,7 @@ cases:
 
   # ---------------------------------------------------------------- États de mission
   - id: CT-067
-    title: Publication d'une mission - ouverte ou bloquée
+    title: "Publication d'une mission : ouverte ou bloquée"
     covers: ["M01:index_contract", "M02:index_contract"]
     rules: []
     given:
@@ -2969,7 +2969,7 @@ cases:
         expect: {result: ok, response: {assignment: {attempt: att_0001}}}
 
   - id: CT-080
-    title: Budget épuisé - nouvelles réservations refusées, tentative en cours préservée
+    title: "Budget épuisé : nouvelles réservations refusées, tentative en cours préservée"
     covers: ["T02:heartbeat"]
     rules: [F2]
     given:
@@ -3118,8 +3118,8 @@ cases:
       - {at: "+1m", actor: agt_alice, op: contest_review, input: {attempt: att_0003, generation: 1, submission: SUB-003, reason: Essai}, key: k6, expect: {result: error, error: invalid_transition}}
       - at: "+1m"
         actor: agt_alice
-        op: contest_review
-        input: {attempt: att_0004, generation: 1, submission: SUB-003, reason: Essai}
+        op: heartbeat
+        input: {attempt: att_0003, generation: 1}
         key: k7
         expect:
           result: error

@@ -14,6 +14,15 @@
 | `policy-security.schema.json` | `.tokenhood/policies/security.yaml` |
 | `policy-review.schema.json` | `.tokenhood/policies/review.yaml` |
 | `common.schema.json` | types partagés · shared types |
+| `protocol.schema.json` | entrées et sorties des opérations du protocole, erreurs · protocol operation inputs, outputs and errors |
+| `protocol-machine.schema.json` | `protocole/machine.yaml` |
+| `protocol-conformance.schema.json` | `protocole/conformite.yaml` |
+
+## Protocole de coordination · Coordination protocol
+
+**FR** · `protocole/machine.yaml` est la forme exécutable du protocole de coordination (états, transitions, autorisations, générations, versions, reprise, erreurs) ; `protocole/conformite.yaml` décrit les tests de conformité que l'implémentation doit passer, chaque couple transition:déclencheur couvert. Lecture commentée et normative : `docs/specs/protocole.md` (TH-009). Ces deux fichiers ne sont pas des exemples : le validateur ne les contrôle pas encore.
+
+**EN** · `protocole/machine.yaml` is the executable form of the coordination protocol (states, transitions, authorisations, generations, versions, resumption, errors); `protocole/conformite.yaml` describes the conformance tests the implementation must pass, with every transition:trigger pair covered. Normative commentary: `docs/specs/protocole.md` (TH-009, French). These two files are not examples: the validator does not check them yet.
 
 ## Valider · Validate
 
