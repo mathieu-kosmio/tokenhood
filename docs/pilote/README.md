@@ -15,7 +15,7 @@ Statut : **proposé**. Le protocole s'applique dès sa fusion par le porteur ; l
 
 À retenir de l'état initial (détail et sources dans le [journal](journal-de-campagne.md)) :
 
-- 13 missions intégrées au 2026-10-20, toutes produites, intégrées et fusionnées par le même compte, sans aucune revue sur les PR #1 à #22 : elles sont classées dérogatoires, et la démonstration 1 reste entièrement à faire.
+- 13 missions intégrées et 4 en cours au 2026-10-20 ; les 13 intégrées ont toutes été produites, intégrées et fusionnées par le même compte, sans aucune revue sur les PR #1 à #22 : elles sont classées dérogatoires, et la démonstration 1 reste entièrement à faire.
 - 5 668 022 tokens comptés (déclarés) : 3 807 429 en production, 1 860 593 en intégration ; aucune vérification.
 - Les 13 premiers retours à 30 jours sont dus le 2026-11-17.
 - Cases vides de la grille de couverture : mission i18n, second contributeur, contributeur extérieur, second client, mainteneur externe.
