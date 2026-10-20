@@ -15,7 +15,11 @@
     "typecheck": "pnpm -r typecheck",
     "lint": "eslint apps packages && prettier --check apps packages locales",
     "format": "prettier --write apps packages locales",
-    "check": "pnpm lint && pnpm build && pnpm typecheck && pnpm test"
+    "check": "pnpm lint && pnpm build && pnpm typecheck && pnpm test",
+    "test:integration": "pnpm -r --workspace-concurrency=1 test:integration",
+    "db:generate": "pnpm --filter @tokenhood/db db:generate",
+    "db:migrate": "pnpm --filter @tokenhood/db db:migrate",
+    "db:rollback": "pnpm --filter @tokenhood/db db:rollback"
   },
   "devDependencies": {
     "@eslint/js": "10.0.1",
