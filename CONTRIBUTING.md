@@ -9,9 +9,19 @@ Tokenhood se construit avec Tokenhood : toute contribution passe par une mission
 ### Avant de commencer
 
 - **Code de conduite** : [`.github/CODE_OF_CONDUCT.md`](.github/CODE_OF_CONDUCT.md). Il vaut aussi pour ce que publie votre agent.
-- **Licence : à choisir.** <!-- LICENCE : emplacement à compléter quand la licence sera décidée (fichier LICENSE, licence des contributions). --> Le dépôt n'a pas encore de licence ; l'AGPL-3.0 est proposée, la décision revient à la gouvernance avant la porte du lot 0. Cette section indiquera la licence de vos contributions dès qu'elle sera choisie.
+- **Licences** : une par couche du dépôt, voir la section suivante.
 - **Principes non négociables** : aucun appel à un fournisseur de LLM côté serveur ; rien ne se vend ni ne se transfère ; vérification croisée par l'agent d'un autre utilisateur ; fusion toujours humaine ; interface bilingue FR/EN.
 - **Spécifications** : [`docs/specs/`](docs/specs/README.md), en particulier les missions, la coordination et la vérification croisée.
+
+### Licences
+
+| Couche et chemins | Licence (SPDX) |
+| --- | --- |
+| Plateforme et tout ce qui n'est pas cité plus bas : `apps/`, `packages/`, `landing/`, `tools/validate/`, `tools/no-llm-sdk/`, `design/`, `.github/`, `.tokenhood/`, fichiers de la racine | `AGPL-3.0-only` ([`LICENSE`](LICENSE)) |
+| Protocole : `schemas/`, `examples/`, `skills/` (chaque skill), `tools/usage/` | `Apache-2.0` |
+| Documentation et décisions : `docs/`, `decisions/` | `CC-BY-4.0` |
+
+Chacun de ces dossiers porte son fichier `LICENSE`. Chaque contribution est publiée sous la licence du dossier qu'elle modifie, avec le DCO (plus bas) et sans accord de cession de droits. Les noms et logos de Kosmio et de Tokenhood ne sont couverts par aucune de ces licences. Décision : DEC-2026-005 ([`decisions/DEC-2026-005-licences.md`](decisions/DEC-2026-005-licences.md)).
 
 ### Cycle d'une contribution
 
@@ -55,7 +65,7 @@ Les demandes d'arbitrage se posent dans GitHub Discussions, catégorie Clarifica
 
 **Signature DCO.** Chaque commit porte la ligne `Signed-off-by: Nom <adresse>` de l'humain responsable de l'agent, ajoutée par `git commit -s`. Elle certifie le [Developer Certificate of Origin 1.1](https://developercertificate.org/), dont le texte anglais fait foi. En résumé, vous attestez que :
 
-- (a) vous avez créé la contribution, en tout ou en partie, et avez le droit de la soumettre sous la licence du projet ; ou
+- (a) vous avez créé la contribution, en tout ou en partie, et avez le droit de la soumettre sous la licence du dossier qu'elle modifie ; ou
 - (b) elle repose sur un travail antérieur couvert par une licence libre appropriée, qui vous permet de la soumettre ainsi ; ou
 - (c) une autre personne qui a certifié (a), (b) ou (c) vous l'a fournie et vous ne l'avez pas modifiée ;
 - (d) vous comprenez que le projet et la contribution sont publics, et qu'une trace de la contribution, signature comprise, est conservée sans limite de durée et peut être redistribuée.
@@ -128,9 +138,19 @@ Tokenhood is built with Tokenhood: every contribution goes through a mission in 
 ### Before you start
 
 - **Code of conduct**: [`.github/CODE_OF_CONDUCT.md`](.github/CODE_OF_CONDUCT.md). It also covers what your agent publishes.
-- **Licence: to be chosen.** <!-- LICENCE: placeholder to complete once the licence is decided (LICENSE file, licence of contributions). --> The repository has no licence yet; AGPL-3.0 is proposed, and governance decides before the lot 0 gate. This section will state the licence of your contributions once it is chosen.
+- **Licences**: one per repository layer, see the next section.
 - **Non-negotiable principles**: no LLM provider calls on the server side; nothing is sold or transferred; cross-review by another user's agent; merging is always human; bilingual FR/EN interface.
 - **Specifications**: [`docs/specs/`](docs/specs/README.md), English versions in `docs/specs/en/`, especially missions, coordination and cross-review.
+
+### Licences
+
+| Layer and paths | Licence (SPDX) |
+| --- | --- |
+| Platform and everything not listed below: `apps/`, `packages/`, `landing/`, `tools/validate/`, `tools/no-llm-sdk/`, `design/`, `.github/`, `.tokenhood/`, root files | `AGPL-3.0-only` ([`LICENSE`](LICENSE)) |
+| Protocol: `schemas/`, `examples/`, `skills/` (each skill), `tools/usage/` | `Apache-2.0` |
+| Documentation and decisions: `docs/`, `decisions/` | `CC-BY-4.0` |
+
+Each of these folders carries its own `LICENSE` file. Every contribution is published under the licence of the folder it changes, with the DCO (below) and without any copyright assignment. The Kosmio and Tokenhood names and logos are not covered by any of these licences. Decision: DEC-2026-005 ([`decisions/DEC-2026-005-licences.md`](decisions/DEC-2026-005-licences.md)).
 
 ### Contribution cycle
 
@@ -174,7 +194,7 @@ Arbitration requests go to GitHub Discussions, Clarifications category (General 
 
 **DCO sign-off.** Every commit carries the `Signed-off-by: Name <address>` line of the human responsible for the agent, added by `git commit -s`. It certifies the [Developer Certificate of Origin 1.1](https://developercertificate.org/), whose text prevails. In short, you certify that:
 
-- (a) you created the contribution, in whole or in part, and have the right to submit it under the project's licence; or
+- (a) you created the contribution, in whole or in part, and have the right to submit it under the licence of the folder it changes; or
 - (b) it is based on previous work covered by an appropriate open source licence that lets you submit it this way; or
 - (c) someone who certified (a), (b) or (c) gave it to you and you did not modify it;
 - (d) you understand that the project and the contribution are public, and that a record of the contribution, sign-off included, is kept indefinitely and may be redistributed.
