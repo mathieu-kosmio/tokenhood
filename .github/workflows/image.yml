@@ -1,4 +1,5 @@
 # TH-013 : construction de l'image de la plateforme et essai du compose de référence.
+# TH-102 : service migrate à exécution unique (rejouable), connexion indisponible sans secrets OAuth.
 name: image
 
 on:
@@ -31,6 +32,20 @@ jobs:
           curl -s -H 'accept-language: en-US' http://127.0.0.1:3001/ | grep -q '<html lang="en"'
           curl -s 'http://127.0.0.1:3001/?lang=fr' | grep -q 'Missions du lot 0'
           check "$(code http://127.0.0.1:3001/inexistant)" 404 "web 404"
+          # Migrations : le service migrate s'est terminé avec succès, avant api et web, et se rejoue sans effet.
+          check "$(docker compose ps -a migrate --format '{{.State}} {{.ExitCode}}')" "exited 0" "migrate"
+          applied() { docker compose exec -T postgres psql -U tokenhood -d tokenhood -Atc 'select count(*) from drizzle.__drizzle_migrations'; }
+          before=$(applied)
+          test "$before" -ge 2 || { echo "migrations non appliquées ($before)"; exit 1; }
+          docker compose run --rm --no-deps migrate
+          check "$(applied)" "$before" "migrate rejoué"
+          docker compose exec -T postgres psql -U tokenhood -d tokenhood -Atc 'select 1 from users limit 1' > /dev/null
+          # Sans GITHUB_CLIENT_ID, GITHUB_CLIENT_SECRET ni SESSION_SECRET : la plateforme démarre, connexion indisponible.
+          curl -s http://127.0.0.1:3000/v1/auth/providers | grep -q '"available":false'
+          check "$(code -H 'accept-language: en' http://127.0.0.1:3000/v1/auth/github/start)" 503 "api départ OAuth"
+          check "$(code http://127.0.0.1:3000/v1/users/me)" 401 "api profil anonyme"
+          curl -s 'http://127.0.0.1:3001/login?lang=fr' | grep -q 'Connexion indisponible'
+          curl -s 'http://127.0.0.1:3001/login?lang=en' | grep -q 'Sign-in unavailable'
           for s in api web; do
             uid=$(docker compose exec -T "$s" id -u)
             test "$uid" != 0 || { echo "$s tourne en root"; exit 1; }
@@ -41,7 +56,7 @@ jobs:
           if docker history --no-trunc tokenhood-app | grep -q 'essai-ci-sans-valeur'; then
             echo "Le mot de passe de test apparaît dans l'historique de l'image"; exit 1
           fi
-          echo "Compose conforme : api et web sains, non root, aucune variable sensible dans l'image."
+          echo "Compose conforme : migrations appliquées et rejouables, api et web sains, non root, connexion indisponible sans secrets, aucune variable sensible dans l'image."
       - name: Journaux
         if: always()
         run: docker compose logs --no-color

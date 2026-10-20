@@ -1,5 +1,6 @@
 # TH-101 : CI du monorepo de la plateforme (lint, build, typecheck, tests).
-# Les scans de sécurité et les statuts requis arrivent avec TH-015.
+# TH-102 : tests d'intégration sur un PostgreSQL 16 éphémère (service du job, détruit avec lui).
+# Le nom du job (monorepo) est un statut requis sur main : ne pas le renommer.
 name: ci
 
 on:
@@ -13,6 +14,18 @@ permissions:
 jobs:
   monorepo:
     runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          # Base jetable du job : identifiants de test, sans valeur ailleurs.
+          POSTGRES_USER: tokenhood
+          POSTGRES_PASSWORD: tokenhood
+          POSTGRES_DB: tokenhood_test
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd "pg_isready -U tokenhood -d tokenhood_test"
+          --health-interval 5s --health-timeout 3s --health-retries 20
     env:
       COREPACK_ENABLE_DOWNLOAD_PROMPT: '0'
     steps:
@@ -27,3 +40,7 @@ jobs:
       - run: pnpm build
       - run: pnpm typecheck
       - run: pnpm test
+      - name: Tests d'intégration (PostgreSQL 16 éphémère)
+        env:
+          TEST_DATABASE_URL: postgres://tokenhood:tokenhood@localhost:5432/tokenhood_test
+        run: pnpm test:integration

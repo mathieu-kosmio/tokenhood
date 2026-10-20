@@ -1,8 +1,9 @@
 # Compose de référence de la plateforme (TH-013), utilisé tel quel par Coolify (ressource Docker Compose).
 # Aucun port publié : le proxy de Coolify atteint les services sur le réseau interne.
 # Domaines à déclarer dans Coolify : app. -> web:3000, api. -> api:3000.
-# Secret : SERVICE_PASSWORD_POSTGRES. Coolify le génère et le conserve lui-même (variable magique) ;
-# en local ou en CI, le fournir dans l'environnement. Jamais dans le dépôt.
+# Secrets : SERVICE_PASSWORD_POSTGRES, que Coolify génère et conserve lui-même (variable magique) ; GITHUB_CLIENT_ID,
+# GITHUB_CLIENT_SECRET et SESSION_SECRET (TH-102), à renseigner dans Coolify. En local ou en CI, les fournir dans
+# l'environnement. Jamais dans le dépôt. Sans les trois derniers, la plateforme démarre, connexion indisponible.
 # En local : SERVICE_PASSWORD_POSTGRES=<valeur> docker compose -f compose.yaml -f compose.local.yaml up --build
 
 name: tokenhood
@@ -18,14 +19,37 @@ x-app: &app
     PORT: '3000'
     LOG_LEVEL: ${LOG_LEVEL:-info}
     DATABASE_URL: postgres://tokenhood:${SERVICE_PASSWORD_POSTGRES}@postgres:5432/tokenhood
+    # Origine publique de l'API (adresse de rappel OAuth, lien de connexion) et domaine du cookie de session,
+    # partagé par app. et api.
+    PUBLIC_API_URL: ${PUBLIC_API_URL:-https://api.tokenhood.kosm.io}
+    SESSION_COOKIE_DOMAIN: ${SESSION_COOKIE_DOMAIN:-tokenhood.kosm.io}
 
 services:
-  api:
+  # Migrations de la base (ADR-002) : exécution unique à chaque déploiement, rejouable sans effet.
+  migrate:
     <<: *app
-    command: ['node', 'apps/api/dist/server.js']
+    command: ['node', 'packages/db/dist/migrate.js']
+    restart: 'no'
+    healthcheck:
+      disable: true
     depends_on:
       postgres:
         condition: service_healthy
+
+  api:
+    <<: *app
+    command: ['node', 'apps/api/dist/server.js']
+    environment:
+      <<: *app-env
+      PUBLIC_WEB_URL: ${PUBLIC_WEB_URL:-https://app.tokenhood.kosm.io}
+      GITHUB_CLIENT_ID: ${GITHUB_CLIENT_ID:-}
+      GITHUB_CLIENT_SECRET: ${GITHUB_CLIENT_SECRET:-}
+      SESSION_SECRET: ${SESSION_SECRET:-}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
 
   web:
     <<: *app
@@ -39,6 +63,8 @@ services:
     depends_on:
       api:
         condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
 
   postgres:
     image: postgres:16-alpine

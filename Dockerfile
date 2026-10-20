@@ -1,7 +1,8 @@
 # syntax=docker/dockerfile:1
-# Image unique de la plateforme (ADR-002) : les services api et web en sortent avec des commandes différentes.
+# Image unique de la plateforme (ADR-002) : les services migrate, api et web en sortent avec des commandes différentes.
 #   docker build -t tokenhood-app .
 #   docker run -e PORT=3000 tokenhood-app node apps/api/dist/server.js
+#   docker run -e DATABASE_URL=… tokenhood-app node packages/db/dist/migrate.js
 # La landing a sa propre image : landing/Dockerfile.
 
 FROM node:22-alpine AS base
@@ -11,6 +12,8 @@ WORKDIR /repo
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 COPY apps/api/package.json apps/api/
 COPY apps/web/package.json apps/web/
+COPY packages/core/package.json packages/core/
+COPY packages/db/package.json packages/db/
 COPY packages/i18n/package.json packages/i18n/
 
 # Construction : toutes les dépendances, puis lint, build, typecheck et tests.
@@ -38,6 +41,9 @@ ENV NODE_ENV=production PORT=3000
 WORKDIR /repo
 COPY --from=prod-deps --chown=node:node /repo/ ./
 COPY --from=build --chown=node:node /repo/packages/i18n/dist packages/i18n/dist
+COPY --from=build --chown=node:node /repo/packages/db/dist packages/db/dist
+COPY --from=build --chown=node:node /repo/packages/db/migrations packages/db/migrations
+COPY --from=build --chown=node:node /repo/packages/core/dist packages/core/dist
 COPY --from=build --chown=node:node /repo/apps/api/dist apps/api/dist
 COPY --from=build --chown=node:node /repo/apps/web/build apps/web/build
 USER node
