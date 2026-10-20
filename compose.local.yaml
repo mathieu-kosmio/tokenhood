@@ -1,8 +1,17 @@
-# Surcharge locale : publie les ports et fixe l'origine du web. Jamais utilisée par Coolify.
+# Surcharge locale : publie les ports, fixe les origines et un cookie de session sans domaine ni Secure
+# (http://localhost). Jamais utilisée par Coolify.
 services:
   api:
     ports: ['3000:3000']
+    environment:
+      PUBLIC_API_URL: http://localhost:3000
+      PUBLIC_WEB_URL: http://localhost:3001
+      SESSION_COOKIE_DOMAIN: ''
+      SESSION_COOKIE_SECURE: 'false'
   web:
     ports: ['3001:3000']
     environment:
       ORIGIN: http://localhost:3001
+      PUBLIC_API_URL: http://localhost:3000
+      SESSION_COOKIE_DOMAIN: ''
+      SESSION_COOKIE_SECURE: 'false'
