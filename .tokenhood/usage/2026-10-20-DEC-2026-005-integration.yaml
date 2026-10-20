@@ -1,0 +1,24 @@
+schema_version: "2.1"
+missions: [TH-006]
+contribution:
+  kind: integration
+  pull_requests: [30]
+contributor: mathieu-kosmio
+agent:
+  client: claude-code
+  client_version: "2.1.299"
+  model_family: claude
+  model: claude-opus-5-5
+period:
+  start: "2026-10-20T17:21:14.415Z"
+  end: "2026-10-20T17:28:27.460Z"
+tokens:
+  input: 58
+  output: 28015
+  cache_creation: 47591
+  cache_read: 4725895
+counted: 75664
+method: client_transcript
+nature: declared
+evidence: "Transcription Claude Code de la session, 27 réponses comptées une fois chacune (tools/usage/claude-code.mjs)."
+notes: "Instruction et mise en œuvre de DEC-2026-005 (licences du dépôt), hors mission : analyse des licences possibles à la demande du porteur, puis, après sa validation, fichiers LICENSE, décision, README, project.yaml, skills, landing et PR #30. Rattaché à TH-006, dont l'audit a fait de la licence un préalable à l'inscription sur tokenpool, faute de mission dédiée. Les accusés de réception des événements de surveillance des autres PR, intercalés dans la fenêtre, sont comptés (quelques centaines de tokens). Le suivi de la CI et ce rapport ne sont pas comptés."
