@@ -4,3 +4,4 @@
 **/node_modules/
 pnpm-lock.yaml
 packages/i18n/src/messages.ts
+packages/db/migrations/
