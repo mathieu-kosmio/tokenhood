@@ -1,44 +1,77 @@
-// Application Fastify de l'API REST (ADR-002). Les modules métier vivront dans packages/core ;
-// ce squelette pose la santé, l'i18n des réponses et la description OpenAPI.
-import Fastify, { type FastifyError, type FastifyRequest } from 'fastify';
+// Application Fastify de l'API REST (ADR-002). Les règles vivent dans packages/core ; l'API résout l'acteur
+// (src/auth/), applique les conventions HTTP communes (src/http/) et charge chaque module de routes de src/routes/.
+import Fastify, { type FastifyRequest, type FastifyServerOptions } from 'fastify';
+import cookie from '@fastify/cookie';
 import swagger from '@fastify/swagger';
 import { Type, type TypeBoxTypeProvider } from '@fastify/type-provider-typebox';
-import { LANGS, catalog, isLang, negotiate, translate, type Lang } from '@tokenhood/i18n';
+import { LANGS, catalog, isLang, translate } from '@tokenhood/i18n';
+import type { Database } from '@tokenhood/db';
+import { systemClock, type Clock } from '@tokenhood/core/common';
+import { DOCUMENTS, type Fetch, type LegalDocument } from '@tokenhood/core/identity';
+import { installAuth, SESSION_COOKIE } from './auth/index.js';
+import { configFromEnv, type ApiConfig } from './config.js';
+import type { Deps } from './deps.js';
+import { ErrorBody, installErrors } from './http/errors.js';
+import { installIdempotency } from './http/idempotency.js';
+import { langOf } from './http/lang.js';
+import { loadRouteModules } from './http/routes.js';
 
 export const VERSION = '0.1.0';
 
 export interface AppOptions {
   logger?: boolean | { level: string };
+  db?: Database | null;
+  config?: ApiConfig;
+  fetch?: Fetch;
+  clock?: Clock;
+  documents?: readonly LegalDocument[];
 }
 
-const langOf = (request: FastifyRequest): Lang => negotiate(request.headers['accept-language']);
+// Le code d'autorisation et l'état OAuth de l'URL de rappel ne s'écrivent jamais dans les journaux.
+export const redactUrl = (url: string): string => url.replace(/([?&](?:code|state)=)[^&#]*/g, '$1[masqué]');
 
-const ErrorBody = Type.Object({ error: Type.String(), message: Type.String() });
-
-// Fastify 5 type l'erreur en unknown : on n'en garde que ce qui est sûr.
-function describe(error: unknown) {
-  const e: Partial<FastifyError> = typeof error === 'object' && error !== null ? error : {};
-  return {
-    status: typeof e.statusCode === 'number' ? e.statusCode : 500,
-    code: typeof e.code === 'string' ? e.code : 'bad_request',
-    message: typeof e.message === 'string' ? e.message : '',
-  };
-}
+const loggerOf = (logger: AppOptions['logger']): NonNullable<FastifyServerOptions['logger']> =>
+  logger
+    ? {
+        ...(typeof logger === 'object' ? logger : {}),
+        serializers: {
+          req: (req: FastifyRequest) => ({
+            method: req.method,
+            url: redactUrl(req.url),
+            host: req.host,
+            remoteAddress: req.ip,
+          }),
+        },
+      }
+    : false;
 
 export async function buildApp(options: AppOptions = {}) {
-  const app = Fastify({ logger: options.logger ?? false }).withTypeProvider<TypeBoxTypeProvider>();
+  const app = Fastify({ logger: loggerOf(options.logger) }).withTypeProvider<TypeBoxTypeProvider>();
 
+  const deps: Deps = {
+    db: options.db ?? null,
+    clock: options.clock ?? systemClock,
+    fetch: options.fetch ?? globalThis.fetch,
+    config: options.config ?? configFromEnv({}),
+    documents: options.documents ?? DOCUMENTS,
+  };
+  app.decorate('deps', deps);
+
+  await app.register(cookie);
   await app.register(swagger, {
     openapi: {
       openapi: '3.1.0',
       info: { title: 'Tokenhood API', version: VERSION },
       servers: [{ url: '/' }],
+      components: {
+        securitySchemes: { session: { type: 'apiKey', in: 'cookie', name: SESSION_COOKIE } },
+      },
     },
   });
 
-  app.addHook('onSend', async (request, reply) => {
-    reply.header('content-language', langOf(request));
-  });
+  installErrors(app);
+  installAuth(app);
+  installIdempotency(app);
 
   app.get(
     '/healthz',
@@ -77,21 +110,7 @@ export async function buildApp(options: AppOptions = {}) {
 
   app.get('/v1/openapi.json', { schema: { hide: true } }, async () => app.swagger());
 
-  app.setNotFoundHandler(async (request, reply) =>
-    reply.code(404).send({
-      error: 'not_found',
-      message: translate(langOf(request), 'errors.notFound', { path: request.url }),
-    }),
-  );
-
-  app.setErrorHandler(async (error, request, reply) => {
-    const { status, code, message } = describe(error);
-    if (status >= 500) request.log.error(error);
-    return reply.code(status).send({
-      error: status >= 500 ? 'internal' : code,
-      message: status >= 500 ? translate(langOf(request), 'errors.internal') : message,
-    });
-  });
+  await loadRouteModules(app);
 
   return app;
 }
