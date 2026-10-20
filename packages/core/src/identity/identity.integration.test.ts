@@ -293,7 +293,13 @@ describe('profil et inscription', () => {
 describe('acteurs agents', () => {
   it('un acteur agent ne lit ni ne modifie le profil, n’accepte rien et ne ferme aucune session', async () => {
     const { userId } = await signIn();
-    const agent: AgentActor = { kind: 'agent', agentId: uuidv7(), authorizationId: uuidv7(), userId };
+    const agent: AgentActor = {
+      kind: 'agent',
+      agentId: uuidv7(),
+      authorizationId: uuidv7(),
+      userId,
+      registered: true,
+    };
     expect(await failure(getMe(ctx(), agent))).toBe('403 agent_forbidden');
     expect(await failure(updateMe(ctx(), agent, { lang: 'fr' }, 1))).toBe('403 agent_forbidden');
     expect(await failure(acceptDocument(ctx(), agent, { document: 'charter', version: 1 }))).toBe(
@@ -323,6 +329,8 @@ describe('rôle administrateur provisoire', () => {
     await setAdmin(ctx(), { githubLogin: 'hedy-l' }, false);
     expect((await resolve()).admin).toBe(false);
     expect(await failure(setAdmin(ctx(), { githubLogin: 'personne' }, true))).toBe('404 unknown_user');
+    expect(await setAdmin(ctx(), { githubId: '5005' }, true)).toEqual({ userId, changed: true });
+    await setAdmin(ctx(), { githubId: '5005' }, false);
     const events = await history(t.db, { type: 'user', id: userId });
     expect(
       events
@@ -331,7 +339,22 @@ describe('rôle administrateur provisoire', () => {
     ).toEqual([
       ['identity.admin.granted', 'system', null],
       ['identity.admin.revoked', 'system', null],
+      ['identity.admin.granted', 'system', null],
+      ['identity.admin.revoked', 'system', null],
     ]);
+  });
+
+  it('un login porté par deux comptes (renommage sur GitHub) est refusé : identifiant numérique requis', async () => {
+    // L'ancien titulaire du login ne s'est pas reconnecté depuis son renommage ; un autre compte a pris ce login.
+    await signIn(fakeGitHub({ config: github, account: { id: 5101, login: 'alice', name: 'Alice' } }));
+    const other = await signIn(
+      fakeGitHub({ config: github, account: { id: 5102, login: 'Alice', name: 'Autre' } }),
+    );
+    expect(await failure(setAdmin(ctx(), { githubLogin: 'alice' }, true))).toBe('409 ambiguous_user');
+    expect(await setAdmin(ctx(), { githubId: '5102' }, true)).toEqual({
+      userId: other.userId,
+      changed: true,
+    });
   });
 });
 

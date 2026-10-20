@@ -1,8 +1,9 @@
 // Idempotence des écritures : une route déclarée { config: { idempotent: true } } exige l'en-tête
 // Idempotency-Key. Pour un appelant identifié, la première réponse (hors erreur 5xx) est conservée 24 heures et
 // rejouée à l'identique si la même clé revient avec la même requête ; une autre requête sur la même clé est refusée.
+// Un client qui abandonne sa requête ne libère pas la clé : la réponse, enregistrée à son envoi, sera rejouée.
 import { createHash } from 'node:crypto';
-import { and, eq, lt } from 'drizzle-orm';
+import { and, eq, isNull, lt } from 'drizzle-orm';
 import type { FastifyInstance, FastifyRequest } from 'fastify';
 import { idempotencyKeys } from '@tokenhood/db/schema/idempotency';
 import { sendError } from './errors.js';
@@ -12,10 +13,17 @@ const KEY = /^[\x21-\x7e]{1,255}$/;
 // En-têtes de la réponse rejoués avec elle.
 const KEPT_HEADERS = ['etag', 'location', 'content-type'] as const;
 
+// Une requête « en cours » depuis plus longtemps que ce délai a été interrompue (arrêt du service) : sa clé est
+// reprise. Les écritures de l'API restent sûres à rejouer (verrou optimiste, contraintes d'unicité).
+export const IN_PROGRESS_STALE_MS = 2 * 60 * 1000;
+
+// Portée d'une clé : l'appelant et sa session (ou son autorisation d'agent).
 const scopeOf = (request: FastifyRequest): string | null => {
   const actor = request.actor;
   if (!actor) return null;
-  return actor.kind === 'agent' ? `agent:${actor.agentId}` : `human:${actor.userId}`;
+  return actor.kind === 'agent'
+    ? `agent:${actor.agentId}:${actor.authorizationId}`
+    : `human:${actor.userId}:${actor.sessionId ?? '-'}`;
 };
 
 const requestHash = (request: FastifyRequest) =>
@@ -70,10 +78,32 @@ export function installIdempotency(app: FastifyInstance) {
       .from(idempotencyKeys)
       .where(and(eq(idempotencyKeys.scope, scope), eq(idempotencyKeys.key, raw)))
       .limit(1);
-    if (!existing || existing.requestHash !== hash)
-      return sendError(request, reply, 422, 'idempotency_key_reused', 'errors.idempotencyKeyReused');
-    if (existing.statusCode === null)
+    if (!existing)
       return sendError(request, reply, 409, 'idempotency_in_progress', 'errors.idempotencyInProgress');
+    // Première requête encore en cours : 409, sauf si elle est périmée (service arrêté) ; la clé est alors reprise.
+    if (existing.statusCode === null) {
+      const stale = existing.createdAt.getTime() < now.getTime() - IN_PROGRESS_STALE_MS;
+      const [taken] = stale
+        ? await db
+            .update(idempotencyKeys)
+            .set({ createdAt: now, requestHash: hash })
+            .where(
+              and(
+                eq(idempotencyKeys.scope, scope),
+                eq(idempotencyKeys.key, raw),
+                isNull(idempotencyKeys.statusCode),
+                eq(idempotencyKeys.createdAt, existing.createdAt),
+              ),
+            )
+            .returning({ key: idempotencyKeys.key })
+        : [];
+      if (!taken)
+        return sendError(request, reply, 409, 'idempotency_in_progress', 'errors.idempotencyInProgress');
+      request.idempotency = { scope, key: raw };
+      return;
+    }
+    if (existing.requestHash !== hash)
+      return sendError(request, reply, 422, 'idempotency_key_reused', 'errors.idempotencyKeyReused');
     reply.code(existing.statusCode).headers({ ...existing.responseHeaders, 'idempotent-replayed': 'true' });
     return reply.send(existing.responseBody ?? undefined);
   });
@@ -102,14 +132,5 @@ export function installIdempotency(app: FastifyInstance) {
       })
       .where(where);
     return payload;
-  });
-
-  // Requête interrompue avant sa réponse : la clé est libérée pour une nouvelle tentative.
-  app.addHook('onRequestAbort', async (request) => {
-    const pending = request.idempotency;
-    if (!pending || !app.deps.db) return;
-    await app.deps.db
-      .delete(idempotencyKeys)
-      .where(and(eq(idempotencyKeys.scope, pending.scope), eq(idempotencyKeys.key, pending.key)));
   });
 }

@@ -19,12 +19,14 @@ export const handle: Handle = async ({ event, resolve }) => {
   event.locals.etag = user?.etag ?? null;
   event.locals.session = user ? (session ?? null) : null;
 
-  // Connecté, la langue du profil prime ; un choix explicite (?lang=) met le profil à jour.
+  // Connecté, la langue du profil prime ; un choix explicite (?lang=) met le profil à jour, mais seulement depuis
+  // l'interface elle-même ou une adresse saisie : un lien venu d'un autre site ne modifie pas le profil.
   const { lang, remember, updateProfile } = resolveLang({
     ...sources,
     profile: event.locals.user?.lang ?? null,
   });
-  if (updateProfile && event.locals.user) {
+  const fromHere = ['same-origin', 'none'].includes(event.request.headers.get('sec-fetch-site') ?? '');
+  if (updateProfile && fromHere && event.locals.user) {
     const res = await api<Me>('/v1/users/me', {
       method: 'PATCH',
       body: { lang },

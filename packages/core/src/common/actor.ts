@@ -18,6 +18,8 @@ export interface AgentActor {
   agentId: string;
   authorizationId: string;
   userId: string;
+  // Inscription complète de l'utilisateur représenté : sans elle, l'agent n'a accès à rien.
+  registered: boolean;
 }
 
 export type Actor = HumanActor | AgentActor;
@@ -49,6 +51,8 @@ export function authorize(actor: Actor | null | undefined, op: Operation): Actor
   if (actor.kind === 'agent') {
     if (!op.agents)
       throw new DomainError('agent_forbidden', 403, 'errors.agentForbidden', { operation: op.id });
+    if (!actor.registered)
+      throw new DomainError('registration_incomplete', 403, 'errors.registrationIncomplete');
     return actor;
   }
   if (op.humans === 'registering') return actor;

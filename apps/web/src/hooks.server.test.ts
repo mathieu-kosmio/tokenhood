@@ -40,12 +40,19 @@ function stubApi(profile: Me | 'expired') {
   return calls;
 }
 
-async function run(path: string, cookies: Record<string, string>, acceptLanguage = 'fr-FR') {
+async function run(
+  path: string,
+  cookies: Record<string, string>,
+  acceptLanguage = 'fr-FR',
+  fetchSite = 'same-origin',
+) {
   const jar = { ...cookies };
   const deleted: string[] = [];
   const event = {
     url: new URL(`http://localhost:3001${path}`),
-    request: new Request(`http://localhost:3001${path}`, { headers: { 'accept-language': acceptLanguage } }),
+    request: new Request(`http://localhost:3001${path}`, {
+      headers: { 'accept-language': acceptLanguage, 'sec-fetch-site': fetchSite },
+    }),
     locals: {} as App.Locals,
     cookies: {
       get: (name: string) => jar[name],
@@ -92,6 +99,13 @@ describe('crochet serveur', () => {
     expect(patch?.headers['if-match']).toBe('"v1"');
     expect(patch?.headers['idempotency-key']).toMatch(/^[0-9a-f-]{36}$/);
     expect(locals).toMatchObject({ lang: 'fr', etag: '"v2"', user: { lang: 'fr' } });
+  });
+
+  it('un lien venu d’un autre site affiche la langue demandée sans modifier le profil', async () => {
+    const calls = stubApi(me({ lang: 'en' }));
+    const { locals } = await run('/?lang=fr', { th_session: 'jeton' }, 'en', 'cross-site');
+    expect(calls.filter((c) => c.method === 'PATCH')).toEqual([]);
+    expect(locals).toMatchObject({ lang: 'fr', user: { lang: 'en' } });
   });
 
   it('inscription incomplète : toute page hors du parcours mène à l’inscription', async () => {

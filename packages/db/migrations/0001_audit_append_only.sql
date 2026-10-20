@@ -1,6 +1,8 @@
 -- Journal d'audit en ajout seul (TH-102) : la base refuse toute mise à jour, suppression ou troncature
--- de audit_events, quel que soit le rôle applicatif. Migration personnalisée créée par
--- drizzle-kit generate --custom : les déclencheurs n'ont pas d'équivalent dans le schéma Drizzle.
+-- de audit_events venue d'une requête. Le propriétaire de la table (aujourd'hui le compte de l'application)
+-- peut retirer les déclencheurs : protection contre l'erreur, pas contre la compromission de ce compte.
+-- Migration personnalisée créée par drizzle-kit generate --custom : les déclencheurs n'ont pas d'équivalent
+-- dans le schéma Drizzle.
 CREATE FUNCTION "audit_events_append_only"() RETURNS trigger LANGUAGE plpgsql AS $$
 BEGIN
   RAISE EXCEPTION 'audit_events est en ajout seul : % refusé', TG_OP USING ERRCODE = 'insufficient_privilege';

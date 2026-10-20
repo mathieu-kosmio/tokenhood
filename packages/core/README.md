@@ -38,8 +38,10 @@ Fournis une fois, hors des modules métier :
 - **Acteurs et autorisations** : voir plus bas.
 
 Côté API, les conventions HTTP communes vivent dans `apps/api/src/http/` : erreurs localisées, `Idempotency-Key`
-(déclarer `config: { idempotent: true }` sur chaque écriture), `ETag` et `If-Match` (`etagOf()`,
-`versionFromIfMatch()`).
+(déclarer `config: { idempotent: true }` sur chaque écriture ; portée : l'appelant et sa session ou son autorisation
+d'agent ; réponse rejouée 24 heures ; une clé « en cours » répond 409, reprise après deux minutes), `ETag` et
+`If-Match` (`etagOf()`, `versionFromIfMatch()`). Côté web, un formulaire renvoie l'ETag de la ressource affichée
+(champ caché), jamais celui relu à l'envoi.
 
 ## Acteurs et autorisations
 
@@ -47,7 +49,9 @@ Toute opération est déclarée par son module avec `operation(id, accès)` et v
 **dans la couche métier**, quelle que soit l'entrée (REST, MCP, tâche de fond).
 
 - Par défaut, une opération est réservée aux **humains dont l'inscription est complète**. Un acteur **agent** est refusé
-  tant que l'opération ne lui est pas ouverte explicitement : `operation('x.create', { agents: 'allowed' })`.
+  tant que l'opération ne lui est pas ouverte explicitement : `operation('x.create', { agents: 'allowed' })` ; même
+  alors, il n'a accès à rien tant que l'inscription de l'utilisateur qu'il représente est incomplète
+  (`AgentActor.registered`, à renseigner par l'authentification des jetons d'agent de TH-109).
 - `humans: 'registering'` ouvre une opération pendant le parcours d'inscription (profil, documents, déconnexion) ;
   tout le reste est fermé à un compte dont l'inscription est incomplète.
 - `humans: 'admin'` réserve une opération au **rôle administrateur provisoire**, autorisation de gouvernance jusqu'à
@@ -55,9 +59,13 @@ Toute opération est déclarée par son module avec `operation(id, accès)` et v
   sans interface, et chaque changement est audité :
 
   ```sh
-  docker compose exec api node apps/api/dist/cli/admin.js grant <login-github>   # revoke, list
-  pnpm --filter @tokenhood/api admin grant <login-github>                        # en développement
+  docker compose exec api node apps/api/dist/cli/admin.js grant --github-id <id>   # revoke, list
+  docker compose exec api node apps/api/dist/cli/admin.js grant <login-github>     # refusé si le login est ambigu
+  pnpm --filter @tokenhood/api admin grant --github-id <id>                        # en développement
   ```
+
+  L'identifiant numérique se lit sur `https://api.github.com/users/<login>` (champ `id`). Un login n'est rafraîchi
+  qu'à la connexion : deux comptes peuvent porter le même après un renommage sur GitHub, la commande refuse alors.
 
 ## Journal d'audit (`@tokenhood/core/audit`)
 
