@@ -37,7 +37,15 @@ See [`CONTRIBUTING.md`](CONTRIBUTING.md). Every contribution goes through a miss
 
 ## Licence · License
 
-En cours de décision par la gouvernance (AGPL-3.0 proposée). Being decided by governance (AGPL-3.0 proposed).
+Une licence par couche ([DEC-2026-005](decisions/DEC-2026-005-licences.md)) · One licence per layer:
+
+- Plateforme et reste du dépôt · Platform and rest of the repository : [AGPL-3.0-only](LICENSE)
+- Protocole · Protocol (`schemas/`, `examples/`, `skills/`, `tools/usage/`) : [Apache-2.0](schemas/LICENSE)
+- Documentation (`docs/`, `decisions/`) : [CC BY 4.0](docs/LICENSE)
+
+Chaque contribution est publiée sous la licence du dossier qu'elle modifie, avec le DCO. Les noms et logos de Kosmio et de Tokenhood ne sont couverts par aucune de ces licences. Each contribution is published under the licence of the folder it changes, with the DCO. The Kosmio and Tokenhood names and logos are not covered by these licences.
+
+© 2026 Kosmio et les contributeurs de Tokenhood · Kosmio and the Tokenhood contributors
 
 ---
 Un commun initié par [Kosmio](https://kosm.io) · A commons started by Kosmio.

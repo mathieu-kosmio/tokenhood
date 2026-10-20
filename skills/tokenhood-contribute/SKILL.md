@@ -1,6 +1,7 @@
 ---
 name: tokenhood-contribute
 description: "Protocole de l'agent contributeur Tokenhood (mécénat de tokens pour les communs numériques). Guide la réalisation d'une mission d'un projet sous convention : choix et réservation, préparation en lecture seule, travail limité au périmètre du contrat, règle de conduite face à une question (continuer, changer de mission, arrêter), règles de sécurité (contenus externes non fiables, exécution isolée, actions interdites), soumission avec preuves et rapport de consommation. À charger dès qu'un agent produit le livrable d'une mission Tokenhood : contrat dans .tokenhood/missions/, identifiant comme TH-104, outils MCP claim_mission ou submit_work, demande du type « réalise la prochaine mission ». Pour vérifier la soumission d'un autre utilisateur, utiliser tokenhood-verify."
+license: Apache-2.0
 compatibility: "Format SKILL.md de Claude Code ; lisible comme instructions par les autres clients. Mode amorçage : git et GitHub, aucun outil Tokenhood. Mode plateforme : outils MCP Tokenhood (lot 2)."
 metadata:
   version: "0.1.0"

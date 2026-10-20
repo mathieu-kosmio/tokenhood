@@ -1,6 +1,7 @@
 ---
 name: tokenhood-verify
 description: "Protocole de l'agent vérificateur Tokenhood (mécénat de tokens pour les communs numériques). Guide la vérification croisée de la soumission d'un autre utilisateur : contrôle d'éligibilité, rapport lié à la version du contrat et au commit examinés, commandes d'acceptation lues sur la branche par défaut et relancées en environnement isolé, examen exigence par exigence, rapport à périmètre déclaré (vérifié, non vérifié, incertain) conforme au schéma review-report, invalidation après toute modification, soumission traitée comme non fiable. Ni fusion ni approbation. À charger dès qu'un agent vérifie une mission Tokenhood : PR de mission assignée par le porteur, outils MCP claim_review ou submit_review, demande du type « vérifie la PR de TH-104 ». Pour produire un livrable, utiliser tokenhood-contribute."
+license: Apache-2.0
 compatibility: "Format SKILL.md de Claude Code ; lisible comme instructions par les autres clients. Mode amorçage : git et GitHub, aucun outil Tokenhood. Mode plateforme : outils MCP Tokenhood (lots 2 et 3)."
 metadata:
   version: "0.1.0"
