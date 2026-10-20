@@ -1,7 +1,27 @@
+import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import os from 'node:os';
+import path from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { LANGS, catalog, negotiate, translate } from '../src/index.js';
 // @ts-expect-error script JavaScript sans déclaration de types
-import { check, loadLocales } from '../scripts/generate.mjs';
+import { check, keysOf, loadLocales, loadSources, merge } from '../scripts/generate.mjs';
+
+// Arborescence locales/ temporaire : { 'fr.json': {...}, 'fr/identity.json': {...} } ou texte brut.
+async function withLocales(files: Record<string, unknown>, run: (dir: string) => Promise<void>) {
+  const dir = mkdtempSync(path.join(os.tmpdir(), 'th-locales-'));
+  try {
+    for (const [file, content] of Object.entries(files)) {
+      mkdirSync(path.dirname(path.join(dir, file)), { recursive: true });
+      writeFileSync(
+        path.join(dir, file),
+        typeof content === 'string' ? content : JSON.stringify(content, null, 2),
+      );
+    }
+    await run(dir);
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+}
 
 describe('locales', () => {
   it('fr et en ont les mêmes clés, des messages ICU valides et les mêmes arguments', async () => {
@@ -19,6 +39,70 @@ describe('locales', () => {
 
   it('chaque langue prise en charge a son catalogue', () => {
     for (const lang of LANGS) expect(Object.keys(catalog(lang)).length).toBeGreaterThan(0);
+  });
+});
+
+describe('fusion des fichiers de module', () => {
+  it('fusionne locales/<lang>.json et locales/<lang>/<module>.json', async () => {
+    await withLocales(
+      {
+        'fr.json': { 'app.name': 'Tokenhood' },
+        'en.json': { 'app.name': 'Tokenhood' },
+        'fr/identity.json': { 'identity.title': 'Profil de {name}' },
+        'en/identity.json': { 'identity.title': '{name}’s profile' },
+      },
+      async (dir) => {
+        const { messages, errors } = merge(await loadSources(dir));
+        expect(errors).toEqual([]);
+        expect(messages.fr).toEqual({ 'app.name': 'Tokenhood', 'identity.title': 'Profil de {name}' });
+        expect(check(messages)).toEqual([]);
+      },
+    );
+  });
+
+  it('refuse une clé définie deux fois, entre deux fichiers ou dans le même fichier', async () => {
+    await withLocales(
+      {
+        'fr.json': { 'identity.title': 'Commun' },
+        'fr/identity.json':
+          '{\n  "identity.title": "Module",\n  "identity.x": "a",\n  "identity.x": "b"\n}\n',
+      },
+      async (dir) => {
+        const { errors } = merge(await loadSources(dir));
+        expect(errors).toEqual([
+          'fr/identity.json : clé « identity.title » déjà définie dans fr.json',
+          'fr/identity.json : clé « identity.x » déjà définie dans fr/identity.json',
+        ]);
+      },
+    );
+  });
+
+  it('refuse, dans un fichier de module, une clé hors de son préfixe', async () => {
+    await withLocales({ 'fr.json': {}, 'fr/identity.json': { 'interests.title': 'x' } }, async (dir) => {
+      expect(merge(await loadSources(dir)).errors).toEqual([
+        'fr/identity.json : la clé « interests.title » doit commencer par « identity. »',
+      ]);
+    });
+  });
+
+  it('garde la parité des clés et des arguments entre langues, fichiers de module compris', async () => {
+    await withLocales(
+      {
+        'fr.json': {},
+        'en.json': {},
+        'fr/identity.json': { 'identity.a': 'Bonjour {nom}', 'identity.b': 'Au revoir' },
+        'en/identity.json': { 'identity.a': 'Hello {name}' },
+      },
+      async (dir) => {
+        const errors: string[] = check(merge(await loadSources(dir)).messages);
+        expect(errors).toContain('en : clé manquante « identity.b »');
+        expect(errors.some((e) => e.includes('« identity.a » utilise {name}'))).toBe(true);
+      },
+    );
+  });
+
+  it('lit les clés de premier niveau dans l’ordre, doublons compris', () => {
+    expect(keysOf('{"a": "x: \\"y\\"", "b": {"c": 1}, "a": "z"}')).toEqual(['a', 'b', 'a']);
   });
 });
 
