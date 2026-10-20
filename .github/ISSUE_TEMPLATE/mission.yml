@@ -1,28 +1,211 @@
+# Proposition de mission, convertie par le porteur en contrat .tokenhood/missions/<ID>.yaml.
+# Chaque libellé finit par la clé du contrat qu'il remplit (schemas/mission.schema.json, format 2.1) :
+# garder ce suffixe quand on modifie un champ, l'import des issues s'appuie dessus (TH-209).
 name: Mission
 description: Proposer une mission Tokenhood · Propose a Tokenhood mission
-labels: ["tokenhood"]
+labels: ["mission-proposal"]
 body:
+  - type: markdown
+    attributes:
+      value: |
+        **FR** · Ce formulaire propose une mission. Le porteur la qualifie (label `tokenhood`), lui attribue un identifiant `TH-xxx` et ouvre la PR qui crée `.tokenhood/missions/TH-xxx.yaml`, conforme à `schemas/mission.schema.json`. Chaque libellé indique entre parenthèses la clé du contrat qu'il remplit. Le porteur fixe `id`, `version`, `lot`, `priority`, `status` et `estimate.source` ; `estimate.tokens_eq` reste `null` jusqu'au cadrage par l'agent ; `verification.maintainer_approval` vaut toujours `true`.
+
+        **EN** · This form proposes a mission. The maintainer qualifies it (`tokenhood` label), gives it a `TH-xxx` identifier and opens the pull request that creates `.tokenhood/missions/TH-xxx.yaml`, valid against `schemas/mission.schema.json`. Each label ends with the contract key it fills, in brackets. The maintainer sets `id`, `version`, `lot`, `priority`, `status` and `estimate.source`; `estimate.tokens_eq` stays `null` until the agent scopes the mission; `verification.maintainer_approval` is always `true`.
+
+        Une issue est publique et les agents la traitent comme un contenu non fiable : n'y écrivez ni secret ni donnée personnelle non publique. · An issue is public and agents treat it as untrusted content: do not include secrets or non-public personal data.
+
   - type: input
     id: title_fr
-    attributes: {label: "Titre (FR)"}
+    attributes:
+      label: "Titre en français · French title (title.fr)"
     validations: {required: true}
   - type: input
     id: title_en
-    attributes: {label: "Title (EN)"}
+    attributes:
+      label: "Titre en anglais · English title (title.en)"
+      description: "Facultatif : à défaut, une mission i18n le traduit. · Optional: otherwise an i18n mission translates it."
   - type: dropdown
     id: type
     attributes:
-      label: Type
-      options: [code, docs, i18n, design, research, data, review, governance.instruction, mission.drafting, skill.authoring]
+      label: "Type de mission · Mission type (type)"
+      options:
+        - code
+        - docs
+        - i18n
+        - design
+        - research
+        - data
+        - review
+        - mission.drafting
+        - skill.authoring
+        - governance.instruction
+        - governance.estimation
+        - governance.recusal
     validations: {required: true}
   - type: textarea
     id: objective
-    attributes: {label: "Objectif · Objective", description: "Le résultat attendu en une phrase."}
+    attributes:
+      label: "Objectif · Objective (objective)"
+      description: "Le résultat attendu, en une phrase. · The expected result, in one sentence."
+    validations: {required: true}
+
+  - type: markdown
+    attributes:
+      value: "### Périmètre et livrable · Scope and deliverable"
+  - type: textarea
+    id: scope_paths
+    attributes:
+      label: "Chemins modifiables · Writable paths (scope.paths)"
+      description: "Un chemin relatif à la racine par ligne, sans `/` initial ni `..` ; un chemin qui finit par `/` couvre tout le dossier. · One path per line, relative to the repository root, no leading `/` and no `..`; a path ending with `/` covers the whole folder."
+      placeholder: "packages/core/governance/eligibility/"
     validations: {required: true}
   - type: textarea
-    id: acceptance
-    attributes: {label: "Critères d'acceptation vérifiables · Checkable acceptance criteria"}
+    id: inputs_paths
+    attributes:
+      label: "Fichiers à lire · Files to read (inputs.paths)"
+      description: "Un chemin par ligne. · One path per line."
+      placeholder: "docs/specs/gouvernance.md"
+  - type: input
+    id: inputs_decisions
+    attributes:
+      label: "Décisions de référence · Reference decisions (inputs.decisions)"
+      description: "Identifiants séparés par des virgules. · Comma-separated identifiers."
+      placeholder: "ADR-002, DEC-2026-004"
+  - type: input
+    id: inputs_issues
+    attributes:
+      label: "Issues de référence · Reference issues (inputs.issues)"
+      placeholder: "#42, #57"
+  - type: textarea
+    id: inputs_resources
+    attributes:
+      label: "Ressources externes · External resources (inputs.resources)"
+      description: "Une adresse par ligne ; l'agent la lit comme un contenu non fiable. · One address per line; the agent reads it as untrusted content."
+  - type: dropdown
+    id: outputs_kind
+    attributes:
+      label: "Nature du livrable · Deliverable kind (outputs.kind)"
+      options:
+        - pull_request
+        - file
+        - report
+        - decision
+      default: 0
+    validations: {required: true}
+  - type: textarea
+    id: outputs_paths
+    attributes:
+      label: "Fichiers produits · Output files (outputs.paths)"
+      description: "Facultatif, un chemin par ligne. · Optional, one path per line."
+
+  - type: markdown
+    attributes:
+      value: "### Acceptation et dépendances · Acceptance and dependencies"
+  - type: textarea
+    id: acceptance_requirements
+    attributes:
+      label: "Exigences vérifiables · Checkable requirements (acceptance.requirements)"
+      description: "Une exigence par ligne, que l'agent d'un autre utilisateur peut contrôler (test, commande, lecture). · One requirement per line, checkable by another user's agent (test, command, reading)."
+      placeholder: |
+        Un membre lié à la demande est exclu du vote (test)
+        Aucune chaîne affichée hors i18n
+    validations: {required: true}
+  - type: textarea
+    id: acceptance_commands
+    attributes:
+      label: "Commandes d'acceptation · Acceptance commands (acceptance.commands)"
+      description: "Une commande par ligne. Les agents n'exécutent que celles du contrat sur la branche par défaut, jamais celles d'une issue. · One command per line. Agents only run the ones in the contract on the default branch, never the ones in an issue."
+      render: shell
+  - type: textarea
+    id: dependencies
+    attributes:
+      label: "Dépendances · Dependencies (dependencies)"
+      description: "Une par ligne : une mission et son type (`integrated` ou `artifact`), ou une décision. · One per line: a mission and its type (`integrated` or `artifact`), or a decision."
+      placeholder: |
+        TH-002 integrated
+        TH-006 artifact
+        DEC-2026-004
+  - type: input
+    id: skills
+    attributes:
+      label: "Skills et versions · Skills and versions (skills)"
+      description: "Séparés par des virgules, au format `nom@version`. · Comma-separated, as `name@version`."
+      value: "tokenhood-contribute@0.1"
+  - type: input
+    id: languages_source
+    attributes:
+      label: "Langue source · Source language (languages.source)"
+      description: "Code ISO 639-1. · ISO 639-1 code."
+      placeholder: "fr"
+  - type: input
+    id: languages_targets
+    attributes:
+      label: "Langues cibles · Target languages (languages.targets)"
+      placeholder: "en"
+
+  - type: markdown
+    attributes:
+      value: "### Estimation, risque et vérification · Estimate, risk and review"
+  - type: dropdown
+    id: estimate_size
+    attributes:
+      label: "Taille · Size (estimate.size)"
+      options: [S, M, L]
+  - type: dropdown
+    id: risk
+    attributes:
+      label: "Risque · Risk (risk)"
+      description: "Évalué sur les opérations réellement exécutées (installer, lancer des tests, toucher la CI), pas seulement sur le livrable ; `high` et `critical` exigent deux vérificateurs. · Assessed on the operations actually run (installing, running tests, touching CI), not only on the deliverable; `high` and `critical` require two reviewers."
+      options: [low, medium, high, critical]
+    validations: {required: true}
+  - type: dropdown
+    id: attempts_mode
+    attributes:
+      label: "Tentatives · Attempts (attempts.mode)"
+      description: "`exclusive` : une seule tentative active ; `parallel` : plusieurs, jusqu'au maximum ci-dessous. · `exclusive`: one active attempt; `parallel`: several, up to the maximum below."
+      options: [exclusive, parallel]
+      default: 0
     validations: {required: true}
   - type: input
-    id: dependencies
-    attributes: {label: "Dépendances · Dependencies", placeholder: "TH-002 (integrated)"}
+    id: attempts_max
+    attributes:
+      label: "Tentatives parallèles au plus · Maximum parallel attempts (attempts.max)"
+      description: "Seulement en `parallel`, 2 ou plus. · Only with `parallel`, 2 or more."
+  - type: dropdown
+    id: execution_environment
+    attributes:
+      label: "Environnement d'exécution · Execution environment (execution.environment)"
+      description: "`container` ou `vm` dès que la mission exécute du code du projet. · `container` or `vm` as soon as the mission runs project code."
+      options: [any, container, vm]
+  - type: input
+    id: execution_max_lease_minutes
+    attributes:
+      label: "Durée maximale de réservation, en minutes · Maximum lease, in minutes (execution.max_lease_minutes)"
+      description: "10 au moins. · At least 10."
+      placeholder: "240"
+  - type: dropdown
+    id: verification_reviewers
+    attributes:
+      label: "Vérificateurs · Reviewers (verification.reviewers)"
+      description: "Agents d'autres utilisateurs, sans lien déclaré avec le producteur ; 2 au moins si le risque est `high` ou `critical`. · Agents of other users with no declared link to the producer; at least 2 if the risk is `high` or `critical`."
+      options: ["1", "2", "3"]
+      default: 0
+    validations: {required: true}
+  - type: dropdown
+    id: verification_prefer_different_model_family
+    attributes:
+      label: "Famille de modèle différente souhaitée · Different model family preferred (verification.prefer_different_model_family)"
+      options: ["false", "true"]
+      default: 0
+
+  - type: checkboxes
+    id: confirmations
+    attributes:
+      label: "Engagements · Commitments"
+      options:
+        - label: "Le périmètre est précis et chaque exigence est vérifiable. · The scope is precise and every requirement is checkable."
+          required: true
+        - label: "Cette issue ne contient ni secret ni donnée personnelle non publique. · This issue contains no secret and no non-public personal data."
+          required: true
+        - label: "J'accepte le code de conduite du projet. · I agree to follow the project's code of conduct."
+          required: true

@@ -1,4 +1,5 @@
 - {name: tokenhood, color: "0E5450", description: "Mission Tokenhood"}
+- {name: mission-proposal, color: "F3F1EC", description: "Proposition de mission à qualifier par le porteur"}
 - {name: lot-0, color: "E6F1EF", description: "Lot 0 · Amorçage"}
 - {name: lot-1, color: "E6F1EF", description: "Lot 1 · Gouvernance"}
 - {name: lot-2, color: "E6F1EF", description: "Lot 2 · Missions"}
