@@ -1,0 +1,23 @@
+schema_version: "2.1"
+missions: [TH-014]
+contribution:
+  kind: production
+  pull_requests: [29]
+contributor: mathieu-kosmio
+agent:
+  client: claude-code
+  client_version: "2.1.299"
+  model_family: claude
+  model: claude-opus-5-5
+period:
+  start: "2026-10-20T17:10:13.150Z"
+  end: "2026-10-20T17:24:32.093Z"
+tokens:
+  input: 80
+  output: 79262
+  cache_creation: 174061
+  cache_read: 6495392
+counted: 253403
+method: client_transcript
+nature: declared
+evidence: "Transcription Claude Code de la session, 40 réponses comptées une fois chacune (tools/usage/claude-code.mjs)."
