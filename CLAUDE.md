@@ -17,15 +17,15 @@ Principes non négociables :
 
 - Spécifications V2.1 : `docs/specs/` (versées par TH-001, PR #2) ; source : https://claude.ai/code/artifact/70f6540c-17f9-4d27-95dd-8b33017cf7d2
 - Plan de développement (56 missions, 5 lots) : https://claude.ai/code/artifact/c4fd5cb0-43b3-487d-a5a8-b98bf86c0a94
-- Décisions : `decisions/` (DEC-2026-001 direction artistique, DEC-2026-002 déploiement, DEC-2026-003 landing, DEC-2026-004 choix d'amorçage du skill contribute, ADR-002 stack proposée par TH-007)
+- Décisions : `decisions/` (DEC-2026-001 direction artistique, DEC-2026-002 déploiement, DEC-2026-003 landing, DEC-2026-004 choix d'amorçage du skill contribute, ADR-001 coordination proposée par TH-006, ADR-002 stack proposée par TH-007)
 
-## État au 19/10/2026
+## État au 20/10/2026
 
-- Lot 0 (amorçage) en cours ; missions TH-001 à TH-020 publiées, 12 intégrées ; TH-101 (lot 1) intégrée en avance. TH-006, TH-009 et TH-010 portent `priority: high` : ce sont les trois prochaines missions mises en avant sur la feuille de route.
+- Lot 0 (amorçage) en cours ; missions TH-001 à TH-020 publiées, 18 intégrées ; TH-006 fusionnée (PR #22), son passage à `integrated` attend la PR #32. Lot 1 : TH-101 intégrée en avance ; contrats TH-102, TH-103, TH-105, TH-109 et TH-114 publiés (PR #28), sans `priority`. Réservables : TH-102 et TH-012 ; TH-103, TH-105, TH-109 et TH-114 attendent TH-102.
 - Dépôt public, licence non encore choisie (AGPL-3.0 proposée).
 - Dépôt réglé : description, site, sujets, labels, Discussions activées. Les catégories Clarifications, Décisions, Propositions restent à créer dans l'interface GitHub (aucune API).
 - `main` protégée : PR obligatoire (y compris pour les administrateurs), historique linéaire (fusion en rebase ou squash), conversations résolues, ni force-push ni suppression. Zéro approbation requise tant que le porteur est seul mainteneur ; depuis le 18/10/2026, les 10 statuts de CI listés plus bas sont requis et la branche doit être à jour avec `main` avant fusion.
-- La fusion des PR revient au porteur. Le 18/10/2026, il a autorisé l'agent à fusionner la file en rebase après CI verte, puis, au cas par cas, TH-004 (PR #16) et son passage à `integrated`, et le 19/10/2026 TH-005 (PR #18) et TH-020 (PR #19) avec leur passage à `integrated` ; sans autorisation explicite, l'agent prépare, vérifie et documente, il ne fusionne pas.
+- La fusion des PR revient au porteur. Le 18/10/2026, il a autorisé l'agent à fusionner la file en rebase après CI verte, puis, au cas par cas, TH-004 (PR #16) et son passage à `integrated`, et le 19/10/2026 TH-005 (PR #18) et TH-020 (PR #19) avec leur passage à `integrated`, et le 20/10/2026 la file des PR #22 à #29 avec le passage à `integrated` des missions concernées, la PR #30 (licences) restant à sa décision ; sans autorisation explicite, l'agent prépare, vérifie et documente, il ne fusionne pas.
 
 ### Intégré sur `main` le 18/10/2026
 
@@ -34,6 +34,19 @@ TH-001 (spécifications, PR #2), TH-002 (schémas, #3), TH-003 (CI de validation
 ### Intégré sur `main` le 19/10/2026
 
 TH-005 (skill `tokenhood-verify` v0, #18), TH-020 (page « Feuille de route » de la landing, #19). Les six réponses par défaut de la PR #18 (conduite `continue`) sont acceptées avec la fusion.
+
+### Intégré sur `main` le 20/10/2026
+
+Fusionnées en rebase, une par une, après mise à jour sur `main` et CI verte :
+
+- TH-008 (#23) : `docs/specs/garanties.md` version 1, 33 promesses classées garantie, dépendante du client ou déclarative, et registre de compatibilité initial.
+- TH-009 (#24) : contrats exécutables du protocole, `docs/specs/protocole.md`, `schemas/protocole/machine.yaml` et `conformite.yaml` (85 cas), schémas `protocol*.schema.json` ; à confronter à ADR-001 une fois adoptée.
+- TH-010 (#25) : protocole de la campagne pilote, `docs/pilote/` (protocole, retour à 30 jours, gabarit du rapport de campagne, journal).
+- TH-011 (#26) : charte opérationnelle d'amorçage, `docs/charte/`, FR et EN.
+- TH-016 (#27) : gabarits du dépôt, `CONTRIBUTING.md` FR et EN à parité, code de conduite, modèles d'issue et de PR.
+- TH-014 (#29) : runbook Coolify, `docs/exploitation/`, FR et EN.
+- Contrats du lot 1 (#28) : TH-102, TH-103, TH-105, TH-109, TH-114.
+- TH-006 (#22, audit de tokenpool et projet d'ADR-001) : fusionnée hors de cette file ; passage à `integrated` et adoption d'ADR-001 dans la PR #32, ouverte.
 
 ## Landing (`landing/`)
 
@@ -99,9 +112,11 @@ Statuts obligatoires sur `main` depuis le 18/10/2026 (protection de branche, sou
 ## Prochaines étapes
 
 1. Plateforme en ligne sur app. et api.tokenhood.kosm.io (TH-018) ; landing sur tokenhood.kosm.io. Interface Coolify : http://51.91.166.222:8000, projet « Tools & Concepts ».
-2. Porteur : formulaire Brevo et `BREVO_FORM_ACTION` ; catégories Discussions (puis `contribute.discussionCategory` de `landing/site.config.json`, `general` en attendant) ; licence (`LICENSE`, README, `project.yaml`, FAQ de la landing) ; watch paths Coolify de la landing complétés par `docs/specs/plan-de-developpement.md` et `decisions/**`.
-3. Relire les textes de la landing, les pages légales et la traduction EN des spécifications (statut `machine`).
-4. Missions suivantes, mises en avant sur la feuille de route : TH-006 (audit de tokenpool), TH-009 (contrats du protocole), TH-010 (protocole pilote) ; puis TH-011 ; côté MVP, TH-102 (identité, OAuth GitHub, `packages/db` avec Drizzle) et le stockage S3 laissé hors de TH-013.
+2. Porteur : formulaire Brevo et `BREVO_FORM_ACTION` ; catégories Discussions (puis `contribute.discussionCategory` de `landing/site.config.json`, `general` en attendant) ; watch paths Coolify de la landing complétés par `docs/specs/plan-de-developpement.md` et `decisions/**`.
+3. **Licence, à trancher (PR #30, DEC-2026-005).** Depuis TH-016 (#27), la section Licences de `CONTRIBUTING.md` (FR et EN) annonce AGPL-3.0, Apache-2.0 et CC BY 4.0 et renvoie à `LICENSE` et à `decisions/DEC-2026-005-licences.md`, absents de `main` ; `project.yaml` reste `license: TBD`. Fusionner #30 ou retirer cette section en attendant.
+4. Autres décisions en attente : PR #32 (TH-006 intégrée, ADR-001 option B adoptée), PR #31 (contrats TH-021 à TH-029, TH-116 en draft).
+5. Relire les textes de la landing, les pages légales et la traduction EN des spécifications et de la charte (statut `machine`).
+6. Missions suivantes : TH-102 (identité, OAuth GitHub, `packages/db` avec Drizzle), qui débloque TH-103, TH-105, TH-109 et TH-114 ; TH-012 (projet externe pilote) ; le stockage S3 laissé hors de TH-013.
 
 ## Conventions de commit
 
