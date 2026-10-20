@@ -1,0 +1,47 @@
+schema_version: "2.1"
+id: TH-022
+version: 1
+lot: 0
+title:
+  fr: "Mode plateforme des skills aligné sur le protocole"
+  en: "Skills platform mode aligned with the protocol"
+type: skill.authoring
+objective: "Aligner le mode plateforme de tokenhood-contribute et tokenhood-verify sur docs/specs/protocole.md (TH-009) : renvoi au module, outils et enchaînement des opérations, contest_review et decline_review, conduite face à chaque erreur du catalogue, sans rien changer au mode amorçage."
+scope:
+  paths: [skills/tokenhood-contribute/SKILL.md, skills/tokenhood-contribute/README.md, skills/tokenhood-contribute/references/, skills/tokenhood-contribute/assets/, skills/tokenhood-contribute/examples/, skills/tokenhood-contribute/tests/skill.test.mjs, skills/tokenhood-verify/SKILL.md, skills/tokenhood-verify/README.md, skills/tokenhood-verify/references/, skills/tokenhood-verify/assets/, skills/tokenhood-verify/examples/, skills/tokenhood-verify/tests/skill.test.mjs]
+inputs:
+  paths: [docs/specs/protocole.md, schemas/protocole/machine.yaml, schemas/protocol.schema.json, docs/specs/api-et-mcp.md, docs/specs/verification-croisee.md, skills/tokenhood-contribute/, skills/tokenhood-verify/]
+  decisions: [DEC-2026-004]
+outputs:
+  kind: pull_request
+acceptance:
+  commands:
+    - "cd tools/validate && npm ci --ignore-scripts"
+    - "node --test 'skills/*/tests/*.test.mjs'"
+  requirements:
+    - "Le mode plateforme de references/protocole.md, dans les deux skills, renvoie à docs/specs/protocole.md comme référence normative ; la mention « contrats exacts fixés par TH-009 » disparaît ; la règle « en cas d'écart, la plateforme fait foi et l'écart se signale par spec.clarification » est conservée"
+    - "Chaque outil cité en mode plateforme existe sous ce nom dans les opérations de schemas/protocole/machine.yaml ou dans le catalogue MCP de docs/specs/api-et-mcp.md ; chaque opération d'agent de la machine (kind: agent) est citée par l'un des deux skills, celles de l'acteur agent_holder par tokenhood-contribute, celles de l'acteur agent_reviewer par tokenhood-verify (test)"
+    - "tokenhood-contribute décrit contest_review : quand contester un verdict, dans quel délai, ce que devient la tentative pendant la contestation ; tokenhood-verify décrit decline_review : motifs (éligibilité, moyens, lien d'intérêt découvert), effet sur l'assignation, cohérence avec la règle actuelle « décliner faute de moyens plutôt que rendre un verdict »"
+    - "Erreurs : le tableau de chaque skill couvre chaque code du catalogue d'erreurs de la machine que peut recevoir une opération de ce skill, avec la conduite de l'agent que donne le module ; aucun code cité n'est absent du catalogue (test)"
+    - "Le cycle de vie d'une tentative décrit par tokenhood-contribute reprend les états et transitions de la machine accessibles à l'agent ; génération, bail, deadline_at et resume_from expliqués comme dans le module"
+    - "Mode amorçage inchangé : choix de DEC-2026-004 et choix d'amorçage de TH-005 ; les tests existants passent sans être affaiblis"
+    - "Montée de version selon la règle du README de chaque skill (mineure pour un geste ajouté) ; si la référence @0.1 change, gabarits, exemples et README citent la nouvelle, et la PR liste les contrats ouverts qui déclarent @0.1 pour que le porteur décide de leur mise à jour (hors périmètre)"
+    - "README des deux skills à jour : version, mention « à revoir après TH-009 » retirée ; SKILL.md reste sous 500 lignes, le détail dans references/"
+dependencies:
+  - mission: TH-009
+    type: integrated
+skills: [tokenhood-contribute@0.1]
+estimate:
+  size: M
+  tokens_eq: null          # à produire par l'agent au cadrage
+  source: agent
+risk: low
+attempts: {mode: exclusive}
+execution:
+  max_lease_minutes: 240
+  environment: any
+verification:
+  reviewers: 1
+  prefer_different_model_family: false
+  maintainer_approval: true
+status: open

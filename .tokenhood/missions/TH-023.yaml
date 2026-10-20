@@ -1,0 +1,46 @@
+schema_version: "2.1"
+id: TH-023
+version: 1
+lot: 0
+title:
+  fr: "Module « Contrats exécutables du protocole » en anglais et sommaire des spécifications"
+  en: "Executable protocol contracts module in English and specification index"
+type: i18n
+objective: "Traduire en anglais le module normatif de TH-009 (docs/specs/en/protocole.md), l'inscrire au sommaire bilingue de docs/specs/README.md et y indiquer la provenance des modules postérieurs à l'export V2.1 (protocole, matrice des garanties v1)."
+scope:
+  paths: [docs/specs/en/protocole.md, docs/specs/protocole.md, docs/specs/README.md]
+inputs:
+  paths: [docs/specs/protocole.md, schemas/protocole/machine.yaml, schemas/protocole/conformite.yaml, docs/specs/en/, docs/specs/README.md, docs/specs/garanties.md, docs/specs/non-code-et-i18n.md]
+outputs:
+  kind: pull_request
+acceptance:
+  requirements:
+    - "docs/specs/en/protocole.md traduit tout le module : mêmes sections, tableaux, diagramme et liste des cas, dans le même ordre ; identifiants (états, opérations, erreurs, règles, invariants, paramètres, cas CT-xxx), noms de champs et valeurs de code inchangés"
+    - "Terminologie alignée sur les modules anglais de docs/specs/en/ (claim, attempt, lease, generation, review…) ; un terme sans équivalent établi est choisi une fois, appliqué partout et listé dans la PR"
+    - "En-tête comme les autres modules anglais : lien vers la version française, statut de traduction machine tant qu'aucune relecture humaine ne l'a validée ; dans docs/specs/protocole.md, seule la ligne de navigation change, pour mener à la version anglaise"
+    - "Liens relatifs et ancres résolus dans les deux langues (contrôle et résultat décrits dans la PR)"
+    - "docs/specs/README.md : le module figure au sommaire FR et EN (tableau des modules ou des documents associés, choix motivé dans la PR) ; la provenance signale les modules qui s'écartent de l'export V2.1 : garanties.md (version 1, TH-008) et protocole.md (TH-009)"
+    - "Aucun changement de sens : un passage ambigu ou fautif de la source française se signale par une demande spec.clarification, sans corriger la source"
+dependencies:
+  - mission: TH-009
+    type: integrated
+  - mission: TH-008
+    type: integrated
+skills: [tokenhood-contribute@0.1]
+languages:
+  source: fr
+  targets: [en]
+estimate:
+  size: M
+  tokens_eq: null          # à produire par l'agent au cadrage
+  source: agent
+risk: low
+attempts: {mode: exclusive}
+execution:
+  max_lease_minutes: 240
+  environment: any
+verification:
+  reviewers: 1
+  prefer_different_model_family: false
+  maintainer_approval: true
+status: open

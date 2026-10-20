@@ -1,0 +1,43 @@
+schema_version: "2.1"
+id: TH-024
+version: 1
+lot: 0
+title:
+  fr: "Matrice des garanties v1 en anglais"
+  en: "Guarantee matrix v1 in English"
+type: i18n
+objective: "Remplacer docs/specs/en/garanties.md, encore celle de la V2.1, par la traduction anglaise de la matrice des garanties version 1 et du registre de compatibilité produits par TH-008."
+scope:
+  paths: [docs/specs/en/garanties.md, docs/specs/garanties.md]
+inputs:
+  paths: [docs/specs/garanties.md, docs/specs/en/garanties.md, docs/specs/en/, docs/specs/non-code-et-i18n.md]
+outputs:
+  kind: pull_request
+acceptance:
+  requirements:
+    - "docs/specs/en/garanties.md traduit toute la version 1 : mêmes sections et tableaux, dans le même ordre ; les 33 promesses G-01 à G-33 et les entrées R-01 à R-09 du registre gardent leurs identifiants, leur classe, leur mécanisme, leur test et leurs missions"
+    - "Noms des trois classes repris de la version anglaise V2.1 quand elle les nomme, sinon choisis une fois et listés dans la PR ; noms de clients, de produits et de conditions d'usage cités tels qu'en français, avec leurs dates"
+    - "Un contrôle décrit dans la PR compte les lignes G-xx et R-xx dans les deux langues et trouve les mêmes identifiants, chacun avec la même classe"
+    - "En-tête comme les autres modules anglais : lien vers la version française, statut de traduction machine ; dans docs/specs/garanties.md, seule la phrase qui annonce une version anglaise restée en V2.1 est retirée ou mise à jour"
+    - "Liens relatifs résolus ; aucun changement de sens, un passage ambigu de la source se signale par une demande spec.clarification"
+dependencies:
+  - mission: TH-008
+    type: integrated
+skills: [tokenhood-contribute@0.1]
+languages:
+  source: fr
+  targets: [en]
+estimate:
+  size: S
+  tokens_eq: null          # à produire par l'agent au cadrage
+  source: agent
+risk: low
+attempts: {mode: exclusive}
+execution:
+  max_lease_minutes: 240
+  environment: any
+verification:
+  reviewers: 1
+  prefer_different_model_family: false
+  maintainer_approval: true
+status: open

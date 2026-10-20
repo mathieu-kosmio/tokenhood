@@ -1,0 +1,46 @@
+schema_version: "2.1"
+id: TH-116
+version: 1
+lot: 1
+title:
+  fr: "Base PostgreSQL hors du compose : DATABASE_URL fournie par l'environnement"
+  en: "PostgreSQL outside the compose file: DATABASE_URL from the environment"
+type: code
+objective: "Sortir le service postgres de compose.yaml pour que le staging et la production se connectent à une base PostgreSQL 16 autonome gérée par Coolify, sauvegardée et restaurée par ses outils (runbook de TH-014, section 6.2), la base du compose restant réservée au poste et à la CI dans la surcharge locale. À intégrer avant la mise en production du lot 1."
+scope:
+  paths: [compose.yaml, compose.local.yaml, .github/workflows/image.yml, docs/exploitation/runbook-coolify.md, docs/exploitation/en/runbook-coolify.md, CLAUDE.md]
+inputs:
+  paths: [docs/exploitation/, compose.yaml, compose.local.yaml, Dockerfile, .github/workflows/image.yml, .github/workflows/ci.yml, docs/specs/plan-de-developpement.md, docs/specs/exploitation.md, decisions/DEC-2026-002-deploiement.md]
+  decisions: [DEC-2026-002]
+outputs:
+  kind: pull_request
+acceptance:
+  commands:
+    - "DATABASE_URL=postgres://essai:essai@base:5432/tokenhood docker compose -f compose.yaml config --quiet"
+  requirements:
+    - "compose.yaml ne contient plus ni service postgres ni volume pgdata ; les services qui joignent la base (api, et le service de migration de TH-102) lisent DATABASE_URL dans l'environnement, déclarée obligatoire : sans elle, docker compose -f compose.yaml config échoue avec un message explicite (essai décrit dans la PR) ; aucune valeur par défaut ne contient de mot de passe"
+    - "compose.local.yaml, jamais utilisée par Coolify, ajoute le service postgres 16 (healthcheck, volume) et la DATABASE_URL qui le désigne, pour le poste et la CI ; la commande de lancement local écrite en tête de compose.yaml reste exacte"
+    - "Workflow image : le job compose garde son nom (statut requis sur main) et ses essais de fumée ; il démarre compose.yaml avec la surcharge locale, vérifie que l'API joint la base (migrations appliquées, sonde de disponibilité de TH-114 à 200) et que compose.yaml seul ne définit aucun service postgres"
+    - "Runbook FR et EN (docs/exploitation/) : base autonome gérée par Coolify pour le staging comme pour la production ; procédure de bascule de la ressource actuelle (créer la base dans l'environnement staging, renseigner DATABASE_URL dans Coolify avant la fusion de cette PR, faute de quoi le déploiement automatique échoue ; données de test reprises ou abandonnées ; témoin du schéma exploitation ; volume pgdata retiré après vérification) ; sections 1, 6.3 et 11 à jour"
+    - "CLAUDE.md : sections Plateforme et Déploiement à jour (services du compose, DATABASE_URL, SERVICE_PASSWORD_POSTGRES retiré de la ressource après la bascule)"
+    - "Aucune donnée, aucun volume ni aucun réglage de Coolify touchés par l'agent : la PR liste dans l'ordre les gestes du porteur à faire avant sa fusion et n'en accomplit aucun ; aucun secret dans le dépôt"
+dependencies:                # à compléter à la publication par TH-102 et TH-114 (integrated), absents de main tant que la PR #28 n'est pas fusionnée
+  - mission: TH-013
+    type: integrated
+  - mission: TH-014
+    type: integrated
+skills: [tokenhood-contribute@0.1]
+estimate:
+  size: M
+  tokens_eq: null          # à produire par l'agent au cadrage
+  source: agent
+risk: medium
+attempts: {mode: exclusive}
+execution:
+  max_lease_minutes: 240
+  environment: container
+verification:
+  reviewers: 1
+  prefer_different_model_family: false
+  maintainer_approval: true
+status: draft                # à passer à open (version 2) quand TH-102 et TH-114 seront publiées sur main et ajoutées aux dépendances

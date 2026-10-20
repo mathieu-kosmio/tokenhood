@@ -1,0 +1,48 @@
+schema_version: "2.1"
+id: TH-028
+version: 1
+lot: 0
+title:
+  fr: "Bouton « Contribuer » de la feuille de route : discussion « Réservation TH-xxx »"
+  en: "Roadmap Contribute button: « Réservation TH-xxx » discussion"
+type: code
+objective: "Aligner le bouton « Contribuer » de la feuille de route sur DEC-2026-004 : il ouvre une discussion intitulée « Réservation TH-xxx », préremplie avec le commentaire de réservation de CONTRIBUTING.md, au lieu d'une discussion « Contribuer à TH-xxx »."
+scope:
+  paths: [landing/locales/fr/roadmap.json, landing/locales/en/roadmap.json, landing/src/roadmap.mjs, landing/src/roadmap-data.mjs, landing/test/roadmap.test.mjs, landing/README.md]
+inputs:
+  paths: [decisions/DEC-2026-004-skill-contribute-amorcage.md, CONTRIBUTING.md, .github/ISSUE_TEMPLATE/config.yml, skills/tokenhood-contribute/references/protocole.md, landing/README.md, landing/site.config.json]
+  decisions: [DEC-2026-004]
+outputs:
+  kind: pull_request
+acceptance:
+  commands:
+    - "cd landing && npm ci --ignore-scripts && npm test"
+    - "cd landing && npm run build"
+  requirements:
+    - "La discussion ouverte par le bouton s'intitule « Réservation TH-xxx », identique en FR et en EN (DEC-2026-004 fixe ce libellé, que la section anglaise de CONTRIBUTING.md garde en français) ; catégorie inchangée (contribute.discussionCategory)"
+    - "Corps prérempli : le commentaire de réservation de CONTRIBUTING.md avec l'identifiant et la version du contrat remplis, les champs à compléter (compte, agent, échéance) signalés, la durée maximale tirée de execution.max_lease_minutes du contrat, le résumé de la mission et le lien du contrat ; consignes autour du commentaire dans la langue de la page"
+    - "Le texte de la section « Ensuite » décrit la réservation : vérifier qu'aucune réservation récente ni PR ne tient la mission, réserver, puis travailler ; lien vers le guide de contribution ; FR et EN"
+    - "Le test de la feuille de route vérifie, pour chaque mission mise en avant, le titre, la version du contrat et la durée dans le corps, en FR et en EN ; aucune chaîne d'interface hors de landing/locales/ ; les clés FR et EN restent alignées"
+    - "landing/README.md décrit le nouveau comportement du bouton"
+    - "Rendu vérifié en largeur bureau et mobile"
+dependencies:
+  - mission: TH-020
+    type: integrated
+  - mission: TH-016
+    type: integrated
+  - decision: DEC-2026-004
+skills: [tokenhood-contribute@0.1]
+estimate:
+  size: S
+  tokens_eq: null          # à produire par l'agent au cadrage
+  source: agent
+risk: low
+attempts: {mode: exclusive}
+execution:
+  max_lease_minutes: 240
+  environment: container
+verification:
+  reviewers: 1
+  prefer_different_model_family: false
+  maintainer_approval: true
+status: open
