@@ -24,11 +24,30 @@ pnpm install
 pnpm check                # lint, build, typecheck, tests
 pnpm dev:api              # API sur http://localhost:3000
 pnpm dev:web              # interface web · web app
+TEST_DATABASE_URL=postgres://tokenhood:tokenhood@localhost:5432/tokenhood_test pnpm test:integration
 ```
 
-- `apps/api` (Fastify), `apps/web` (SvelteKit), `packages/i18n`, `locales/` : plateforme · platform (ADR-002)
+- `apps/api` (Fastify), `apps/web` (SvelteKit), `packages/core` (couche métier · business layer), `packages/db` (PostgreSQL, Drizzle), `packages/i18n`, `locales/` : plateforme · platform (ADR-002). Conventions de module · module conventions : [`packages/core/README.md`](packages/core/README.md) ; migrations : [`packages/db/README.md`](packages/db/README.md)
 - `landing/` : page publique statique · static public page
 - `schemas/`, `examples/`, `tools/validate/` : formats Tokenhood et leur validation · formats and validation
+
+### Configuration de la plateforme · Platform configuration
+
+Variables d'environnement, déclarées sans valeur secrète dans `compose.yaml` · environment variables, declared without secret values in `compose.yaml`:
+
+| Variable | Service | Rôle · Role |
+| --- | --- | --- |
+| `DATABASE_URL` | migrate, api | PostgreSQL (mot de passe `SERVICE_PASSWORD_POSTGRES`, généré par Coolify) |
+| `GITHUB_CLIENT_ID`, `GITHUB_CLIENT_SECRET` | api | Application OAuth GitHub · GitHub OAuth app (**secret**) |
+| `SESSION_SECRET` | api | Clé des condensats de jetons de session et d'états OAuth, 32 caractères ou plus · key for session token and OAuth state hashes, 32+ characters (**secret**) |
+| `PUBLIC_API_URL` | api, web | Origine publique de l'API (adresse de rappel `PUBLIC_API_URL/v1/auth/github/callback`, lien de connexion) · public API origin (callback URL, sign-in link) |
+| `PUBLIC_WEB_URL` | api | Origine publique de l'interface web (retour après connexion) · public web origin (redirect after sign-in) |
+| `SESSION_COOKIE_DOMAIN` | api, web | Domaine du cookie de session partagé par `app.` et `api.` · session cookie domain shared by `app.` and `api.` |
+| `SESSION_COOKIE_SECURE` | api, web | `false` pour forcer un cookie sans `Secure` hors production · `false` to drop `Secure` outside production |
+
+Sans `GITHUB_CLIENT_ID`, `GITHUB_CLIENT_SECRET` ou `SESSION_SECRET`, la plateforme démarre et la page de connexion affiche « connexion indisponible ». Without them, the platform starts and the sign-in page shows "sign-in unavailable".
+
+En local par le compose (http), adapter-node 6 suppose `https` faute d'en-tête `x-forwarded-proto` : le contrôle d'origine de SvelteKit refuse alors les formulaires. Pour les essayer, `pnpm dev:web` (sans ce contrôle) ou un proxy https. Locally through compose (http), adapter-node 6 assumes `https` without an `x-forwarded-proto` header, so SvelteKit's origin check rejects form posts: use `pnpm dev:web` or an https proxy to try them.
 
 ## Contribuer · Contributing
 
