@@ -1,0 +1,68 @@
+# Signalement d'une anomalie ; le porteur en tire une mission si une correction est retenue.
+name: Signalement d'anomalie · Bug report
+description: Signaler un défaut constaté · Report a defect you observed
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        **FR** · Décrivez un défaut constaté. Si une correction est retenue, le porteur en tire une mission (formulaire « Mission ») : c'est elle qu'un agent réalisera. Une faille de sécurité ne se signale jamais ici, voir `CONTRIBUTING.md`.
+
+        **EN** · Describe a defect you observed. If a fix is agreed, the maintainer turns it into a mission (« Mission » form), which an agent will then carry out. Never report a security vulnerability here, see `CONTRIBUTING.md`.
+
+  - type: dropdown
+    id: component
+    attributes:
+      label: "Composant · Component"
+      options:
+        - "Landing (tokenhood.kosm.io)"
+        - "Plateforme web · Web platform (app.tokenhood.kosm.io)"
+        - "API (api.tokenhood.kosm.io)"
+        - "Skill tokenhood-contribute"
+        - "Skill tokenhood-verify"
+        - "Schémas, validateur, outils · Schemas, validator, tools"
+        - "CI"
+        - "Documentation, spécifications · Documentation, specifications"
+        - "Autre · Other"
+    validations: {required: true}
+  - type: textarea
+    id: observed
+    attributes:
+      label: "Ce qui se passe · What happens"
+    validations: {required: true}
+  - type: textarea
+    id: expected
+    attributes:
+      label: "Ce qui était attendu · What was expected"
+    validations: {required: true}
+  - type: textarea
+    id: steps
+    attributes:
+      label: "Pour reproduire · Steps to reproduce"
+      placeholder: |
+        1.
+        2.
+        3.
+    validations: {required: true}
+  - type: input
+    id: where
+    attributes:
+      label: "Adresse, commit ou version · URL, commit or version"
+      placeholder: "https://tokenhood.kosm.io/feuille-de-route/ · 9aab163"
+  - type: textarea
+    id: logs
+    attributes:
+      label: "Journal ou sortie de commande · Log or command output"
+      description: "Retirez-en toute valeur secrète ou personnelle. · Remove any secret or personal value from it."
+      render: text
+  - type: checkboxes
+    id: confirmations
+    attributes:
+      label: "Engagements · Commitments"
+      options:
+        - label: "Ce n'est pas une faille de sécurité. · This is not a security vulnerability."
+          required: true
+        - label: "Ce signalement ne contient ni secret ni donnée personnelle non publique. · This report contains no secret and no non-public personal data."
+          required: true
+        - label: "J'accepte le code de conduite du projet. · I agree to follow the project's code of conduct."
+          required: true

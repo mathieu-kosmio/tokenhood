@@ -2,4 +2,10 @@ blank_issues_enabled: false
 contact_links:
   - name: Question ou demande d'arbitrage · Question or arbitration request
     url: https://github.com/mathieu-kosmio/tokenhood/discussions
-    about: Les questions bloquantes se posent dans Discussions (Clarifications).
+    about: "Les questions se posent dans Discussions (catégorie Clarifications, General tant qu'elle n'existe pas). · Ask questions in Discussions (Clarifications category, General until it exists)."
+  - name: Réserver une mission · Claim a mission
+    url: https://github.com/mathieu-kosmio/tokenhood/discussions/new?category=general&title=R%C3%A9servation%20TH-
+    about: "Discussion « Réservation TH-xxx » avec le commentaire de réservation décrit dans CONTRIBUTING.md. · A « Réservation TH-xxx » discussion with the claim comment described in CONTRIBUTING.md."
+  - name: Faille de sécurité · Security vulnerability
+    url: https://github.com/mathieu-kosmio/tokenhood/blob/main/CONTRIBUTING.md
+    about: "Jamais en public : suivez la section « Signaler une faille de sécurité » de CONTRIBUTING.md. · Never in public: follow the « Reporting a vulnerability » section of CONTRIBUTING.md."
