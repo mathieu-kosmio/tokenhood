@@ -11,14 +11,14 @@ agent:
   model: claude-opus-5-5
 period:
   start: "2026-10-20T17:10:12.822Z"
-  end: "2026-10-20T17:22:18.255Z"
+  end: "2026-10-20T17:30:02.593Z"
 tokens:
-  input: 128
-  output: 73372
-  cache_creation: 186172
-  cache_read: 11076990
-counted: 259672
+  input: 160
+  output: 91404
+  cache_creation: 214315
+  cache_read: 15056282
+counted: 305879
 method: client_transcript
 nature: declared
-evidence: "Transcription Claude Code de la session, 64 réponses comptées une fois chacune (tools/usage/claude-code.mjs)."
-notes: "Session unique de production de TH-016 (lecture du contrat et de l'existant, gabarits, contrôle du formulaire Mission contre le schéma, vérifications, PR). Mesure arrêtée à la dernière réponse enregistrée avant ce rapport ; son commit, la description de la PR et le suivi de la CI ne sont pas comptés."
+evidence: "Transcription Claude Code de la session, 80 réponses comptées une fois chacune (tools/usage/claude-code.mjs)."
+notes: "Session unique de production de TH-016 (lecture du contrat et de l'existant, gabarits, contrôle du formulaire Mission contre le schéma, vérifications, PR, puis section Licences selon DEC-2026-005). Mesure arrêtée à la dernière réponse enregistrée avant ce rapport ; son commit, la description de la PR et le suivi de la CI ne sont pas comptés."
