@@ -21,6 +21,7 @@ acceptance:
     - "TEST_DATABASE_URL=postgres://tokenhood:tokenhood@localhost:5432/tokenhood_test pnpm test:integration"
   requirements:
     - "Données : packages/db (Drizzle ORM, PostgreSQL 16) avec migrations versionnées générées par drizzle-kit et une commande qui les applique, rejouable sans effet ; retour arrière documenté (migration inverse ou procédure)"
+    - "Le schéma PostgreSQL exploitation, réservé à l'exploitation (témoin de restauration du runbook Coolify), reste hors de l'application : ni les migrations ni drizzle-kit ne le créent, ne le modifient ou ne le suppriment, et aucune migration n'exécute DROP SCHEMA (test sur le SQL des migrations)"
     - "Déploiement : compose.yaml gagne un service migrate à exécution unique dont dépend api ; les workflows image et ci restent verts et le job monorepo garde son nom (statut requis)"
     - "pnpm check passe sans base de données ; pnpm test:integration exécute les tests d'intégration sur la base désignée par TEST_DATABASE_URL, et la CI les lance sur un PostgreSQL 16 éphémère"
     - "Connexion GitHub : flux par code d'autorisation avec state à usage unique et PKCE S256, portée read:user et user:email seulement ; compte rattaché à l'identifiant numérique GitHub (pas au login) ; refus sans email principal vérifié ; jeton GitHub non conservé après la connexion (tests contre un GitHub simulé, sans réseau)"
