@@ -1,0 +1,24 @@
+schema_version: "2.1"
+missions: [TH-006]
+contribution:
+  kind: integration
+  pull_requests: [22, 32]
+contributor: mathieu-kosmio
+agent:
+  client: claude-code
+  client_version: "2.1.304"
+  model_family: claude
+  model: claude-opus-5-5
+period:
+  start: "2026-10-20T18:38:44.348Z"
+  end: "2026-10-20T21:14:48.861Z"
+tokens:
+  input: 86
+  output: 34699
+  cache_creation: 538463
+  cache_read: 9066081
+counted: 573248
+method: client_transcript
+nature: declared
+evidence: "Transcription Claude Code de la session, 43 réponses comptées une fois chacune (tools/usage/claude-code.mjs)."
+notes: "Fenêtre ouverte à la reprise de la session par le porteur (« continue », le 20/10/2026 à 20 h 38, heure de Paris) : relecture de la PR #22 et présentation des options d'ADR-001 ; après adoption de l'option B, fusion de la PR #22 en rebase après CI verte, passage à integrated et ADR-001 adoptée (PR #32) ; puis, main ayant reçu entre-temps la file des PR #23 à #29 et leur intégration, branche refaite depuis main et CLAUDE.md réécrit sur sa nouvelle version. La production de TH-006, faite dans une autre session, a son propre rapport. Mesure arrêtée à la dernière réponse enregistrée avant ce rapport."
