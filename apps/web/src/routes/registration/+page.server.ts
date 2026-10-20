@@ -3,7 +3,7 @@ import { translator } from '@tokenhood/i18n';
 import type { FormError } from '#lib/forms/index.js';
 import { DEFAULT_TIMEZONE, timezones } from '#lib/identity.js';
 import { api, newIdempotencyKey } from '#lib/server/api.js';
-import { readProfile, saveProfile } from '#lib/server/profile.js';
+import { etagOf, readProfile, saveProfile } from '#lib/server/profile.js';
 import type { Actions, PageServerLoad } from './$types';
 
 export const load: PageServerLoad = ({ locals }) => {
@@ -11,6 +11,7 @@ export const load: PageServerLoad = ({ locals }) => {
   if (locals.user.registration.complete) redirect(303, '/account');
   return {
     me: locals.user,
+    etag: locals.etag,
     timezones: timezones(),
     defaultTimezone: DEFAULT_TIMEZONE,
     // Clé de la soumission : un double envoi du formulaire est rejoué par l'API, pas exécuté deux fois.
@@ -35,9 +36,9 @@ export const actions: Actions = {
         message: t('identity.documents.errors.required', { title: t(`identity.documents.${d.id}`) }),
       }));
 
-    const saved = await saveProfile(locals, values, `${submission}:profile`);
+    const saved = await saveProfile(locals, values, etagOf(form), `${submission}:profile`);
     if (!saved.ok)
-      return fail(saved.message ? 503 : 422, {
+      return fail(saved.status, {
         values,
         documents,
         errors: [...saved.errors, ...errors],

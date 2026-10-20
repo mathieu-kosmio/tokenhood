@@ -6,6 +6,7 @@ import { authorize, operation } from '@tokenhood/core/common';
 import { DOCUMENTS } from '@tokenhood/core/identity';
 import { fakeGitHub } from '@tokenhood/core/identity/testing';
 import { buildApp } from '../../app.js';
+import { run as adminCommand } from '../../cli/admin.js';
 import { configFromEnv } from '../../config.js';
 
 const env = {
@@ -358,5 +359,71 @@ describe('base présente, secrets OAuth absents', () => {
     } finally {
       await bare.close();
     }
+  });
+});
+
+describe('idempotence', () => {
+  it('la portée d’une clé est la session : la même clé depuis une autre session n’est pas rejouée', async () => {
+    const first = await signIn();
+    const second = await signIn();
+    for (const token of [first.token, second.token]) {
+      const res = await app.inject({
+        method: 'POST',
+        url: '/v1/auth/logout',
+        cookies: { th_session: token },
+        headers: { 'idempotency-key': 'meme-cle' },
+      });
+      expect(res.headers['idempotent-replayed']).toBeUndefined();
+    }
+    expect((await me(first.token)).statusCode).toBe(401);
+    expect((await me(second.token)).statusCode).toBe(401);
+  });
+
+  it('une requête en cours bloque sa clé (409) ; périmée, la clé est reprise', async () => {
+    const { token } = await signIn();
+    const profile = await me(token);
+    const userId: string = profile.json().id;
+    const session = await t.pool.query(
+      'select id from sessions where user_id = $1 order by created_at desc limit 1',
+      [userId],
+    );
+    const scope = `human:${userId}:${session.rows[0].id}`;
+    await t.pool.query(
+      "insert into idempotency_keys (scope, key, request_hash, created_at) values ($1, 'en-cours', 'autre', $2)",
+      [scope, now],
+    );
+    const headers = { 'idempotency-key': 'en-cours', 'if-match': profile.headers.etag as string };
+    const blocked = await patch(token, { timezone: 'Europe/Paris' }, headers);
+    expect(blocked.statusCode).toBe(409);
+    expect(blocked.json().error).toBe('idempotency_in_progress');
+    await t.pool.query("update idempotency_keys set created_at = $2 where scope = $1 and key = 'en-cours'", [
+      scope,
+      new Date(now.getTime() - 3 * 60 * 1000),
+    ]);
+    const taken = await patch(token, { timezone: 'Europe/Paris' }, headers);
+    expect(taken.statusCode).toBe(200);
+    const replay = await patch(token, { timezone: 'Europe/Paris' }, headers);
+    expect(replay.headers['idempotent-replayed']).toBe('true');
+  });
+});
+
+describe('commande d’exploitation du rôle administrateur', () => {
+  it('attribue le rôle par identifiant numérique GitHub', async () => {
+    const { token } = await signIn();
+    const lines: string[] = [];
+    expect(
+      await adminCommand(['grant', '--github-id', String(accountId)], { DATABASE_URL: t.url }, (l) =>
+        lines.push(l),
+      ),
+    ).toBe(0);
+    expect(lines[0]).toMatch(/rôle administrateur attribué/);
+    expect((await me(token)).json().admin).toBe(true);
+    expect(await adminCommand(['grant'], { DATABASE_URL: t.url }, (l) => lines.push(l))).toBe(2);
+    expect(await adminCommand(['grant', 'inconnu-xyz'], { DATABASE_URL: t.url }, (l) => lines.push(l))).toBe(
+      1,
+    );
+    expect(lines.at(-1)).toBe(
+      'Erreur unknown_user : Aucun utilisateur rattaché au compte GitHub inconnu-xyz.',
+    );
   });
 });

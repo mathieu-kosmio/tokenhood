@@ -54,5 +54,6 @@
   "identity.documents.errors.required": "Accept {title} to complete your registration.",
   "identity.documents.errors.unknown": "Unknown document: {document}.",
   "identity.documents.errors.outdated": "This document changed: the current version of “{document}” is {current}. Read it again, then accept it.",
-  "identity.admin.errors.unknownUser": "No user is linked to the GitHub account {login}."
+  "identity.admin.errors.unknownUser": "No user is linked to the GitHub account {login}.",
+  "identity.admin.errors.ambiguousLogin": "Several accounts carry the GitHub login {login}: designate the account by its numeric ID (--github-id)."
 }

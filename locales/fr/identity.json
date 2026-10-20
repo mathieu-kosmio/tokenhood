@@ -54,5 +54,6 @@
   "identity.documents.errors.required": "Acceptez {title} pour terminer l'inscription.",
   "identity.documents.errors.unknown": "Document inconnu : {document}.",
   "identity.documents.errors.outdated": "Ce document a changé : la version courante de « {document} » est la {current}. Relisez-la puis acceptez-la.",
-  "identity.admin.errors.unknownUser": "Aucun utilisateur rattaché au compte GitHub {login}."
+  "identity.admin.errors.unknownUser": "Aucun utilisateur rattaché au compte GitHub {login}.",
+  "identity.admin.errors.ambiguousLogin": "Plusieurs comptes portent le login GitHub {login} : désignez le compte par son identifiant numérique (--github-id)."
 }

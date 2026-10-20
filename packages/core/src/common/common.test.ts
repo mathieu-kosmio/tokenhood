@@ -13,7 +13,13 @@ const human = (over: Partial<HumanActor> = {}): HumanActor => ({
   sessionId: null,
   ...over,
 });
-const agent: AgentActor = { kind: 'agent', agentId: uuidv7(), authorizationId: uuidv7(), userId: uuidv7() };
+const agent: AgentActor = {
+  kind: 'agent',
+  agentId: uuidv7(),
+  authorizationId: uuidv7(),
+  userId: uuidv7(),
+  registered: true,
+};
 
 const code = (fn: () => unknown) => {
   try {
@@ -118,6 +124,12 @@ describe('acteurs et autorisations', () => {
     expect(code(() => authorize(agent, registering))).toBe('403 agent_forbidden');
     expect(code(() => authorize(agent, admin))).toBe('403 agent_forbidden');
     expect(code(() => authorize(agent, forAgents))).toBe('ok');
+  });
+
+  it('un agent n’a accès à rien tant que l’inscription de son utilisateur est incomplète', () => {
+    expect(code(() => authorize({ ...agent, registered: false }, forAgents))).toBe(
+      '403 registration_incomplete',
+    );
   });
 
   it('une opération d’administration ne s’ouvre jamais aux agents', () => {

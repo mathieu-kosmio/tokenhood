@@ -4,6 +4,7 @@ import { isRedirect } from '@sveltejs/kit';
 import type { Me } from '#lib/identity.js';
 import { load as loginLoad } from './login/+page.server.js';
 import { actions as registration } from './registration/+page.server.js';
+import { POST as logout } from './logout/+server.js';
 
 const pending: Me = {
   id: 'u1',
@@ -38,12 +39,27 @@ const pending: Me = {
 function stubApi(
   respond: (method: string, path: string, body: unknown) => { status: number; body?: unknown },
 ) {
-  const calls: { method: string; path: string; body: unknown; key: string | undefined }[] = [];
+  const calls: {
+    method: string;
+    path: string;
+    body: unknown;
+    key: string | undefined;
+    ifMatch: string | undefined;
+    cookie: string | undefined;
+  }[] = [];
   vi.stubGlobal('fetch', async (url: string, init: RequestInit) => {
     const path = new URL(url).pathname;
     const body = init.body ? JSON.parse(String(init.body)) : null;
     const method = init.method ?? 'GET';
-    calls.push({ method, path, body, key: (init.headers as Record<string, string>)['idempotency-key'] });
+    const headers = init.headers as Record<string, string>;
+    calls.push({
+      method,
+      path,
+      body,
+      key: headers['idempotency-key'],
+      ifMatch: headers['if-match'],
+      cookie: headers.cookie,
+    });
     const res = respond(method, path, body);
     return new Response(res.status === 204 ? null : JSON.stringify(res.body ?? {}), {
       status: res.status,
@@ -67,6 +83,7 @@ const submit = (entries: [string, string][]) =>
 
 const profileEntries: [string, string][] = [
   ['submission', 's1'],
+  ['etag', '"v-affiche"'],
   ['display_name', 'Ada'],
   ['roles', 'contributor'],
   ['lang', 'fr'],
@@ -158,11 +175,56 @@ describe('inscription', () => {
       ['POST', '/v1/users/me/acceptances', 's1:charter:1'],
       ['POST', '/v1/users/me/acceptances', 's1:terms:1'],
     ]);
+    // If-Match : l'ETag du profil affiché (champ caché), pas celui relu à l'envoi (« "v1" » dans locals).
+    expect(calls[0]?.ifMatch).toBe('"v-affiche"');
     expect(calls[0]?.body).toEqual({
       display_name: 'Ada',
       roles: ['contributor'],
       lang: 'fr',
       timezone: 'Europe/Paris',
     });
+  });
+});
+
+describe('déconnexion', () => {
+  const cookieJar = (token: string | undefined) => {
+    const deleted: string[] = [];
+    return {
+      deleted,
+      cookies: { get: () => token, delete: (name: string) => deleted.push(name) },
+    };
+  };
+
+  it('révoque la session du cookie même si le profil n’a pas pu être chargé', async () => {
+    const calls = stubApi(() => ({ status: 204 }));
+    const jar = cookieJar('jeton');
+    let redirected: unknown;
+    try {
+      await logout({
+        locals: { lang: 'fr', user: null, session: null, etag: null },
+        cookies: jar.cookies,
+      } as never);
+    } catch (error) {
+      redirected = error;
+    }
+    expect(isRedirect(redirected) && redirected.location).toBe('/');
+    expect(calls.map((c) => [c.method, c.path, c.cookie])).toEqual([
+      ['POST', '/v1/auth/logout', 'th_session=jeton'],
+    ]);
+    expect(jar.deleted).toEqual(['th_session']);
+  });
+
+  it('si l’API ne révoque pas la session, le cookie est gardé et l’erreur affichée', async () => {
+    vi.stubGlobal('fetch', async () => {
+      throw new TypeError('fetch failed');
+    });
+    const jar = cookieJar('jeton');
+    await expect(
+      logout({
+        locals: { lang: 'fr', user: null, session: null, etag: null },
+        cookies: jar.cookies,
+      } as never),
+    ).rejects.toMatchObject({ status: 503 });
+    expect(jar.deleted).toEqual([]);
   });
 });

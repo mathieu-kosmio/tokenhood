@@ -12,6 +12,9 @@ export interface ProfileValues {
   timezone: string;
 }
 
+// ETag du profil affiché, renvoyé par le formulaire (champ caché « etag »).
+export const etagOf = (form: FormData): string | null => String(form.get('etag') ?? '') || null;
+
 export function readProfile(form: FormData): ProfileValues {
   return {
     display_name: String(form.get('display_name') ?? ''),
@@ -22,14 +25,18 @@ export function readProfile(form: FormData): ProfileValues {
 }
 
 export type SaveResult =
-  { ok: true; me: Me; etag: string | null } | { ok: false; errors: FormError[]; message: string | null };
+  | { ok: true; me: Me; etag: string | null }
+  | { ok: false; status: number; errors: FormError[]; message: string | null };
 
 // Les champs de l'API (« roles.0 », « display_name ») désignent les champs du formulaire du même nom.
 const fieldId = (field: string) => field.split('.')[0] ?? field;
 
+// ifMatch : ETag du profil tel qu'il était affiché (champ caché du formulaire), jamais celui relu à l'envoi :
+// une modification faite entre-temps (autre onglet) est refusée par l'API (412) au lieu d'être écrasée.
 export async function saveProfile(
   locals: App.Locals,
   values: ProfileValues,
+  ifMatch: string | null,
   idempotencyKey: string,
 ): Promise<SaveResult> {
   const t = translator(locals.lang);
@@ -38,17 +45,18 @@ export async function saveProfile(
     session: locals.session,
     lang: locals.lang,
     idempotencyKey,
-    ifMatch: locals.etag,
+    ifMatch,
     body: values,
   });
   if (res.ok && res.body) return { ok: true, me: res.body, etag: res.etag };
-  if (res.status === 0) return { ok: false, errors: [], message: t('errors.unavailable') };
+  if (res.status === 0) return { ok: false, status: 503, errors: [], message: t('errors.unavailable') };
   const fields = res.error?.fields ?? [];
   if (fields.length)
     return {
       ok: false,
+      status: res.status,
       errors: fields.map((f) => ({ field: fieldId(f.field), message: f.message })),
       message: null,
     };
-  return { ok: false, errors: [], message: res.error?.message ?? t('errors.internal') };
+  return { ok: false, status: res.status, errors: [], message: res.error?.message ?? t('errors.internal') };
 }

@@ -47,6 +47,7 @@
 
 <form method="POST" class="th-form" novalidate>
   <input type="hidden" name="submission" value={data.submission} />
+  <input type="hidden" name="etag" value={data.etag ?? ''} />
   <TextField
     id="display_name"
     name="display_name"
