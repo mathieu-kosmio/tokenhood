@@ -45,7 +45,9 @@ Missions en cours au 2026-10-20 :
 | Mission | Type | PR | Estimation au cadrage | Source |
 | --- | --- | --- | --- | --- |
 | TH-006 | governance.instruction | #22, ouverte le 2026-10-19 | 150 000 à 400 000 tokens comptés | PR #22, section Mission |
-| TH-010 | research | PR de cette mission | 150 000 à 350 000 tokens comptés | PR de cette mission, section Mission |
+| TH-008 | docs | #23, brouillon ouvert le 2026-10-20 | Non donnée à ce jour | PR #23 |
+| TH-009 | docs | #24, brouillon ouvert le 2026-10-20 | Non donnée à ce jour | PR #24 |
+| TH-010 | research | #25, ouverte le 2026-10-20 | 150 000 à 350 000 tokens comptés | PR #25, section Mission |
 
 Les autres missions publiées sont `open` dans `.tokenhood/missions/` ; elles entrent au journal à leur première tentative.
 
@@ -90,8 +92,8 @@ Aucun défaut après intégration n'est rattaché à une mission au 2026-10-20 :
 
 | Dimension | Cible | Au 2026-10-20 | Source |
 | --- | --- | --- | --- |
-| Missions réelles | 15 à 20 | 13 intégrées, 2 en cours, aucune abandonnée | Contrats, PR |
-| Types | Code, documentation, i18n, gouvernance | code 9, docs 3, governance.instruction 1 ; **i18n 0** ; research 1 en cours | Champ `type` des contrats |
+| Missions réelles | 15 à 20 | 13 intégrées, 4 en cours, aucune abandonnée | Contrats, PR |
+| Types | Code, documentation, i18n, gouvernance | Intégrées : code 9, docs 3, governance.instruction 1 ; **i18n 0**. En cours : docs 2, governance.instruction 1, research 1 | Champ `type` des contrats |
 | Contributeurs | Plusieurs, dont un extérieur | **1** (`mathieu-kosmio`), aucun extérieur | Champ `contributor` des rapports |
 | Clients d'agent | 2 lorsque disponibles | **1** : Claude Code 2.1.299, `claude-opus-5-5` (et `claude-haiku-5-5` pour des contrôles de lecture de TH-004) | Champ `agent` et notes des rapports |
 | Vérifications croisées | Une par mission | **0** | API GitHub (E-10) |
