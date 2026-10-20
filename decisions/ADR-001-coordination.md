@@ -2,13 +2,13 @@
 
 - Type : `architecture.choice`, catégorie 2
 - Instruction : TH-006, `decisions/ADR-001-dossier-options.md` (audit de tokenpool au commit `328acb9`, 19/10/2026)
-- Statut : **proposée**. Adoptée par les mainteneurs compétents (le porteur pendant l'amorçage) à la fusion de la PR qui l'introduit ; la date de fusion fait foi. Recours possible en gouvernance. L'agent qui a instruit le dossier ne décide pas : les mainteneurs peuvent retenir une autre option du dossier en modifiant ce fichier avant la fusion.
+- Statut : **adoptée** le 20/10/2026 par le porteur, à la fusion de la PR #22, telle que proposée par l'instruction (option B). Recours possible en gouvernance.
 
-## Décision proposée
+## Décision
 
 Option B du dossier : **réimplémentation compatible**, avec deux ajustements tirés de l'audit.
 
-| Point | Choix proposé |
+| Point | Choix |
 |---|---|
 | Code de tokenpool | Non repris. Aucune dépendance d'exécution à une instance tokenpool après le lot 2 |
 | Module de coordination | TH-202, dans `packages/core` (TypeScript, PostgreSQL, ADR-002), conforme aux contrats de TH-009 |
