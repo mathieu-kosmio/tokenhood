@@ -6,6 +6,7 @@ describe('resolveLang', () => {
     expect(resolveLang({ query: 'en', cookie: 'fr', acceptLanguage: 'fr' })).toEqual({
       lang: 'en',
       remember: true,
+      updateProfile: false,
     });
   });
 
@@ -13,6 +14,7 @@ describe('resolveLang', () => {
     expect(resolveLang({ query: null, cookie: 'en', acceptLanguage: 'fr-FR' })).toEqual({
       lang: 'en',
       remember: false,
+      updateProfile: false,
     });
   });
 
@@ -24,6 +26,26 @@ describe('resolveLang', () => {
     expect(resolveLang({ query: 'de', cookie: 'xx', acceptLanguage: null })).toEqual({
       lang: 'fr',
       remember: false,
+      updateProfile: false,
     });
+  });
+
+  it('connecté : la langue du profil prime sur le cookie et le navigateur', () => {
+    expect(resolveLang({ query: null, profile: 'en', cookie: 'fr', acceptLanguage: 'fr-FR' })).toEqual({
+      lang: 'en',
+      remember: true,
+      updateProfile: false,
+    });
+  });
+
+  it('connecté : un choix explicite différent du profil met le profil à jour', () => {
+    expect(resolveLang({ query: 'fr', profile: 'en', cookie: 'en', acceptLanguage: 'en' })).toEqual({
+      lang: 'fr',
+      remember: true,
+      updateProfile: true,
+    });
+    expect(
+      resolveLang({ query: 'en', profile: 'en', cookie: 'en', acceptLanguage: 'fr' }).updateProfile,
+    ).toBe(false);
   });
 });

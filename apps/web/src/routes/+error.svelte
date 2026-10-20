@@ -5,9 +5,14 @@
 
   const lang = $derived(page.data.lang ?? negotiate(null));
   const t = $derived(translator(lang));
+  const heading = $derived(page.status === 404 ? t('errors.pageNotFound') : t('errors.internal'));
 </script>
 
+<svelte:head>
+  <title>{heading} · {t('app.name')}</title>
+</svelte:head>
+
 <section class="th-wrap th-error">
-  <h1>{page.status === 404 ? t('errors.pageNotFound') : t('errors.internal')}</h1>
+  <h1>{heading}</h1>
   <p><a class="th-btn th-btn--outline" href={resolve('/')}>{t('errors.backHome')}</a></p>
 </section>

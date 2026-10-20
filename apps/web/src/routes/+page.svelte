@@ -8,6 +8,10 @@
   const statusKey = (status: Status) => `missions.status.${status}` as MessageKey;
 </script>
 
+<svelte:head>
+  <title>{t('app.name')} · {t('app.tagline')}</title>
+</svelte:head>
+
 <section class="th-hero">
   <div class="th-wrap th-hero__inner">
     <p class="th-eyebrow">{t('home.eyebrow')}</p>
