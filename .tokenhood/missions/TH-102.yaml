@@ -1,0 +1,54 @@
+schema_version: "2.1"
+id: TH-102
+version: 1
+lot: 1
+title:
+  fr: "Identité : OAuth GitHub, profil, langues"
+  en: "Identity: GitHub OAuth, profile, languages"
+type: code
+objective: "Permettre l'inscription et la connexion par OAuth GitHub, avec profil, langue d'interface, fuseau horaire et acceptation des documents versionnés, et poser le socle de données (packages/db avec Drizzle) et les conventions de module que réutilisent les missions suivantes du lot 1."
+scope:
+  paths: [packages/db/, packages/core/, packages/i18n/, apps/api/, apps/web/, locales/, package.json, pnpm-workspace.yaml, pnpm-lock.yaml, eslint.config.js, .prettierignore, compose.yaml, compose.local.yaml, Dockerfile, .dockerignore, .github/workflows/ci.yml, .github/workflows/image.yml, README.md, CLAUDE.md]
+inputs:
+  paths: [docs/specs/inscription-et-identite.md, docs/specs/modele-de-donnees.md, docs/specs/architecture-technique.md, docs/specs/api-et-mcp.md, docs/specs/securite-et-conformite.md, docs/specs/interfaces.md, docs/specs/non-code-et-i18n.md, docs/specs/plan-de-developpement.md, decisions/ADR-002-stack.md]
+  decisions: [ADR-002]
+outputs:
+  kind: pull_request
+acceptance:
+  commands:
+    - "pnpm install --frozen-lockfile"
+    - "pnpm check"
+    - "TEST_DATABASE_URL=postgres://tokenhood:tokenhood@localhost:5432/tokenhood_test pnpm test:integration"
+  requirements:
+    - "Données : packages/db (Drizzle ORM, PostgreSQL 16) avec migrations versionnées générées par drizzle-kit et une commande qui les applique, rejouable sans effet ; retour arrière documenté (migration inverse ou procédure)"
+    - "Déploiement : compose.yaml gagne un service migrate à exécution unique dont dépend api ; les workflows image et ci restent verts et le job monorepo garde son nom (statut requis)"
+    - "pnpm check passe sans base de données ; pnpm test:integration exécute les tests d'intégration sur la base désignée par TEST_DATABASE_URL, et la CI les lance sur un PostgreSQL 16 éphémère"
+    - "Connexion GitHub : flux par code d'autorisation avec state à usage unique et PKCE S256, portée read:user et user:email seulement ; compte rattaché à l'identifiant numérique GitHub (pas au login) ; refus sans email principal vérifié ; jeton GitHub non conservé après la connexion (tests contre un GitHub simulé, sans réseau)"
+    - "Sessions : jeton opaque conservé haché côté serveur, cookie HttpOnly, SameSite=Lax et Secure en production, expiration, déconnexion qui révoque la session (tests)"
+    - "Profil : nom affiché, rôle contributeur, porteur ou les deux, langue d'interface (fr, en) et fuseau horaire ; une fois connecté, la langue du profil prime sur le cookie et le navigateur, et un choix explicite de langue met le profil à jour (tests)"
+    - "Documents à accepter : liste versionnée (identifiant, version, URL FR et EN) ; tant qu'un document n'est pas accepté dans sa version courante, le compte reste en inscription incomplète et n'accède qu'au parcours d'inscription ; chaque acceptation est horodatée et conservée (tests). Le texte des documents est hors périmètre"
+    - "Acteurs : la couche métier distingue acteur humain et acteur agent et refuse par défaut à un acteur agent toute opération qui ne lui est pas explicitement ouverte ; un rôle administrateur, attribué par une commande d'exploitation et sans interface, sert d'autorisation provisoire de gouvernance jusqu'à TH-104 (tests)"
+    - "Audit : table d'événements en ajout seul (mise à jour et suppression refusées par la base, test d'intégration), horodatage UTC, identifiants UUID v7 ; création de compte, modification du profil, acceptation d'un document et révocation de session y sont inscrites"
+    - "API : routes /v1/auth et /v1/users/me décrites dans l'OpenAPI ; Idempotency-Key sur les écritures, ETag et If-Match sur le profil, erreurs localisées selon Accept-Language ; utilitaires communs (UUID v7, pagination par curseur, référence normalisée d'un dépôt GitHub en attendant l'entité Project) fournis une fois, hors des modules métier"
+    - "Conventions de module documentées dans packages/core/README.md et appliquées au module identity : schéma dans packages/db/src/schema/<module>.ts, règles dans packages/core/src/<module>/, routes dans apps/api/src/routes/<module>/ chargées sans liste centrale, résolution de l'acteur dans apps/api/src/auth/, rubriques du compte dans apps/web/src/routes/account/<rubrique>/ listées sans menu central, messages dans locales/<lang>/<module>.json, tests à côté du code. Ajouter un module ne modifie aucun fichier écrit à la main hors de ces emplacements ; seuls les fichiers générés (migrations, pnpm-lock.yaml) sont communs"
+    - "i18n : packages/i18n fusionne locales/<lang>.json et locales/<lang>/*.json, refuse une clé définie deux fois et conserve les contrôles de parité des clés et des arguments ICU (tests) ; aucune chaîne d'interface en dur"
+    - "Aucun secret dans le dépôt : identifiants de l'application OAuth GitHub et secret de session lus dans l'environnement, déclarés sans valeur dans compose.yaml ; sans eux, la plateforme démarre et la page de connexion affiche un message localisé « connexion indisponible » (test)"
+    - "Pages de connexion, d'inscription et de profil utilisables au clavier, champs étiquetés, erreurs reliées à leur champ (tests de rendu) ; tokens du design system Kosmio uniquement"
+dependencies:
+  - mission: TH-101
+    type: integrated
+skills: [tokenhood-contribute@0.1]
+estimate:
+  size: M
+  tokens_eq: null          # à produire par l'agent au cadrage
+  source: plan
+risk: medium
+attempts: {mode: exclusive}
+execution:
+  max_lease_minutes: 240
+  environment: container
+verification:
+  reviewers: 1
+  prefer_different_model_family: false
+  maintainer_approval: true
+status: open

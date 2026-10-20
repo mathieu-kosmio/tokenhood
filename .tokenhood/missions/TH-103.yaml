@@ -1,0 +1,48 @@
+schema_version: "2.1"
+id: TH-103
+version: 1
+lot: 1
+title:
+  fr: "Identité : liens d'intérêt et calcul des exclusions"
+  en: "Identity: conflicts of interest and exclusion computation"
+type: code
+objective: "Permettre à chaque utilisateur de déclarer ses liens d'intérêt (organisations, projets) et calculer de façon déterministe les exclusions qui en découlent, pour la vérification croisée (TH-301) et le déport en gouvernance (TH-104)."
+scope:
+  paths: [packages/core/src/interests/, packages/db/src/schema/interests.ts, packages/db/migrations/, apps/api/src/routes/interests/, apps/web/src/routes/account/interests/, locales/fr/interests.json, locales/en/interests.json]
+inputs:
+  paths: [docs/specs/inscription-et-identite.md, docs/specs/verification-croisee.md, docs/specs/gouvernance.md, docs/specs/modele-de-donnees.md, docs/specs/recette-mvp.md, packages/core/README.md]
+outputs:
+  kind: pull_request
+acceptance:
+  commands:
+    - "pnpm install --frozen-lockfile"
+    - "pnpm check"
+    - "TEST_DATABASE_URL=postgres://tokenhood:tokenhood@localhost:5432/tokenhood_test pnpm test:integration"
+  requirements:
+    - "Entités Organization, Affiliation (lien utilisateur-organisation : emploi, adhésion, mandat) et ConflictOfInterest (lien utilisateur-projet : emploi, maintenance, financement, autre), avec dates de début et de fin facultative ; l'organisation d'appartenance du profil se déclare ici"
+    - "Un projet est désigné par la référence normalisée de son dépôt fournie par TH-102, en attendant l'entité Project ; une organisation par son nom normalisé et, s'il est donné, son compte de forge : deux déclarations du même nom normalisé désignent la même organisation (tests)"
+    - "Mettre fin à un lien renseigne sa date de fin sans l'effacer ; chaque déclaration, modification ou fin produit un événement d'audit"
+    - "Calcul des exclusions, fonction pure et déterministe à une date donnée : deux utilisateurs sont liés s'ils sont la même personne, partagent une affiliation active à la même organisation ou maintiennent le même dépôt ; un utilisateur est exclu d'un projet s'il a un lien actif avec lui. La relation entre utilisateurs est symétrique (tests)"
+    - "Jeux de données adverses en test : casse et espaces différents dans un nom d'organisation, lien échu, lien daté dans le futur, lien réciproque, utilisateur sans déclaration"
+    - "Les déclarations ne sont lisibles que par leur auteur et par la couche métier ; aucune route ne les expose à un autre utilisateur ni à un acteur agent (tests)"
+    - "API /v1/users/me/interests (liste, ajout, fin) décrite dans l'OpenAPI, avec Idempotency-Key sur les écritures et erreurs localisées"
+    - "Rubrique « Liens d'intérêt » de l'espace Compte : liste, ajout, fin d'un lien, en FR et EN, utilisable au clavier, champs étiquetés"
+    - "Conventions de module de TH-102 respectées : aucun fichier hors du périmètre ; migration produite par drizzle-kit sur main à jour, jamais retouchée à la main, régénérée après rebase si une autre migration a été intégrée entre-temps"
+dependencies:
+  - mission: TH-102
+    type: integrated
+skills: [tokenhood-contribute@0.1]
+estimate:
+  size: M
+  tokens_eq: null          # à produire par l'agent au cadrage
+  source: plan
+risk: medium
+attempts: {mode: exclusive}
+execution:
+  max_lease_minutes: 240
+  environment: container
+verification:
+  reviewers: 1
+  prefer_different_model_family: false
+  maintainer_approval: true
+status: open
