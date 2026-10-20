@@ -1,0 +1,24 @@
+{
+  "name": "@tokenhood/core",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Couche métier de Tokenhood : un dossier par module (règles, services), utilitaires communs",
+  "type": "module",
+  "exports": {
+    "./*": {
+      "types": "./dist/*/index.d.ts",
+      "default": "./dist/*/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run --exclude '**/*.integration.test.ts'",
+    "test:integration": "vitest run integration.test"
+  },
+  "dependencies": {
+    "@tokenhood/db": "workspace:*",
+    "@tokenhood/i18n": "workspace:*",
+    "drizzle-orm": "0.45.4"
+  }
+}
