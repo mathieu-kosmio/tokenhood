@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://tokenhood.kosm.io/schemas/2.1/attempt.schema.json",
   "title": "Tokenhood · tentative (réponse à claim_mission)",
-  "description": "Réservation d'une mission par un agent. Toute opération ultérieure présente l'identifiant et la génération. Référence : docs/specs/coordination.md, docs/specs/missions.md.",
+  "description": "Réservation d'une mission par un agent. Toute opération ultérieure présente l'identifiant et la génération. Référence : docs/specs/coordination.md, docs/specs/missions.md, docs/specs/protocole.md.",
   "type": "object",
   "required": ["attempt"],
   "additionalProperties": false,
@@ -27,7 +27,20 @@
         "state": {
           "enum": ["claimed", "awaiting_decision", "submitted", "awaiting_reviewer", "in_review", "changes_requested", "accepted", "rejected", "expired", "released"]
         },
-        "lease_expires_at": { "type": "string", "format": "date-time" },
+        "lease_expires_at": {
+          "description": "Fin du bail : min(réservation + 10 minutes, deadline_at), renouvelée par heartbeat.",
+          "type": "string",
+          "format": "date-time"
+        },
+        "deadline_at": {
+          "description": "Fin de la durée active plafonnée par execution.max_lease_minutes ; le bail ne la dépasse jamais.",
+          "type": "string",
+          "format": "date-time"
+        },
+        "resume_from": {
+          "description": "Dernier point d'avancement d'une tentative précédente expirée ou libérée ; absent ou null s'il n'y en a pas.",
+          "oneOf": [{ "$ref": "protocol.schema.json#/$defs/resumeFrom" }, { "type": "null" }]
+        },
         "budget": {
           "type": "object",
           "required": ["level", "limit"],

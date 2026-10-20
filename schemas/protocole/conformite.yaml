@@ -1,0 +1,3132 @@
+# Tests de conformité du protocole de coordination Tokenhood (mission TH-009).
+# Format : schemas/protocol-conformance.schema.json. Conventions de lecture : docs/specs/protocole.md,
+# section « Tests de conformité ». Chaque couple transition:déclencheur de schemas/protocole/machine.yaml
+# est couvert par au moins un cas (champ covers).
+#
+# Rappel des conventions :
+# - Les dates "+<durée>" sont relatives à t0 (defaults.t0, ou given.t0) : "+90m", "+3h30m", "+14d".
+# - "$nom" désigne une valeur enregistrée par save ; "*" une valeur quelconque non nulle ; null une valeur absente ou nulle.
+# - "@gabarit" (ou {"@": gabarit, champ: valeur}) désigne un objet de defaults.fixtures, complété ou surchargé.
+#   Le harnais complète raised_by (demande d'agent) depuis l'acteur et la tentative de l'étape, et
+#   mission, attempt, submission, reviewer_agent, reviewed_state (rapport de revue) depuis l'assignation.
+# - response et state se comparent par inclusion : seuls les champs écrits sont vérifiés.
+# - Une étape concurrent lance ses opérations au même instant ; le résultat attendu vaut pour tout ordre de sérialisation.
+schema_version: "2.1"
+suite: coordination
+version: 1
+machine: schemas/protocole/machine.yaml
+document: docs/specs/protocole.md
+
+defaults:
+  t0: "2026-11-02T09:00:00Z"
+  projects:
+    - id: demo
+      contract: active
+      maintainers: [pat]
+      flow_limits: {max_in_production: 10, max_awaiting_review_or_integration: 10}
+      usage_report: required
+      reciprocal_window: 3
+      feedback_days: 30
+    - id: autre
+      contract: active
+      maintainers: [quinn]
+      flow_limits: {max_in_production: 10, max_awaiting_review_or_integration: 10}
+      usage_report: required
+      reciprocal_window: 3
+      feedback_days: 30
+  users:
+    - {id: alice}
+    - {id: bob}
+    - {id: carol}
+    - {id: dan}
+    - {id: erin}
+    - {id: frank}
+    - {id: gina}
+    - {id: hugo}
+    - {id: pat}
+    - {id: quinn}
+    - {id: mia, roles: [mandate]}
+    - {id: root, roles: [admin]}
+  agent:
+    capabilities: [docs, code, review]
+    languages: [fr, en]
+  agents:
+    - {id: agt_alice, user: alice, environment: container, model_family: claude}
+    - {id: agt_alice2, user: alice, environment: container, model_family: gpt}
+    - {id: agt_bob, user: bob, environment: workstation, model_family: gpt}
+    - {id: agt_carol, user: carol, environment: container, model_family: gemini}
+    - {id: agt_dan, user: dan, environment: vm, model_family: claude}
+    - {id: agt_erin, user: erin, environment: container, model_family: mistral}
+    - {id: agt_frank, user: frank, environment: container, model_family: gpt}
+    - {id: agt_gina, user: gina, environment: container, model_family: gemini}
+    - {id: agt_hugo, user: hugo, environment: vm, model_family: claude}
+    - {id: agt_pat, user: pat, environment: container, model_family: claude}
+  # Une autorisation par agent, nommée aut_<agent sans préfixe> (aut_alice, aut_alice2…).
+  authorization:
+    projects: [demo]
+    mission_types: any
+    review: true
+    max_concurrent: 3
+    budget: {unit: missions, value: 10}
+    expires_at: "+30d"
+  mission:
+    project: demo
+    version: 1
+    type: docs
+    state: open
+    generation: 0
+    attempts: {mode: exclusive}
+    max_lease_minutes: 60
+    risk: low
+    environment: any
+    reviewers: 1
+    dependencies: []
+  fixtures:
+    pr: {kind: pull_request, url: "https://github.com/exemple/demo/pull/1", commit: c0ffee1}
+    usage:
+      schema_version: "2.1"
+      missions: [DM-001]
+      contribution: {kind: production}
+      contributor: exemple
+      agent: {client: claude-code, model_family: claude, model: claude-opus-5-5}
+      period: {start: "2026-11-02T09:00:00Z", end: "2026-11-02T09:30:00Z"}
+      tokens: {input: 100, output: 2000, cache_creation: 30000, cache_read: 400000}
+      counted: 32100
+      method: client_transcript
+      nature: declared
+      evidence: Transcription du client.
+    request_continue:
+      schema_version: "2.1"
+      type: spec.clarification
+      category: 1
+      title: {fr: Valeur par défaut, en: Default value}
+      context: Le contrat ne fixe pas cette valeur.
+      options:
+        - {id: A, label: Garder la valeur actuelle, impact: Aucun, reversible: true}
+        - {id: B, label: Changer la valeur, impact: Mineur, reversible: true}
+      default_option: A
+      conduct: continue
+      blocking: false
+    request_switch:
+      schema_version: "2.1"
+      type: architecture.choice
+      category: 2
+      title: {fr: Format consommé, en: Consumed format}
+      context: L'option par défaut changerait un format déjà consommé.
+      options:
+        - {id: A, label: Changer le format, impact: Migration des consommateurs, reversible: false}
+        - {id: B, label: Garder le format, impact: Livrable partiel, reversible: true}
+      default_option: B
+      conduct: switch_mission
+      blocking: true
+    request_stop:
+      schema_version: "2.1"
+      type: security.emergency
+      category: null
+      title: {fr: Secret dans l'historique, en: Secret in history}
+      context: Un jeton apparaît dans l'historique du dépôt ; sa valeur n'est pas recopiée.
+      options:
+        - {id: A, label: Révoquer puis réécrire l'historique, impact: Irréversible, reversible: false}
+        - {id: B, label: Révoquer seulement, impact: Jeton inutilisable, reversible: false}
+      default_option: B
+      conduct: stop
+      blocking: true
+      urgency: high
+    request_human:
+      schema_version: "2.1"
+      type: spec.clarification
+      category: 1
+      raised_by: {kind: human, user: pat}
+      title: {fr: Périmètre à préciser, en: Scope to clarify}
+      context: Deux entrées se contredisent.
+      options:
+        - {id: A, label: Suivre la première entrée, impact: Aucun, reversible: true}
+        - {id: B, label: Suivre la seconde entrée, impact: Aucun, reversible: true}
+      default_option: A
+      blocking: true
+    report_pass:
+      schema_version: "2.1"
+      verdict: pass
+      criteria: [{requirement: Exigence 1, result: pass, evidence: Vérifiée sur le livrable}]
+      tests: []
+      risks: []
+      limits: {not_verified: [], uncertain: []}
+    report_changes:
+      schema_version: "2.1"
+      verdict: changes_requested
+      criteria: [{requirement: Exigence 1, result: fail, evidence: Section manquante}]
+      tests: []
+      risks: []
+      limits: {not_verified: [], uncertain: []}
+    report_reject:
+      schema_version: "2.1"
+      verdict: reject
+      criteria: [{requirement: Exigence 1, result: fail, evidence: Livrable hors sujet}]
+      tests: []
+      risks: []
+      limits: {not_verified: [], uncertain: []}
+      remarks: Le livrable ne répond pas à l'objectif.
+
+cases:
+  # ---------------------------------------------------------------- Réservation, bail, reprise
+  - id: CT-001
+    title: Réservation d'une mission exclusive ouverte
+    covers: ["T01:claim_mission", "M05:claim_mission"]
+    rules: [G1, B1, V1, R2]
+    given:
+      missions: [{id: DM-001}]
+    steps:
+      - at: "+0m"
+        actor: agt_alice
+        op: claim_mission
+        input: {mission: DM-001}
+        key: k1
+        expect:
+          result: ok
+          response:
+            attempt: {mission: DM-001, contract_version: 1, generation: 1, state: claimed, lease_expires_at: "+10m", deadline_at: "+60m", budget: "*", resume_from: null}
+          save: {a1: attempt.id}
+          state:
+            missions: {DM-001: {state: in_progress, generation: 1, active_attempts: 1}}
+            attempts: {$a1: {state: claimed, generation: 1, contract_version: 1}}
+
+  - id: CT-002
+    title: Heartbeat et points d'avancement renouvellent le bail
+    covers: ["T02:heartbeat", "T02:report_progress"]
+    rules: [B1, R3]
+    given:
+      missions: [{id: DM-001, state: in_progress, generation: 1}]
+      attempts:
+        - {id: att_0001, mission: DM-001, agent: agt_alice, state: claimed, generation: 1, claimed_at: "+0m", lease_expires_at: "+10m", deadline_at: "+60m"}
+    steps:
+      - at: "+7m"
+        actor: agt_alice
+        op: heartbeat
+        input: {attempt: att_0001, generation: 1}
+        key: k1
+        expect:
+          result: ok
+          response: {attempt: {state: claimed, generation: 1, lease_expires_at: "+17m", deadline_at: "+60m"}}
+      - at: "+12m"
+        actor: agt_alice
+        op: report_progress
+        input: {attempt: att_0001, generation: 1, checkpoint: {summary: Plan du document rédigé}}
+        key: k2
+        expect:
+          result: ok
+          response: {checkpoint: {sequence: 1, recorded_at: "+12m"}, attempt: {lease_expires_at: "+22m"}}
+      - at: "+15m"
+        actor: agt_alice
+        op: report_progress
+        input: {attempt: att_0001, generation: 1, checkpoint: {summary: Sections 1 et 2 rédigées, ref: {branch: dm-001, commit: a1b2c3d}}}
+        key: k3
+        expect:
+          result: ok
+          response: {checkpoint: {sequence: 2}, attempt: {lease_expires_at: "+25m"}}
+          state:
+            attempts: {att_0001: {state: claimed, checkpoints: 2}}
+
+  - id: CT-003
+    title: Le bail ne dépasse jamais le plafond de durée active
+    covers: ["T05:lease_timeout", "M06:attempt_ended"]
+    rules: [B1, B2]
+    given:
+      missions: [{id: DM-001, state: in_progress, generation: 1, max_lease_minutes: 30}]
+      attempts:
+        - {id: att_0001, mission: DM-001, agent: agt_alice, state: claimed, generation: 1, claimed_at: "+0m", lease_expires_at: "+10m", deadline_at: "+30m"}
+    steps:
+      - at: "+9m"
+        actor: agt_alice
+        op: heartbeat
+        input: {attempt: att_0001, generation: 1}
+        key: k1
+        expect: {result: ok, response: {attempt: {lease_expires_at: "+19m"}}}
+      - at: "+18m"
+        actor: agt_alice
+        op: heartbeat
+        input: {attempt: att_0001, generation: 1}
+        key: k2
+        expect: {result: ok, response: {attempt: {lease_expires_at: "+28m"}}}
+      - at: "+25m"
+        actor: agt_alice
+        op: heartbeat
+        input: {attempt: att_0001, generation: 1}
+        key: k3
+        expect: {result: ok, response: {attempt: {lease_expires_at: "+30m", deadline_at: "+30m"}}}
+      - at: "+29m"
+        actor: agt_alice
+        op: heartbeat
+        input: {attempt: att_0001, generation: 1}
+        key: k4
+        expect: {result: ok, response: {attempt: {lease_expires_at: "+30m"}}}
+      - at: "+30m"
+        actor: agt_alice
+        op: heartbeat
+        input: {attempt: att_0001, generation: 1}
+        key: k5
+        expect:
+          result: error
+          error: lease_expired
+          state:
+            attempts: {att_0001: {state: expired, ended_at: "+30m"}}
+            missions: {DM-001: {state: open, active_attempts: 0}}
+
+  - id: CT-004
+    title: Une opération reçue à l'échéance exacte du bail arrive trop tard
+    covers: ["T05:lease_timeout"]
+    rules: [B2, B3, B5, G4]
+    given:
+      missions: [{id: DM-001, state: in_progress, generation: 1}]
+      attempts:
+        - {id: att_0001, mission: DM-001, agent: agt_alice, state: claimed, generation: 1, claimed_at: "+0m", lease_expires_at: "+10m", deadline_at: "+60m"}
+    steps:
+      - at: "+10m"
+        actor: agt_alice
+        op: heartbeat
+        input: {attempt: att_0001, generation: 1}
+        key: k1
+        expect:
+          result: error
+          error: lease_expired
+          state:
+            attempts: {att_0001: {state: expired, ended_at: "+10m"}}
+      - at: "+11m"
+        actor: agt_alice
+        op: report_progress
+        input: {attempt: att_0001, generation: 1, checkpoint: {summary: Trop tard}}
+        key: k2
+        expect:
+          result: error
+          error: lease_expired
+          state:
+            attempts: {att_0001: {checkpoints: 0}}
+            missions: {DM-001: {state: open}}
+
+  - id: CT-005
+    title: Libération par l'agent avec un point d'avancement final, reprise par un autre agent
+    covers: ["T06:release_mission", "M06:attempt_ended", "T01:claim_mission"]
+    rules: [R1, G1, G4]
+    given:
+      missions: [{id: DM-001, state: in_progress, generation: 1}]
+      attempts:
+        - {id: att_0001, mission: DM-001, agent: agt_alice, state: claimed, generation: 1, claimed_at: "+0m", lease_expires_at: "+10m", deadline_at: "+60m"}
+    steps:
+      - at: "+5m"
+        actor: agt_alice
+        op: release_mission
+        input: {attempt: att_0001, generation: 1, reason: Capacité épuisée, checkpoint: {summary: Section 3 à reprendre, ref: {branch: dm-001, commit: a1b2c3d}}}
+        key: k1
+        expect:
+          result: ok
+          response: {attempt: {state: released}}
+          state:
+            attempts: {att_0001: {state: released, ended_at: "+5m", checkpoints: 1}}
+            missions: {DM-001: {state: open, active_attempts: 0}}
+      - at: "+6m"
+        actor: agt_alice
+        op: heartbeat
+        input: {attempt: att_0001, generation: 1}
+        key: k2
+        expect: {result: error, error: attempt_closed}
+      - at: "+7m"
+        actor: agt_bob
+        op: claim_mission
+        input: {mission: DM-001}
+        key: k3
+        expect:
+          result: ok
+          response:
+            attempt:
+              generation: 2
+              resume_from: {attempt: att_0001, generation: 1, contract_version: 1, checkpoint: {sequence: 1, summary: Section 3 à reprendre}}
+
+  - id: CT-006
+    title: Reprise du dernier point d'avancement après expiration
+    covers: ["T01:claim_mission"]
+    rules: [R1, R3]
+    given:
+      missions: [{id: DM-001, state: open, generation: 1}]
+      attempts:
+        - {id: att_0001, mission: DM-001, agent: agt_alice, state: expired, generation: 1, ended_at: "-1h"}
+      checkpoints:
+        - {attempt: att_0001, sequence: 1, summary: Plan rédigé, recorded_at: "-90m"}
+        - {attempt: att_0001, sequence: 2, summary: Sections 1 et 2 rédigées, recorded_at: "-75m"}
+    steps:
+      - at: "+0m"
+        actor: agt_bob
+        op: claim_mission
+        input: {mission: DM-001}
+        key: k1
+        expect:
+          result: ok
+          response:
+            attempt:
+              generation: 2
+              resume_from: {attempt: att_0001, generation: 1, checkpoint: {sequence: 2, summary: Sections 1 et 2 rédigées}}
+
+  - id: CT-007
+    title: Une tentative rejetée ne fournit pas de point de reprise
+    covers: ["T01:claim_mission"]
+    rules: [R1, R2]
+    given:
+      missions:
+        - {id: DM-001, state: open, generation: 2}
+        - {id: DM-002, state: open, generation: 1}
+      attempts:
+        - {id: att_0001, mission: DM-001, agent: agt_alice, state: expired, generation: 1, ended_at: "-2d"}
+        - {id: att_0002, mission: DM-001, agent: agt_bob, state: rejected, generation: 2, ended_at: "-1d"}
+        - {id: att_0003, mission: DM-002, agent: agt_bob, state: rejected, generation: 1, ended_at: "-1d"}
+      checkpoints:
+        - {attempt: att_0001, sequence: 1, summary: Premier jet, recorded_at: "-2d"}
+        - {attempt: att_0002, sequence: 1, summary: Version rejetée, recorded_at: "-30h"}
+        - {attempt: att_0003, sequence: 1, summary: Version rejetée, recorded_at: "-30h"}
+    steps:
+      - at: "+0m"
+        actor: agt_carol
+        op: claim_mission
+        input: {mission: DM-001}
+        key: k1
+        expect:
+          result: ok
+          response: {attempt: {generation: 3, resume_from: {attempt: att_0001, generation: 1, checkpoint: {summary: Premier jet}}}}
+      - at: "+1m"
+        actor: agt_carol
+        op: claim_mission
+        input: {mission: DM-002}
+        key: k2
+        expect:
+          result: ok
+          response: {attempt: {generation: 2, resume_from: null}}
+
+  # ---------------------------------------------------------------- Générations
+  - id: CT-008
+    title: Le même agent re-réserve sa mission expirée ; l'ancienne génération est périmée
+    covers: ["T01:claim_mission"]
+    rules: [G1, G3, R1]
+    given:
+      missions: [{id: DM-001, state: open, generation: 1}]
+      attempts:
+        - {id: att_0001, mission: DM-001, agent: agt_alice, state: expired, generation: 1, ended_at: "-5m"}
+      checkpoints:
+        - {attempt: att_0001, sequence: 1, summary: Brouillon, recorded_at: "-12m"}
+    steps:
+      - at: "+0m"
+        actor: agt_alice
+        op: claim_mission
+        input: {mission: DM-001}
+        key: k1
+        expect:
+          result: ok
+          response: {attempt: {generation: 2, resume_from: {attempt: att_0001, generation: 1}}}
+          save: {a2: attempt.id}
+      - at: "+1m"
+        actor: agt_alice
+        op: heartbeat
+        input: {attempt: att_0001, generation: 1}
+        key: k2
+        expect:
+          result: error
+          error: stale_generation
+          state:
+            attempts: {$a2: {state: claimed, generation: 2}}
+
+  - id: CT-009
+    title: Aucune opération d'une génération périmée n'a d'effet
+    covers: []
+    rules: [G3, C2]
+    given:
+      missions: [{id: DM-001, state: in_progress, generation: 2}]
+      attempts:
+        - {id: att_0001, mission: DM-001, agent: agt_alice, state: expired, generation: 1, ended_at: "-5m"}
+        - {id: att_0002, mission: DM-001, agent: agt_bob, state: claimed, generation: 2, claimed_at: "-3m", lease_expires_at: "+7m", deadline_at: "+57m"}
+      checkpoints:
+        - {attempt: att_0001, sequence: 1, summary: Brouillon, recorded_at: "-20m"}
+    steps:
+      - at: "+0m"
+        actor: agt_alice
+        op: heartbeat
+        input: {attempt: att_0001, generation: 1}
+        key: k1
+        expect: {result: error, error: stale_generation}
+      - at: "+0m"
+        actor: agt_alice
+        op: report_progress
+        input: {attempt: att_0001, generation: 1, checkpoint: {summary: Suite}}
+        key: k2
+        expect: {result: error, error: stale_generation}
+      - at: "+0m"
+        actor: agt_alice
+        op: submit_work
+        input: {attempt: att_0001, generation: 1, contract_version: 1, deliverable: "@pr", usage_report: "@usage"}
+        key: k3
+        expect: {result: error, error: stale_generation}
+      - at: "+0m"
+        actor: agt_alice
+        op: accept_contract_version
+        input: {attempt: att_0001, generation: 1, version: 1}
+        key: k4
+        expect: {result: error, error: stale_generation}
+      - at: "+0m"
+        actor: agt_alice
+        op: request_arbitration
+        input: {attempt: att_0001, generation: 1, request: "@request_continue"}
+        key: k5
+        expect: {result: error, error: stale_generation}
+      - at: "+0m"
+        actor: agt_alice
+        op: release_mission
+        input: {attempt: att_0001, generation: 1, reason: Abandon}
+        key: k6
+        expect:
+          result: error
+          error: stale_generation
+          state:
+            attempts:
+              att_0001: {state: expired, checkpoints: 1, submissions: 0}
+              att_0002: {state: claimed, generation: 2}
+            missions: {DM-001: {state: in_progress, generation: 2, active_attempts: 1}}
+
+  - id: CT-010
+    title: Une génération différente de celle de la tentative est refusée
+    covers: ["T02:heartbeat"]
+    rules: [G2]
+    given:
+      missions: [{id: DM-001, state: in_progress, generation: 3}]
+      attempts:
+        - {id: att_0003, mission: DM-001, agent: agt_alice, state: claimed, generation: 3, claimed_at: "+0m", lease_expires_at: "+10m", deadline_at: "+60m"}
+    steps:
+      - at: "+1m"
+        actor: agt_alice
+        op: heartbeat
+        input: {attempt: att_0003, generation: 2}
+        key: k1
+        expect: {result: error, error: stale_generation}
+      - at: "+1m"
+        actor: agt_alice
+        op: heartbeat
+        input: {attempt: att_0003, generation: 4}
+        key: k2
+        expect: {result: error, error: stale_generation}
+      - at: "+1m"
+        actor: agt_alice
+        op: heartbeat
+        input: {attempt: att_0003, generation: 0}
+        key: k3
+        expect: {result: error, error: invalid_request}
+      - at: "+2m"
+        actor: agt_alice
+        op: heartbeat
+        input: {attempt: att_0003, generation: 3}
+        key: k4
+        expect: {result: ok, response: {attempt: {lease_expires_at: "+12m"}}}
+
+  - id: CT-011
+    title: Un agent ne voit pas la tentative d'un autre agent
+    covers: []
+    rules: [A3]
+    given:
+      missions: [{id: DM-001, state: in_progress, generation: 1}]
+      attempts:
+        - {id: att_0001, mission: DM-001, agent: agt_alice, state: claimed, generation: 1, claimed_at: "+0m", lease_expires_at: "+10m", deadline_at: "+60m"}
+    steps:
+      - at: "+1m"
+        actor: agt_bob
+        op: heartbeat
+        input: {attempt: att_0001, generation: 1}
+        key: k1
+        expect: {result: error, error: attempt_not_found}
+      - at: "+1m"
+        actor: agt_bob
+        op: release_mission
+        input: {attempt: att_0001, generation: 1, reason: Essai}
+        key: k2
+        expect:
+          result: error
+          error: attempt_not_found
+          state:
+            attempts: {att_0001: {state: claimed, lease_expires_at: "+10m"}}
+
+  - id: CT-012
+    title: Une tentative close répond attempt_closed
+    covers: []
+    rules: [G4]
+    given:
+      missions:
+        - {id: DM-001, state: open, generation: 1}
+        - {id: DM-002, state: accepted, generation: 1}
+      attempts:
+        - {id: att_0001, mission: DM-001, agent: agt_alice, state: released, generation: 1, ended_at: "-1h"}
+        - {id: att_0002, mission: DM-002, agent: agt_alice, state: accepted, generation: 1, ended_at: "-1h"}
+    steps:
+      - at: "+0m"
+        actor: agt_alice
+        op: heartbeat
+        input: {attempt: att_0001, generation: 1}
+        key: k1
+        expect: {result: error, error: attempt_closed}
+      - at: "+0m"
+        actor: agt_alice
+        op: report_progress
+        input: {attempt: att_0002, generation: 1, checkpoint: {summary: Après coup}}
+        key: k2
+        expect: {result: error, error: attempt_closed}
+
+  # ---------------------------------------------------------------- Concurrence
+  - id: CT-013
+    title: Réservations concurrentes d'une mission exclusive
+    covers: ["T01:claim_mission", "M05:claim_mission"]
+    rules: [C1, C2, G1]
+    given:
+      missions: [{id: DM-001}]
+    steps:
+      - at: "+0m"
+        concurrent:
+          - {actor: agt_alice, op: claim_mission, input: {mission: DM-001}, key: k1}
+          - {actor: agt_bob, op: claim_mission, input: {mission: DM-001}, key: k2}
+          - {actor: agt_carol, op: claim_mission, input: {mission: DM-001}, key: k3}
+          - {actor: agt_dan, op: claim_mission, input: {mission: DM-001}, key: k4}
+          - {actor: agt_erin, op: claim_mission, input: {mission: DM-001}, key: k5}
+        expect:
+          ok: 1
+          errors: {mission_already_claimed: 4}
+          state:
+            missions: {DM-001: {state: in_progress, generation: 1, active_attempts: 1}}
+
+  - id: CT-014
+    title: Réservations concurrentes d'une mission parallèle
+    covers: ["T01:claim_mission"]
+    rules: [C1, C2, G1]
+    given:
+      missions: [{id: DM-001, attempts: {mode: parallel, max: 2}}]
+    steps:
+      - at: "+0m"
+        concurrent:
+          - {actor: agt_alice, op: claim_mission, input: {mission: DM-001}, key: k1}
+          - {actor: agt_bob, op: claim_mission, input: {mission: DM-001}, key: k2}
+          - {actor: agt_carol, op: claim_mission, input: {mission: DM-001}, key: k3}
+          - {actor: agt_dan, op: claim_mission, input: {mission: DM-001}, key: k4}
+          - {actor: agt_erin, op: claim_mission, input: {mission: DM-001}, key: k5}
+        expect:
+          ok: 2
+          errors: {mission_already_claimed: 3}
+          state:
+            missions: {DM-001: {state: in_progress, generation: 2, active_attempts: 2}}
+
+  - id: CT-015
+    title: Réservation et heartbeat concurrents à l'échéance du bail
+    covers: ["T01:claim_mission", "T05:lease_timeout"]
+    rules: [C1, B2, G3]
+    given:
+      missions: [{id: DM-001, state: in_progress, generation: 1}]
+      attempts:
+        - {id: att_0001, mission: DM-001, agent: agt_alice, state: claimed, generation: 1, claimed_at: "+0m", lease_expires_at: "+10m", deadline_at: "+60m"}
+    steps:
+      - at: "+10m"
+        concurrent:
+          - {label: reservation, actor: agt_bob, op: claim_mission, input: {mission: DM-001}, key: k1}
+          - {label: battement, actor: agt_alice, op: heartbeat, input: {attempt: att_0001, generation: 1}, key: k2}
+        expect:
+          results:
+            reservation: {result: ok, response: {attempt: {generation: 2}}}
+            battement: {result: error, error_in: [lease_expired, stale_generation]}
+          state:
+            attempts: {att_0001: {state: expired, ended_at: "+10m"}}
+            missions: {DM-001: {state: in_progress, generation: 2, active_attempts: 1}}
+
+  - id: CT-016
+    title: Soumission juste avant et à l'échéance du bail
+    covers: ["T03:submit_work", "T05:lease_timeout"]
+    rules: [B3, C1]
+    given:
+      missions:
+        - {id: DM-001, state: in_progress, generation: 1}
+        - {id: DM-002, state: in_progress, generation: 1}
+      attempts:
+        - {id: att_0001, mission: DM-001, agent: agt_alice, state: claimed, generation: 1, claimed_at: "+0m", lease_expires_at: "+10m", deadline_at: "+60m"}
+        - {id: att_0002, mission: DM-002, agent: agt_bob, state: claimed, generation: 1, claimed_at: "+0m", lease_expires_at: "+10m", deadline_at: "+60m"}
+    steps:
+      - at: "+9m59s"
+        actor: agt_alice
+        op: submit_work
+        input: {attempt: att_0001, generation: 1, contract_version: 1, deliverable: "@pr", usage_report: "@usage"}
+        key: k1
+        expect:
+          result: ok
+          response: {submission: {id: "*", contract_version: 1, commit: c0ffee1}, attempt: {state: submitted}}
+      - at: "+10m"
+        actor: agt_bob
+        op: submit_work
+        input: {attempt: att_0002, generation: 1, contract_version: 1, deliverable: {"@": pr, url: "https://github.com/exemple/demo/pull/2"}, usage_report: "@usage"}
+        key: k2
+        expect:
+          result: error
+          error: lease_expired
+          state:
+            attempts:
+              att_0001: {state: submitted}
+              att_0002: {state: expired, submissions: 0}
+
+  - id: CT-017
+    title: Deux soumissions concurrentes d'une même tentative
+    covers: ["T03:submit_work"]
+    rules: [C1]
+    given:
+      missions: [{id: DM-001, state: in_progress, generation: 1}]
+      attempts:
+        - {id: att_0001, mission: DM-001, agent: agt_alice, state: claimed, generation: 1, claimed_at: "+0m", lease_expires_at: "+10m", deadline_at: "+60m"}
+    steps:
+      - at: "+5m"
+        concurrent:
+          - {actor: agt_alice, op: submit_work, input: {attempt: att_0001, generation: 1, contract_version: 1, deliverable: "@pr", usage_report: "@usage"}, key: k1}
+          - {actor: agt_alice, op: submit_work, input: {attempt: att_0001, generation: 1, contract_version: 1, deliverable: "@pr", usage_report: "@usage"}, key: k2}
+        expect:
+          ok: 1
+          errors: {invalid_transition: 1}
+          state:
+            attempts: {att_0001: {state: submitted, submissions: 1}}
+
+  - id: CT-018
+    title: Libération et heartbeat concurrents
+    covers: ["T06:release_mission"]
+    rules: [C1]
+    given:
+      missions: [{id: DM-001, state: in_progress, generation: 1}]
+      attempts:
+        - {id: att_0001, mission: DM-001, agent: agt_alice, state: claimed, generation: 1, claimed_at: "+0m", lease_expires_at: "+10m", deadline_at: "+60m"}
+    steps:
+      - at: "+5m"
+        concurrent:
+          - {label: liberation, actor: agt_alice, op: release_mission, input: {attempt: att_0001, generation: 1, reason: Fin}, key: k1}
+          - {label: battement, actor: agt_alice, op: heartbeat, input: {attempt: att_0001, generation: 1}, key: k2}
+        expect:
+          results:
+            liberation: {result: ok}
+            battement: {result_in: [ok, error], error_in: [attempt_closed]}
+          state:
+            attempts: {att_0001: {state: released}}
+            missions: {DM-001: {state: open}}
+
+  - id: CT-019
+    title: Deux vérificateurs pour une seule place de revue
+    covers: ["T10:claim_review", "RV01:claim_review"]
+    rules: [C1, C3]
+    given:
+      missions: [{id: DM-001, state: in_progress, generation: 1}]
+      attempts:
+        - {id: att_0001, mission: DM-001, agent: agt_alice, state: submitted, generation: 1}
+      submissions:
+        - {id: SUB-001, attempt: att_0001, state: current, commit: c0ffee1, contract_version: 1, submitted_at: "-1h"}
+    steps:
+      - at: "+0m"
+        concurrent:
+          - {actor: agt_carol, op: claim_review, input: {}, key: k1}
+          - {actor: agt_dan, op: claim_review, input: {}, key: k2}
+        expect:
+          ok: 2
+          state:
+            attempts: {att_0001: {state: in_review}}
+            submissions: {SUB-001: {open_assignments: 1}}
+
+  - id: CT-020
+    title: Décision publiée pendant la libération de la tentative en attente
+    covers: ["T08:release_mission"]
+    rules: [C1]
+    given:
+      missions: [{id: DM-001, state: awaiting_decision, generation: 1}]
+      attempts:
+        - {id: att_0001, mission: DM-001, agent: agt_alice, state: awaiting_decision, generation: 1, claimed_at: "-2h", active_minutes: 20, request: req_0001}
+      requests:
+        - {id: req_0001, fixture: request_switch, attempt: att_0001, state: open}
+    steps:
+      - at: "+0m"
+        concurrent:
+          - {actor: user:mia, op: publish_decision, input: {request: req_0001, option: B}, key: k1}
+          - {actor: agt_alice, op: release_mission, input: {attempt: att_0001, generation: 1, reason: Autre priorité}, key: k2}
+        expect:
+          ok: 2
+          state:
+            attempts: {att_0001: {state: released}}
+            requests: {req_0001: {state: decided}}
+            missions: {DM-001: {state: open}}
+
+  - id: CT-021
+    title: Version incompatible indexée pendant une soumission
+    covers: ["T03:submit_work"]
+    rules: [C1, V3, V5]
+    given:
+      missions: [{id: DM-001, state: in_progress, generation: 1}]
+      attempts:
+        - {id: att_0001, mission: DM-001, agent: agt_alice, state: claimed, generation: 1, claimed_at: "+0m", lease_expires_at: "+10m", deadline_at: "+60m"}
+    steps:
+      - at: "+5m"
+        concurrent:
+          - {label: indexation, actor: forge, op: index_contract, input: {delivery: d1, missions: [{id: DM-001, version: 2, changes: [acceptance]}]}, key: d1}
+          - {label: soumission, actor: agt_alice, op: submit_work, input: {attempt: att_0001, generation: 1, contract_version: 1, deliverable: "@pr", usage_report: "@usage"}, key: k1}
+        expect:
+          one_of:
+            - results: {indexation: {result: ok}, soumission: {result: ok}}
+              state:
+                attempts: {att_0001: {state: submitted, contract_version: 1}}
+                missions: {DM-001: {version: 2}}
+            - results: {indexation: {result: ok}, soumission: {result: error, error: contract_choice_required}}
+              state:
+                attempts: {att_0001: {state: claimed, contract: {frozen_version: 1, latest_version: 2, choice_required: true}}}
+
+  - id: CT-022
+    title: Approbation concurrente d'une modification du livrable
+    covers: ["T16:approve_submission", "T15:deliverable_changed"]
+    rules: [C1]
+    given:
+      missions: [{id: DM-001, state: in_progress, generation: 1}]
+      attempts:
+        - {id: att_0001, mission: DM-001, agent: agt_alice, state: in_review, generation: 1}
+      submissions:
+        - {id: SUB-001, attempt: att_0001, state: current, commit: c0ffee1, contract_version: 1, decided_verdict: pass, approval: pending}
+      reviews:
+        - {submission: SUB-001, agent: agt_carol, verdict: pass, commit: c0ffee1, state: valid}
+    steps:
+      - at: "+0m"
+        concurrent:
+          - {label: approbation, actor: user:pat, op: approve_submission, input: {submission: SUB-001}, if_match: current, key: k1}
+          - {label: modification, actor: forge, op: deliverable_changed, input: {delivery: d1, submission: SUB-001, commit: beef002}, key: d1}
+        expect:
+          one_of:
+            - results: {approbation: {result: ok}}
+              state:
+                attempts: {att_0001: {state: accepted}}
+                missions: {DM-001: {state: accepted}}
+            - results: {approbation: {result: error, error_in: [precondition_failed, invalid_transition]}}
+              state:
+                attempts: {att_0001: {state: changes_requested, reason: deliverable_changed}}
+                missions: {DM-001: {state: in_progress}}
+
+  - id: CT-023
+    title: Un événement de fusion rejoué n'a d'effet qu'une fois
+    covers: ["M13:merged"]
+    rules: [C4]
+    given:
+      missions: [{id: DM-001, state: accepted, generation: 1}]
+      attempts:
+        - {id: att_0001, mission: DM-001, agent: agt_alice, state: accepted, generation: 1}
+      submissions:
+        - {id: SUB-001, attempt: att_0001, state: accepted, commit: c0ffee1, contract_version: 1}
+    steps:
+      - at: "+0m"
+        actor: forge
+        op: merged
+        input: {delivery: d1, submission: SUB-001, commit: c0ffee1}
+        key: d1
+        expect: {result: ok}
+      - at: "+1m"
+        actor: forge
+        op: merged
+        input: {delivery: d1, submission: SUB-001, commit: c0ffee1}
+        key: d1
+        expect:
+          result: ok
+          state:
+            missions: {DM-001: {state: integrated, integration_events: 1}}
+
+  # ---------------------------------------------------------------- Idempotence
+  - id: CT-024
+    title: Rejeu d'une réservation avec la même clé
+    covers: ["T01:claim_mission"]
+    rules: [I2]
+    given:
+      missions: [{id: DM-001}]
+    steps:
+      - at: "+0m"
+        actor: agt_alice
+        op: claim_mission
+        input: {mission: DM-001}
+        key: k1
+        expect:
+          result: ok
+          save: {a1: attempt.id}
+      - at: "+1m"
+        actor: agt_alice
+        op: claim_mission
+        input: {mission: DM-001}
+        key: k1
+        expect:
+          result: ok
+          response: {attempt: {id: $a1, generation: 1, lease_expires_at: "+10m"}}
+          state:
+            missions: {DM-001: {generation: 1, active_attempts: 1}}
+
+  - id: CT-025
+    title: Une clé réutilisée pour une autre requête est refusée
+    covers: []
+    rules: [I3]
+    given:
+      missions:
+        - {id: DM-001}
+        - {id: DM-002}
+    steps:
+      - at: "+0m"
+        actor: agt_alice
+        op: claim_mission
+        input: {mission: DM-001}
+        key: k1
+        expect: {result: ok, save: {a1: attempt.id}}
+      - at: "+1m"
+        actor: agt_alice
+        op: claim_mission
+        input: {mission: DM-002}
+        key: k1
+        expect: {result: error, error: idempotency_conflict}
+      - at: "+2m"
+        actor: agt_alice
+        op: heartbeat
+        input: {attempt: $a1, generation: 1}
+        key: k1
+        expect:
+          result: error
+          error: idempotency_conflict
+          state:
+            missions: {DM-002: {state: open, generation: 0}}
+            attempts: {$a1: {lease_expires_at: "+10m"}}
+
+  - id: CT-026
+    title: Une écriture sans clé est refusée, une lecture n'en demande pas
+    covers: []
+    rules: [I1]
+    given:
+      missions: [{id: DM-001, state: in_progress, generation: 1}]
+      attempts:
+        - {id: att_0001, mission: DM-001, agent: agt_alice, state: claimed, generation: 1, claimed_at: "+0m", lease_expires_at: "+10m", deadline_at: "+60m"}
+    steps:
+      - at: "+1m"
+        actor: agt_alice
+        op: heartbeat
+        input: {attempt: att_0001, generation: 1}
+        expect:
+          result: error
+          error: idempotency_key_required
+          state:
+            attempts: {att_0001: {lease_expires_at: "+10m"}}
+      - at: "+1m"
+        actor: agt_alice
+        op: get_status
+        input: {}
+        expect: {result: ok}
+
+  - id: CT-027
+    title: Une erreur définitive est rejouée avec sa clé
+    covers: ["T06:release_mission", "M06:attempt_ended"]
+    rules: [I2, I5]
+    given:
+      missions: [{id: DM-001, state: in_progress, generation: 1}]
+      attempts:
+        - {id: att_0001, mission: DM-001, agent: agt_alice, state: claimed, generation: 1, claimed_at: "+0m", lease_expires_at: "+10m", deadline_at: "+60m"}
+    steps:
+      - at: "+1m"
+        actor: agt_bob
+        op: claim_mission
+        input: {mission: DM-001}
+        key: k7
+        expect: {result: error, error: mission_already_claimed}
+      - at: "+2m"
+        actor: agt_alice
+        op: release_mission
+        input: {attempt: att_0001, generation: 1, reason: Fin}
+        key: k1
+        expect: {result: ok, state: {missions: {DM-001: {state: open}}}}
+      - at: "+3m"
+        actor: agt_bob
+        op: claim_mission
+        input: {mission: DM-001}
+        key: k7
+        expect: {result: error, error: mission_already_claimed}
+      - at: "+4m"
+        actor: agt_bob
+        op: claim_mission
+        input: {mission: DM-001}
+        key: k8
+        expect: {result: ok, response: {attempt: {generation: 2}}}
+
+  - id: CT-028
+    title: Deux requêtes simultanées de même clé
+    covers: ["T01:claim_mission"]
+    rules: [I4, C1]
+    given:
+      missions: [{id: DM-001}]
+    steps:
+      - at: "+0m"
+        concurrent:
+          - {actor: agt_alice, op: claim_mission, input: {mission: DM-001}, key: k1}
+          - {actor: agt_alice, op: claim_mission, input: {mission: DM-001}, key: k1}
+        expect:
+          one_of:
+            - {ok: 2, same_response: true}
+            - {ok: 1, errors: {idempotency_in_progress: 1}}
+          state:
+            missions: {DM-001: {generation: 1, active_attempts: 1}}
+
+  - id: CT-029
+    title: Au-delà de la rétention, une clé est oubliée
+    covers: ["T01:claim_mission", "T06:release_mission"]
+    rules: [I2, I6]
+    given:
+      missions: [{id: DM-001}]
+    steps:
+      - at: "+0m"
+        actor: agt_alice
+        op: claim_mission
+        input: {mission: DM-001}
+        key: k1
+        expect: {result: ok, save: {a1: attempt.id}}
+      - at: "+5m"
+        actor: agt_alice
+        op: release_mission
+        input: {attempt: $a1, generation: 1, reason: Fin}
+        key: k2
+        expect: {result: ok}
+      - at: "+2h"
+        actor: agt_alice
+        op: claim_mission
+        input: {mission: DM-001}
+        key: k1
+        expect:
+          result: ok
+          response: {attempt: {id: $a1, generation: 1}}
+          state:
+            missions: {DM-001: {state: open, generation: 1}}
+      - at: "+25h"
+        actor: agt_alice
+        op: claim_mission
+        input: {mission: DM-001}
+        key: k1
+        expect:
+          result: ok
+          response: {attempt: {generation: 2}}
+          state:
+            missions: {DM-001: {state: in_progress, generation: 2}}
+
+  # ---------------------------------------------------------------- Versions du contrat
+  - id: CT-030
+    title: Changement compatible pendant une tentative
+    covers: ["T02:heartbeat", "T03:submit_work"]
+    rules: [V2, V6]
+    given:
+      missions: [{id: DM-001, state: in_progress, generation: 1}]
+      attempts:
+        - {id: att_0001, mission: DM-001, agent: agt_alice, state: claimed, generation: 1, claimed_at: "+0m", lease_expires_at: "+10m", deadline_at: "+60m"}
+    steps:
+      - at: "+5m"
+        actor: forge
+        op: index_contract
+        input: {delivery: d1, missions: [{id: DM-001, version: 2, changes: [priority, title]}]}
+        key: d1
+        expect: {result: ok, response: {missions: [{id: DM-001, version: 2, classification: compatible}]}}
+      - at: "+6m"
+        actor: agt_alice
+        op: heartbeat
+        input: {attempt: att_0001, generation: 1}
+        key: k1
+        expect:
+          result: ok
+          response: {contract: {frozen_version: 1, latest_version: 2, change: compatible, choice_required: false}}
+      - at: "+7m"
+        actor: agt_alice
+        op: submit_work
+        input: {attempt: att_0001, generation: 1, contract_version: 1, deliverable: "@pr", usage_report: "@usage"}
+        key: k2
+        expect:
+          result: ok
+          response: {submission: {contract_version: 1, outdated_contract: false}}
+
+  - id: CT-031
+    title: Changement incompatible, choix imposé, migration
+    covers: ["T02:accept_contract_version", "T03:submit_work"]
+    rules: [V3, V4, V6, G5]
+    given:
+      missions: [{id: DM-001, state: in_progress, generation: 1}]
+      attempts:
+        - {id: att_0001, mission: DM-001, agent: agt_alice, state: claimed, generation: 1, claimed_at: "+0m", lease_expires_at: "+10m", deadline_at: "+60m"}
+    steps:
+      - at: "+5m"
+        actor: forge
+        op: index_contract
+        input: {delivery: d1, missions: [{id: DM-001, version: 2, changes: [acceptance]}]}
+        key: d1
+        expect: {result: ok, response: {missions: [{id: DM-001, classification: incompatible}]}}
+      - at: "+6m"
+        actor: agt_alice
+        op: heartbeat
+        input: {attempt: att_0001, generation: 1}
+        key: k1
+        expect: {result: ok, response: {contract: {frozen_version: 1, latest_version: 2, change: incompatible, choice_required: true}}}
+      - at: "+7m"
+        actor: agt_alice
+        op: submit_work
+        input: {attempt: att_0001, generation: 1, contract_version: 1, deliverable: "@pr", usage_report: "@usage"}
+        key: k2
+        expect: {result: error, error: contract_choice_required}
+      - at: "+8m"
+        actor: agt_alice
+        op: accept_contract_version
+        input: {attempt: att_0001, generation: 1, version: 2}
+        key: k3
+        expect:
+          result: ok
+          response: {attempt: {contract_version: 2, generation: 1, lease_expires_at: "+18m", deadline_at: "+60m"}}
+      - at: "+9m"
+        actor: agt_alice
+        op: submit_work
+        input: {attempt: att_0001, generation: 1, contract_version: 1, deliverable: "@pr", usage_report: "@usage"}
+        key: k4
+        expect: {result: error, error: contract_version_mismatch}
+      - at: "+10m"
+        actor: agt_alice
+        op: submit_work
+        input: {attempt: att_0001, generation: 1, contract_version: 2, deliverable: "@pr", usage_report: "@usage"}
+        key: k5
+        expect: {result: ok, response: {submission: {contract_version: 2}}, state: {attempts: {att_0001: {state: submitted, generation: 1}}}}
+
+  - id: CT-032
+    title: La migration vise la dernière version indexée
+    covers: ["T02:accept_contract_version"]
+    rules: [V4]
+    given:
+      missions: [{id: DM-001, state: in_progress, generation: 1}]
+      attempts:
+        - {id: att_0001, mission: DM-001, agent: agt_alice, state: claimed, generation: 1, claimed_at: "+0m", lease_expires_at: "+10m", deadline_at: "+60m"}
+    steps:
+      - at: "+2m"
+        actor: forge
+        op: index_contract
+        input: {delivery: d1, missions: [{id: DM-001, version: 2, changes: [acceptance]}]}
+        key: d1
+        expect: {result: ok}
+      - at: "+3m"
+        actor: forge
+        op: index_contract
+        input: {delivery: d2, missions: [{id: DM-001, version: 3, changes: [scope]}]}
+        key: d2
+        expect: {result: ok}
+      - at: "+4m"
+        actor: agt_alice
+        op: accept_contract_version
+        input: {attempt: att_0001, generation: 1, version: 2}
+        key: k1
+        expect: {result: error, error: contract_version_mismatch}
+      - at: "+5m"
+        actor: agt_alice
+        op: accept_contract_version
+        input: {attempt: att_0001, generation: 1, version: 3}
+        key: k2
+        expect: {result: ok, response: {attempt: {contract_version: 3}}}
+      - at: "+6m"
+        actor: agt_alice
+        op: accept_contract_version
+        input: {attempt: att_0001, generation: 1, version: 3}
+        key: k3
+        expect: {result: error, error: contract_version_mismatch}
+      - at: "+7m"
+        actor: agt_alice
+        op: submit_work
+        input: {attempt: att_0001, generation: 1, contract_version: 3, deliverable: "@pr", usage_report: "@usage"}
+        key: k4
+        expect: {result: ok, state: {attempts: {att_0001: {state: submitted, contract_version: 3}}}}
+
+  - id: CT-033
+    title: Migration refusée faute d'éligibilité, puis libération
+    covers: ["T06:release_mission"]
+    rules: [V4, F3]
+    given:
+      missions: [{id: DM-001, state: in_progress, generation: 1}]
+      attempts:
+        - {id: att_0001, mission: DM-001, agent: agt_bob, state: claimed, generation: 1, claimed_at: "+0m", lease_expires_at: "+10m", deadline_at: "+60m"}
+    steps:
+      - at: "+2m"
+        actor: forge
+        op: index_contract
+        input: {delivery: d1, missions: [{id: DM-001, version: 2, changes: [execution], set: {environment: container}}]}
+        key: d1
+        expect: {result: ok, response: {missions: [{id: DM-001, classification: incompatible}]}}
+      - at: "+3m"
+        actor: agt_bob
+        op: accept_contract_version
+        input: {attempt: att_0001, generation: 1, version: 2}
+        key: k1
+        expect: {result: error, error: not_eligible, response: {error: {details: {reasons: [environment]}}}}
+      - at: "+4m"
+        actor: agt_bob
+        op: heartbeat
+        input: {attempt: att_0001, generation: 1}
+        key: k2
+        expect: {result: ok, response: {contract: {frozen_version: 1, latest_version: 2, choice_required: true}}}
+      - at: "+5m"
+        actor: agt_bob
+        op: release_mission
+        input: {attempt: att_0001, generation: 1, reason: Environnement isolé exigé par la version 2}
+        key: k3
+        expect: {result: ok, state: {attempts: {att_0001: {state: released}}}}
+
+  - id: CT-034
+    title: Une soumission déposée reste liée à sa version
+    covers: ["T10:claim_review", "RV01:claim_review"]
+    rules: [V5]
+    given:
+      missions: [{id: DM-001, state: in_progress, generation: 1}]
+      attempts:
+        - {id: att_0001, mission: DM-001, agent: agt_alice, state: submitted, generation: 1}
+      submissions:
+        - {id: SUB-001, attempt: att_0001, state: current, commit: c0ffee1, contract_version: 1, submitted_at: "-10m"}
+    steps:
+      - at: "+0m"
+        actor: forge
+        op: index_contract
+        input: {delivery: d1, missions: [{id: DM-001, version: 2, changes: [acceptance]}]}
+        key: d1
+        expect:
+          result: ok
+          state:
+            submissions: {SUB-001: {contract_version: 1, outdated_contract: true}}
+      - at: "+1m"
+        actor: agt_alice
+        op: accept_contract_version
+        input: {attempt: att_0001, generation: 1, version: 2}
+        key: k1
+        expect: {result: error, error: invalid_transition}
+      - at: "+2m"
+        actor: agt_carol
+        op: claim_review
+        input: {}
+        key: k2
+        expect:
+          result: ok
+          response: {assignment: {submission: SUB-001, contract_version: 1}}
+          state:
+            attempts: {att_0001: {state: in_review}}
+
+  - id: CT-035
+    title: Le porteur reclasse compatible un changement incompatible
+    covers: ["T03:submit_work"]
+    rules: [V6]
+    given:
+      missions: [{id: DM-001, state: in_progress, generation: 1}]
+      attempts:
+        - {id: att_0001, mission: DM-001, agent: agt_alice, state: claimed, generation: 1, claimed_at: "+0m", lease_expires_at: "+10m", deadline_at: "+60m"}
+    steps:
+      - at: "+2m"
+        actor: forge
+        op: index_contract
+        input: {delivery: d1, missions: [{id: DM-001, version: 2, changes: [acceptance]}]}
+        key: d1
+        expect: {result: ok, response: {missions: [{id: DM-001, classification: incompatible}]}}
+      - at: "+3m"
+        actor: user:pat
+        op: declare_contract_compatibility
+        input: {mission: DM-001, version: 2, classification: compatible, reason: Correction typographique d'un critère}
+        key: k1
+        expect: {result: ok}
+      - at: "+4m"
+        actor: agt_alice
+        op: heartbeat
+        input: {attempt: att_0001, generation: 1}
+        key: k2
+        expect: {result: ok, response: {contract: {latest_version: 2, change: compatible, choice_required: false}}}
+      - at: "+5m"
+        actor: agt_alice
+        op: submit_work
+        input: {attempt: att_0001, generation: 1, contract_version: 1, deliverable: "@pr", usage_report: "@usage"}
+        key: k3
+        expect: {result: ok}
+
+  - id: CT-036
+    title: Indexation refusée - régression, version inchangée, contrat invalide
+    covers: []
+    rules: [V7, C4]
+    given:
+      missions: [{id: DM-001, version: 2}]
+    steps:
+      - at: "+0m"
+        actor: forge
+        op: index_contract
+        input: {delivery: d1, missions: [{id: DM-001, version: 1}]}
+        key: d1
+        expect: {result: ok, response: {missions: [{id: DM-001, error: version_regression}]}}
+      - at: "+1m"
+        actor: forge
+        op: index_contract
+        input: {delivery: d2, missions: [{id: DM-001, version: 2, changes: [acceptance]}]}
+        key: d2
+        expect: {result: ok, response: {missions: [{id: DM-001, error: version_not_incremented}]}}
+      - at: "+2m"
+        actor: forge
+        op: index_contract
+        input: {delivery: d3, missions: [{id: DM-001, version: 3, valid: false}]}
+        key: d3
+        expect: {result: ok, response: {missions: [{id: DM-001, error: contract_invalid}]}}
+      - at: "+3m"
+        actor: forge
+        op: index_contract
+        input: {delivery: d4, missions: [{id: DM-001, version: 2}]}
+        key: d4
+        expect:
+          result: ok
+          response: {missions: [{id: DM-001, version: 2, classification: unchanged}]}
+          state:
+            missions: {DM-001: {version: 2, state: open}}
+
+  - id: CT-037
+    title: La réservation fige la dernière version indexée
+    covers: ["T01:claim_mission"]
+    rules: [V1]
+    given:
+      missions: [{id: DM-001}]
+    steps:
+      - at: "+5m"
+        actor: forge
+        op: index_contract
+        input: {delivery: d1, missions: [{id: DM-001, version: 2, changes: [title]}]}
+        key: d1
+        expect: {result: ok}
+      - at: "+6m"
+        actor: agt_alice
+        op: claim_mission
+        input: {mission: DM-001}
+        key: k1
+        expect: {result: ok, response: {attempt: {contract_version: 2}}}
+
+  - id: CT-038
+    title: Changement incompatible pendant des changements demandés
+    covers: ["T18:accept_contract_version", "T19:submit_work"]
+    rules: [V3, V4, G5]
+    given:
+      missions: [{id: DM-001, state: in_progress, generation: 1}]
+      attempts:
+        - {id: att_0001, mission: DM-001, agent: agt_alice, state: changes_requested, generation: 1, changes_due_at: "+14d", reason: verdict}
+      submissions:
+        - {id: SUB-001, attempt: att_0001, state: current, commit: c0ffee1, contract_version: 1, decided_verdict: changes_requested}
+    steps:
+      - at: "+1h"
+        actor: forge
+        op: index_contract
+        input: {delivery: d1, missions: [{id: DM-001, version: 2, changes: [acceptance]}]}
+        key: d1
+        expect: {result: ok}
+      - at: "+2h"
+        actor: agt_alice
+        op: submit_work
+        input: {attempt: att_0001, generation: 1, contract_version: 1, deliverable: {"@": pr, commit: beef002}, usage_report: "@usage"}
+        key: k1
+        expect: {result: error, error: contract_choice_required}
+      - at: "+3h"
+        actor: agt_alice
+        op: accept_contract_version
+        input: {attempt: att_0001, generation: 1, version: 2}
+        key: k2
+        expect: {result: ok, state: {attempts: {att_0001: {state: changes_requested, contract_version: 2}}}}
+      - at: "+4h"
+        actor: agt_alice
+        op: submit_work
+        input: {attempt: att_0001, generation: 1, contract_version: 2, deliverable: {"@": pr, commit: beef002}, usage_report: "@usage"}
+        key: k3
+        expect:
+          result: ok
+          response: {submission: {contract_version: 2, commit: beef002}}
+          state:
+            attempts: {att_0001: {state: submitted, generation: 1}}
+            submissions: {SUB-001: {state: superseded}}
+
+  # ---------------------------------------------------------------- Arbitrage et attente de décision
+  - id: CT-039
+    title: Question non bloquante pendant la production
+    covers: ["T02:request_arbitration"]
+    rules: [B1]
+    given:
+      missions: [{id: DM-001, state: in_progress, generation: 1}]
+      attempts:
+        - {id: att_0001, mission: DM-001, agent: agt_alice, state: claimed, generation: 1, claimed_at: "+0m", lease_expires_at: "+10m", deadline_at: "+60m"}
+    steps:
+      - at: "+4m"
+        actor: agt_alice
+        op: request_arbitration
+        input: {attempt: att_0001, generation: 1, request: {"@": request_continue, blocking: true}}
+        key: k1
+        expect: {result: error, error: invalid_request}
+      - at: "+5m"
+        actor: agt_alice
+        op: request_arbitration
+        input: {attempt: att_0001, generation: 1, request: "@request_continue"}
+        key: k2
+        expect:
+          result: ok
+          response: {request: {id: "*", blocking: false}, attempt: {state: claimed, lease_expires_at: "+15m"}}
+          save: {r1: request.id}
+          state:
+            requests: {$r1: {state: open, blocking: false}}
+            missions: {DM-001: {state: in_progress}}
+
+  - id: CT-040
+    title: Question bloquante, suspension du bail, reprise après décision
+    covers: ["T04:request_arbitration", "M08:attempt_awaiting_decision", "T07:heartbeat", "M09:attempt_resumed"]
+    rules: [B4, G5]
+    given:
+      missions: [{id: DM-001, state: in_progress, generation: 1}]
+      attempts:
+        - {id: att_0001, mission: DM-001, agent: agt_alice, state: claimed, generation: 1, claimed_at: "+0m", lease_expires_at: "+10m", deadline_at: "+60m"}
+    steps:
+      - at: "+20m"
+        actor: agt_alice
+        op: heartbeat
+        input: {attempt: att_0001, generation: 1}
+        key: k1
+        expect: {result: ok, response: {attempt: {lease_expires_at: "+30m"}}}
+      - at: "+20m"
+        actor: agt_alice
+        op: request_arbitration
+        input: {attempt: att_0001, generation: 1, request: "@request_switch"}
+        key: k2
+        expect:
+          result: ok
+          response: {attempt: {state: awaiting_decision, lease_expires_at: null}}
+          save: {r1: request.id}
+          state:
+            attempts: {att_0001: {state: awaiting_decision, active_minutes: 20}}
+            missions: {DM-001: {state: awaiting_decision}}
+      - at: "+2h"
+        expect:
+          state:
+            attempts: {att_0001: {state: awaiting_decision}}
+      - at: "+2h"
+        actor: agt_alice
+        op: heartbeat
+        input: {attempt: att_0001, generation: 1}
+        key: k3
+        expect: {result: error, error: decision_pending}
+      - at: "+3h"
+        actor: user:mia
+        op: publish_decision
+        input: {request: $r1, option: B}
+        key: k4
+        expect: {result: ok, state: {requests: {$r1: {state: decided}}}}
+      - at: "+3h30m"
+        actor: agt_alice
+        op: heartbeat
+        input: {attempt: att_0001, generation: 1}
+        key: k5
+        expect:
+          result: ok
+          response: {attempt: {state: claimed, generation: 1, lease_expires_at: "+3h40m", deadline_at: "+4h10m"}}
+          state:
+            missions: {DM-001: {state: in_progress}}
+
+  - id: CT-041
+    title: Délai de reprise écoulé après la décision
+    covers: ["T08:resume_timeout", "M10:attempt_ended"]
+    rules: [B2, R1]
+    given:
+      missions: [{id: DM-001, state: awaiting_decision, generation: 1}]
+      attempts:
+        - {id: att_0001, mission: DM-001, agent: agt_alice, state: awaiting_decision, generation: 1, claimed_at: "-3h", active_minutes: 20, request: req_0001}
+      requests:
+        - {id: req_0001, fixture: request_switch, attempt: att_0001, state: decided, decided_at: "+0m"}
+      checkpoints:
+        - {attempt: att_0001, sequence: 1, summary: Avant la question, recorded_at: "-170m"}
+    steps:
+      - at: "+71h59m"
+        expect:
+          state:
+            attempts: {att_0001: {state: awaiting_decision}}
+      - at: "+72h"
+        expect:
+          state:
+            attempts: {att_0001: {state: released, ended_at: "+72h", reason: resume_timeout}}
+            missions: {DM-001: {state: open}}
+      - at: "+73h"
+        actor: agt_bob
+        op: claim_mission
+        input: {mission: DM-001}
+        key: k1
+        expect: {result: ok, response: {attempt: {generation: 2, resume_from: {attempt: att_0001, checkpoint: {sequence: 1}}}}}
+
+  - id: CT-042
+    title: Arrêt pour une question de sécurité - libération immédiate, mission en attente
+    covers: ["T06:request_arbitration", "M08:blocking_request", "M10:decision_published"]
+    rules: [A7]
+    given:
+      missions: [{id: DM-001, state: in_progress, generation: 1}]
+      attempts:
+        - {id: att_0001, mission: DM-001, agent: agt_alice, state: claimed, generation: 1, claimed_at: "+0m", lease_expires_at: "+10m", deadline_at: "+60m"}
+    steps:
+      - at: "+5m"
+        actor: agt_alice
+        op: request_arbitration
+        input: {attempt: att_0001, generation: 1, request: {"@": request_stop, blocked_missions: [DM-001]}}
+        key: k1
+        expect:
+          result: ok
+          response: {request: {blocking: true, visibility: private}, attempt: {state: released}}
+          save: {r1: request.id}
+          state:
+            attempts: {att_0001: {state: released, reason: stopped}}
+            missions: {DM-001: {state: awaiting_decision, active_attempts: 0}}
+      - at: "+6m"
+        actor: agt_bob
+        op: claim_mission
+        input: {mission: DM-001}
+        key: k2
+        expect: {result: error, error: mission_unavailable}
+      - at: "+1h"
+        actor: user:root
+        op: publish_decision
+        input: {request: $r1, option: B}
+        key: k3
+        expect: {result: ok, state: {missions: {DM-001: {state: open}}}}
+      - at: "+2h"
+        actor: agt_bob
+        op: claim_mission
+        input: {mission: DM-001}
+        key: k4
+        expect: {result: ok, response: {attempt: {generation: 2}}}
+
+  - id: CT-043
+    title: Demande humaine bloquante sur une mission ouverte et une mission bloquée
+    covers: ["M11:blocking_request", "M22:blocking_request", "M10:decision_published", "M23:decision_published"]
+    rules: []
+    given:
+      missions:
+        - {id: DM-001}
+        - {id: DM-002, state: blocked, dependencies: [DM-009]}
+        - {id: DM-009}
+    steps:
+      - at: "+0m"
+        actor: user:pat
+        op: request_arbitration
+        input: {request: {"@": request_human, blocked_missions: [DM-001, DM-002]}}
+        key: k1
+        expect:
+          result: ok
+          save: {r1: request.id}
+          state:
+            missions: {DM-001: {state: awaiting_decision}, DM-002: {state: awaiting_decision}}
+      - at: "+1m"
+        actor: agt_alice
+        op: claim_mission
+        input: {mission: DM-001}
+        key: k2
+        expect: {result: error, error: mission_unavailable}
+      - at: "+1h"
+        actor: user:mia
+        op: publish_decision
+        input: {request: $r1, option: A}
+        key: k3
+        expect:
+          result: ok
+          state:
+            missions: {DM-001: {state: open}, DM-002: {state: blocked}}
+
+  - id: CT-044
+    title: Questions autorisées selon l'état de la tentative
+    covers: ["T18:request_arbitration"]
+    rules: []
+    given:
+      missions:
+        - {id: DM-001, state: in_progress, generation: 1}
+        - {id: DM-002, state: in_progress, generation: 1}
+      attempts:
+        - {id: att_0001, mission: DM-001, agent: agt_alice, state: changes_requested, generation: 1, changes_due_at: "+14d", reason: verdict}
+        - {id: att_0002, mission: DM-002, agent: agt_alice, state: submitted, generation: 1}
+      submissions:
+        - {id: SUB-001, attempt: att_0001, state: current, commit: c0ffee1, contract_version: 1, decided_verdict: changes_requested}
+        - {id: SUB-002, attempt: att_0002, state: current, commit: c0ffee2, contract_version: 1}
+    steps:
+      - at: "+0m"
+        actor: agt_alice
+        op: request_arbitration
+        input: {attempt: att_0001, generation: 1, request: "@request_switch"}
+        key: k1
+        expect: {result: error, error: invalid_transition}
+      - at: "+1m"
+        actor: agt_alice
+        op: request_arbitration
+        input: {attempt: att_0001, generation: 1, request: "@request_continue"}
+        key: k2
+        expect: {result: ok, state: {attempts: {att_0001: {state: changes_requested}}}}
+      - at: "+2m"
+        actor: agt_alice
+        op: request_arbitration
+        input: {attempt: att_0002, generation: 1, request: "@request_continue"}
+        key: k3
+        expect: {result: error, error: invalid_transition}
+
+  - id: CT-045
+    title: Un agent ne pose pas une question au nom d'un autre
+    covers: []
+    rules: [A3]
+    given:
+      missions: [{id: DM-001, state: in_progress, generation: 1}]
+      attempts:
+        - {id: att_0001, mission: DM-001, agent: agt_alice, state: claimed, generation: 1, claimed_at: "+0m", lease_expires_at: "+10m", deadline_at: "+60m"}
+    steps:
+      - at: "+1m"
+        actor: agt_alice
+        op: request_arbitration
+        input: {attempt: att_0001, generation: 1, request: {"@": request_continue, raised_by: {kind: agent, agent: agt_bob, mission: DM-001, attempt: att_0001}}}
+        key: k1
+        expect: {result: error, error: invalid_request}
+
+  # ---------------------------------------------------------------- Soumission et vérification
+  - id: CT-046
+    title: Parcours nominal - soumission, revue, approbation
+    covers: ["T03:submit_work", "T10:claim_review", "RV01:claim_review", "T14:submit_review", "RV02:submit_review", "T16:approve_submission", "M12:attempt_accepted"]
+    rules: [V5]
+    given:
+      missions: [{id: DM-001, state: in_progress, generation: 1}]
+      attempts:
+        - {id: att_0001, mission: DM-001, agent: agt_alice, state: claimed, generation: 1, claimed_at: "+0m", lease_expires_at: "+10m", deadline_at: "+60m"}
+    steps:
+      - at: "+5m"
+        actor: agt_alice
+        op: submit_work
+        input: {attempt: att_0001, generation: 1, contract_version: 1, deliverable: "@pr", usage_report: "@usage"}
+        key: k1
+        expect:
+          result: ok
+          response: {submission: {id: "*", state: current}, attempt: {state: submitted, lease_expires_at: null}}
+          save: {s1: submission.id}
+      - at: "+1h"
+        actor: agt_carol
+        op: claim_review
+        input: {}
+        key: k2
+        expect:
+          result: ok
+          response: {assignment: {id: "*", submission: $s1, mission: DM-001, attempt: att_0001, contract_version: 1, due_at: "+25h"}}
+          save: {v1: assignment.id}
+          state:
+            attempts: {att_0001: {state: in_review}}
+            assignments: {$v1: {state: assigned}}
+      - at: "+1h"
+        actor: agt_carol
+        op: get_review_package
+        input: {assignment: $v1}
+        expect:
+          result: ok
+          response: {reviewed_state: {contract_version: 1, commit: c0ffee1}}
+      - at: "+3h"
+        actor: agt_carol
+        op: submit_review
+        input: {assignment: $v1, report: "@report_pass"}
+        key: k3
+        expect:
+          result: ok
+          state:
+            assignments: {$v1: {state: completed}}
+            attempts: {att_0001: {state: in_review}}
+            submissions: {$s1: {valid_reviews: 1, decided_verdict: pass, approval: pending}}
+      - at: "+1d"
+        actor: user:pat
+        op: approve_submission
+        input: {submission: $s1}
+        if_match: current
+        key: k4
+        expect:
+          result: ok
+          state:
+            attempts: {att_0001: {state: accepted}}
+            submissions: {$s1: {state: accepted}}
+            missions: {DM-001: {state: accepted}}
+
+  - id: CT-047
+    title: Aucun vérificateur éligible à la soumission, puis assignation
+    covers: ["T09:no_eligible_reviewer", "T11:claim_review"]
+    rules: [A5]
+    given:
+      missions: [{id: DM-001, state: in_progress, generation: 1}]
+      links: [[alice, bob]]
+      authorizations:
+        - {id: aut_alice2, revoked: true}
+        - {id: aut_carol, active_from: "+1h"}
+        - {id: aut_dan, revoked: true}
+        - {id: aut_erin, revoked: true}
+        - {id: aut_frank, revoked: true}
+        - {id: aut_gina, revoked: true}
+        - {id: aut_hugo, revoked: true}
+      attempts:
+        - {id: att_0001, mission: DM-001, agent: agt_alice, state: claimed, generation: 1, claimed_at: "+0m", lease_expires_at: "+10m", deadline_at: "+60m"}
+    steps:
+      - at: "+5m"
+        actor: agt_alice
+        op: submit_work
+        input: {attempt: att_0001, generation: 1, contract_version: 1, deliverable: "@pr", usage_report: "@usage"}
+        key: k1
+        expect:
+          result: ok
+          response: {attempt: {state: awaiting_reviewer}}
+          state:
+            attempts: {att_0001: {state: awaiting_reviewer}}
+      - at: "+2h"
+        actor: agt_carol
+        op: claim_review
+        input: {}
+        key: k2
+        expect:
+          result: ok
+          response: {assignment: {attempt: att_0001}}
+          state:
+            attempts: {att_0001: {state: in_review}}
+
+  - id: CT-048
+    title: Attente prolongée sans assignation
+    covers: ["T09:reviewer_wait_timeout"]
+    rules: [B2]
+    given:
+      missions: [{id: DM-001, state: in_progress, generation: 1}]
+      attempts:
+        - {id: att_0001, mission: DM-001, agent: agt_alice, state: submitted, generation: 1}
+      submissions:
+        - {id: SUB-001, attempt: att_0001, state: current, commit: c0ffee1, contract_version: 1, submitted_at: "+0m"}
+    steps:
+      - at: "+71h59m"
+        expect: {state: {attempts: {att_0001: {state: submitted}}}}
+      - at: "+72h"
+        expect: {state: {attempts: {att_0001: {state: awaiting_reviewer}}}}
+
+  - id: CT-049
+    title: Exclusions du vérificateur
+    covers: ["T10:claim_review"]
+    rules: [A5]
+    given:
+      missions: [{id: DM-001, state: in_progress, generation: 1}]
+      links: [[alice, bob]]
+      review_history:
+        - {reviewer: alice, producer: dan, at: "-1d"}
+      attempts:
+        - {id: att_0001, mission: DM-001, agent: agt_alice, state: submitted, generation: 1}
+      submissions:
+        - {id: SUB-001, attempt: att_0001, state: current, commit: c0ffee1, contract_version: 1, submitted_at: "-1h"}
+    steps:
+      - at: "+0m"
+        actor: agt_alice2
+        op: claim_review
+        input: {}
+        key: k1
+        expect: {result: ok, response: {assignment: null}}
+      - at: "+0m"
+        actor: agt_bob
+        op: claim_review
+        input: {}
+        key: k2
+        expect: {result: ok, response: {assignment: null}}
+      - at: "+0m"
+        actor: agt_pat
+        op: claim_review
+        input: {}
+        key: k3
+        expect: {result: ok, response: {assignment: null}}
+      - at: "+0m"
+        actor: agt_dan
+        op: claim_review
+        input: {}
+        key: k4
+        expect: {result: ok, response: {assignment: null}, state: {attempts: {att_0001: {state: submitted}}}}
+      - at: "+1m"
+        actor: agt_carol
+        op: claim_review
+        input: {}
+        key: k5
+        expect: {result: ok, response: {assignment: {submission: SUB-001}}, state: {attempts: {att_0001: {state: in_review}}}}
+
+  - id: CT-050
+    title: Deux vérificateurs en désaccord, escalade vers un troisième
+    covers: ["T14:claim_review", "T14:submit_review", "T16:approve_submission"]
+    rules: [W1, W2, C3]
+    given:
+      missions: [{id: DM-001, state: in_progress, generation: 1, risk: high, environment: container, reviewers: 2}]
+      attempts:
+        - {id: att_0001, mission: DM-001, agent: agt_alice, state: submitted, generation: 1}
+      submissions:
+        - {id: SUB-001, attempt: att_0001, state: current, commit: c0ffee1, contract_version: 1, submitted_at: "-1h"}
+    steps:
+      - at: "+0m"
+        actor: agt_carol
+        op: claim_review
+        input: {}
+        key: k1
+        expect: {result: ok, save: {v1: assignment.id}, state: {attempts: {att_0001: {state: in_review}}}}
+      - at: "+1m"
+        actor: agt_erin
+        op: claim_review
+        input: {}
+        key: k2
+        expect: {result: ok, response: {assignment: {submission: SUB-001}}, save: {v2: assignment.id}}
+      - at: "+2m"
+        actor: agt_frank
+        op: claim_review
+        input: {}
+        key: k3
+        expect: {result: ok, response: {assignment: null}}
+      - at: "+2h"
+        actor: agt_carol
+        op: submit_review
+        input: {assignment: $v1, report: "@report_pass"}
+        key: k4
+        expect: {result: ok, state: {submissions: {SUB-001: {valid_reviews: 1, decided_verdict: null}}}}
+      - at: "+3h"
+        actor: agt_erin
+        op: submit_review
+        input: {assignment: $v2, report: "@report_changes"}
+        key: k5
+        expect:
+          result: ok
+          state:
+            attempts: {att_0001: {state: in_review}}
+            submissions: {SUB-001: {valid_reviews: 2, decided_verdict: null, escalation: true}}
+      - at: "+4h"
+        actor: agt_frank
+        op: claim_review
+        input: {}
+        key: k6
+        expect: {result: ok, response: {assignment: {submission: SUB-001}}, save: {v3: assignment.id}}
+      - at: "+6h"
+        actor: agt_frank
+        op: submit_review
+        input: {assignment: $v3, report: "@report_pass"}
+        key: k7
+        expect:
+          result: ok
+          state:
+            attempts: {att_0001: {state: in_review}}
+            submissions: {SUB-001: {valid_reviews: 3, decided_verdict: pass, approval: pending}}
+      - at: "+1d"
+        actor: user:pat
+        op: approve_submission
+        input: {submission: SUB-001}
+        if_match: current
+        key: k8
+        expect: {result: ok, state: {attempts: {att_0001: {state: accepted}}}}
+
+  - id: CT-051
+    title: Verdict « changements demandés », reprise et nouvelle soumission
+    covers: ["T14:submit_review", "T15:verdict_changes_requested", "T18:report_progress", "T19:submit_work"]
+    rules: [G5, W1]
+    given:
+      missions: [{id: DM-001, state: in_progress, generation: 1}]
+      attempts:
+        - {id: att_0001, mission: DM-001, agent: agt_alice, state: in_review, generation: 1}
+      submissions:
+        - {id: SUB-001, attempt: att_0001, state: current, commit: c0ffee1, contract_version: 1, submitted_at: "-1d"}
+      assignments:
+        - {id: rva_0001, submission: SUB-001, agent: agt_carol, state: assigned, due_at: "+20h"}
+    steps:
+      - at: "+0m"
+        actor: agt_carol
+        op: submit_review
+        input: {assignment: rva_0001, report: "@report_changes"}
+        key: k1
+        expect:
+          result: ok
+          state:
+            attempts: {att_0001: {state: changes_requested, generation: 1, changes_due_at: "+14d", reason: verdict}}
+      - at: "+1h"
+        actor: agt_alice
+        op: report_progress
+        input: {attempt: att_0001, generation: 1, checkpoint: {summary: Section manquante ajoutée}}
+        key: k2
+        expect: {result: ok, state: {attempts: {att_0001: {state: changes_requested}}}}
+      - at: "+2h"
+        actor: agt_alice
+        op: submit_work
+        input: {attempt: att_0001, generation: 1, contract_version: 1, deliverable: {"@": pr, commit: beef002}, usage_report: "@usage"}
+        key: k3
+        expect:
+          result: ok
+          response: {submission: {commit: beef002}}
+          state:
+            attempts: {att_0001: {state: submitted, generation: 1}}
+            submissions: {SUB-001: {state: superseded}}
+
+  - id: CT-052
+    title: Le porteur demande des changements ; approbation impossible sans verdict
+    covers: ["T15:request_changes", "RV05:attempt_left_review"]
+    rules: [W1]
+    given:
+      missions: [{id: DM-001, state: in_progress, generation: 1}]
+      attempts:
+        - {id: att_0001, mission: DM-001, agent: agt_alice, state: in_review, generation: 1}
+      submissions:
+        - {id: SUB-001, attempt: att_0001, state: current, commit: c0ffee1, contract_version: 1, submitted_at: "-1d"}
+      assignments:
+        - {id: rva_0001, submission: SUB-001, agent: agt_carol, state: assigned, due_at: "+20h"}
+    steps:
+      - at: "+0m"
+        actor: user:pat
+        op: approve_submission
+        input: {submission: SUB-001}
+        if_match: current
+        key: k1
+        expect: {result: error, error: reviews_incomplete}
+      - at: "+1m"
+        actor: user:pat
+        op: request_changes
+        input: {submission: SUB-001, reason: Ajouter un exemple}
+        key: k2
+        expect:
+          result: ok
+          state:
+            attempts: {att_0001: {state: changes_requested, reason: maintainer}}
+            assignments: {rva_0001: {state: cancelled}}
+      - at: "+2m"
+        actor: agt_carol
+        op: submit_review
+        input: {assignment: rva_0001, report: "@report_pass"}
+        key: k3
+        expect: {result: error, error: assignment_closed}
+
+  - id: CT-053
+    title: Rejet décidé, délai de contestation écoulé
+    covers: ["T14:submit_review", "T17:contest_timeout", "M06:attempt_ended"]
+    rules: [W3, B2]
+    given:
+      missions: [{id: DM-001, state: in_progress, generation: 1}]
+      attempts:
+        - {id: att_0001, mission: DM-001, agent: agt_alice, state: in_review, generation: 1}
+      submissions:
+        - {id: SUB-001, attempt: att_0001, state: current, commit: c0ffee1, contract_version: 1, submitted_at: "-1d"}
+      assignments:
+        - {id: rva_0001, submission: SUB-001, agent: agt_carol, state: assigned, due_at: "+20h"}
+    steps:
+      - at: "+0m"
+        actor: agt_carol
+        op: submit_review
+        input: {assignment: rva_0001, report: "@report_reject"}
+        key: k1
+        expect:
+          result: ok
+          state:
+            attempts: {att_0001: {state: in_review}}
+            submissions: {SUB-001: {decided_verdict: reject, rejection_pending_until: "+48h"}}
+      - at: "+47h59m"
+        expect: {state: {attempts: {att_0001: {state: in_review}}}}
+      - at: "+48h"
+        expect:
+          state:
+            attempts: {att_0001: {state: rejected, ended_at: "+48h"}}
+            submissions: {SUB-001: {state: rejected}}
+            missions: {DM-001: {state: open}}
+
+  - id: CT-054
+    title: Rejet contesté puis confirmé à la majorité
+    covers: ["T14:contest_review", "T14:claim_review", "T17:verdict_reject"]
+    rules: [W2, W3]
+    given:
+      missions: [{id: DM-001, state: in_progress, generation: 1}]
+      attempts:
+        - {id: att_0001, mission: DM-001, agent: agt_alice, state: in_review, generation: 1}
+      submissions:
+        - {id: SUB-001, attempt: att_0001, state: current, commit: c0ffee1, contract_version: 1, submitted_at: "-1d"}
+      assignments:
+        - {id: rva_0001, submission: SUB-001, agent: agt_carol, state: assigned, due_at: "+20h"}
+    steps:
+      - at: "+0m"
+        actor: agt_carol
+        op: submit_review
+        input: {assignment: rva_0001, report: "@report_reject"}
+        key: k1
+        expect: {result: ok}
+      - at: "+1h"
+        actor: agt_alice
+        op: contest_review
+        input: {attempt: att_0001, generation: 1, submission: SUB-001, reason: Le livrable couvre l'objectif ; voir la section 2}
+        key: k2
+        expect:
+          result: ok
+          state:
+            submissions: {SUB-001: {escalation: true, rejection_pending_until: null}}
+      - at: "+2h"
+        actor: agt_dan
+        op: claim_review
+        input: {}
+        key: k3
+        expect: {result: ok, response: {assignment: {submission: SUB-001}}, save: {v2: assignment.id}}
+      - at: "+2h"
+        actor: agt_erin
+        op: claim_review
+        input: {}
+        key: k4
+        expect: {result: ok, response: {assignment: {submission: SUB-001}}, save: {v3: assignment.id}}
+      - at: "+2h"
+        actor: agt_frank
+        op: claim_review
+        input: {}
+        key: k5
+        expect: {result: ok, response: {assignment: null}}
+      - at: "+5h"
+        actor: agt_dan
+        op: submit_review
+        input: {assignment: $v2, report: "@report_reject"}
+        key: k6
+        expect: {result: ok, state: {attempts: {att_0001: {state: in_review}}}}
+      - at: "+6h"
+        actor: agt_erin
+        op: submit_review
+        input: {assignment: $v3, report: "@report_pass"}
+        key: k7
+        expect:
+          result: ok
+          state:
+            attempts: {att_0001: {state: rejected}}
+            submissions: {SUB-001: {valid_reviews: 3, decided_verdict: reject}}
+      - at: "+7h"
+        actor: agt_alice
+        op: contest_review
+        input: {attempt: att_0001, generation: 1, submission: SUB-001, reason: Nouvelle contestation}
+        key: k8
+        expect: {result: error, error: attempt_closed}
+
+  - id: CT-055
+    title: Rejet par le porteur
+    covers: ["T17:reject_submission", "RV05:attempt_left_review", "M06:attempt_ended"]
+    rules: []
+    given:
+      missions: [{id: DM-001, state: in_progress, generation: 1}]
+      attempts:
+        - {id: att_0001, mission: DM-001, agent: agt_alice, state: in_review, generation: 1}
+      submissions:
+        - {id: SUB-001, attempt: att_0001, state: current, commit: c0ffee1, contract_version: 1, submitted_at: "-1d"}
+      assignments:
+        - {id: rva_0001, submission: SUB-001, agent: agt_carol, state: assigned, due_at: "+20h"}
+    steps:
+      - at: "+0m"
+        actor: user:pat
+        op: reject_submission
+        input: {submission: SUB-001, reason: Hors du périmètre du projet}
+        key: k1
+        expect:
+          result: ok
+          state:
+            attempts: {att_0001: {state: rejected}}
+            assignments: {rva_0001: {state: cancelled}}
+            missions: {DM-001: {state: open}}
+
+  - id: CT-056
+    title: Le vérificateur décline, puis une assignation expire
+    covers: ["T14:decline_review", "RV03:decline_review", "T14:assignment_timeout", "RV04:assignment_timeout", "T10:claim_review"]
+    rules: [W4]
+    given:
+      missions: [{id: DM-001, state: in_progress, generation: 1}]
+      attempts:
+        - {id: att_0001, mission: DM-001, agent: agt_alice, state: submitted, generation: 1}
+      submissions:
+        - {id: SUB-001, attempt: att_0001, state: current, commit: c0ffee1, contract_version: 1, submitted_at: "-1h"}
+    steps:
+      - at: "+0m"
+        actor: agt_carol
+        op: claim_review
+        input: {}
+        key: k1
+        expect: {result: ok, save: {v1: assignment.id}}
+      - at: "+10m"
+        actor: agt_carol
+        op: decline_review
+        input: {assignment: $v1, reason: Pas d'environnement isolé disponible}
+        key: k2
+        expect:
+          result: ok
+          state:
+            assignments: {$v1: {state: declined}}
+            attempts: {att_0001: {state: in_review}}
+            submissions: {SUB-001: {open_assignments: 0}}
+      - at: "+11m"
+        actor: agt_carol
+        op: claim_review
+        input: {}
+        key: k3
+        expect: {result: ok, response: {assignment: null}}
+      - at: "+1h"
+        actor: agt_dan
+        op: claim_review
+        input: {}
+        key: k4
+        expect: {result: ok, response: {assignment: {submission: SUB-001, due_at: "+25h"}}, save: {v2: assignment.id}}
+      - at: "+25h"
+        expect:
+          state:
+            assignments: {$v2: {state: expired}}
+            attempts: {att_0001: {state: in_review}}
+      - at: "+25h"
+        actor: agt_dan
+        op: submit_review
+        input: {assignment: $v2, report: "@report_pass"}
+        key: k5
+        expect: {result: error, error: assignment_closed}
+      - at: "+26h"
+        actor: agt_erin
+        op: claim_review
+        input: {}
+        key: k6
+        expect: {result: ok, response: {assignment: {submission: SUB-001}}}
+
+  - id: CT-057
+    title: Livrable modifié pendant la revue
+    covers: ["T15:deliverable_changed", "RV05:deliverable_changed"]
+    rules: [V5]
+    given:
+      missions: [{id: DM-001, state: in_progress, generation: 1}]
+      attempts:
+        - {id: att_0001, mission: DM-001, agent: agt_alice, state: in_review, generation: 1}
+      submissions:
+        - {id: SUB-001, attempt: att_0001, state: current, commit: c0ffee1, contract_version: 1, submitted_at: "-1d"}
+      assignments:
+        - {id: rva_0001, submission: SUB-001, agent: agt_carol, state: assigned, due_at: "+20h"}
+    steps:
+      - at: "+0m"
+        actor: forge
+        op: deliverable_changed
+        input: {delivery: d1, submission: SUB-001, commit: beef002}
+        key: d1
+        expect:
+          result: ok
+          state:
+            attempts: {att_0001: {state: changes_requested, reason: deliverable_changed, changes_due_at: "+14d"}}
+            submissions: {SUB-001: {state: outdated}}
+            assignments: {rva_0001: {state: cancelled}}
+      - at: "+1h"
+        actor: agt_carol
+        op: submit_review
+        input: {assignment: rva_0001, report: "@report_pass"}
+        key: k1
+        expect: {result: error, error: assignment_closed}
+
+  - id: CT-058
+    title: Livrable modifié avant toute assignation
+    covers: ["T12:deliverable_changed", "T13:deliverable_changed"]
+    rules: []
+    given:
+      missions:
+        - {id: DM-001, state: in_progress, generation: 1}
+        - {id: DM-002, state: in_progress, generation: 1}
+      attempts:
+        - {id: att_0001, mission: DM-001, agent: agt_alice, state: submitted, generation: 1}
+        - {id: att_0002, mission: DM-002, agent: agt_bob, state: awaiting_reviewer, generation: 1}
+      submissions:
+        - {id: SUB-001, attempt: att_0001, state: current, commit: c0ffee1, contract_version: 1, submitted_at: "-1h"}
+        - {id: SUB-002, attempt: att_0002, state: current, commit: c0ffee2, contract_version: 1, submitted_at: "-1h"}
+    steps:
+      - at: "+0m"
+        actor: forge
+        op: deliverable_changed
+        input: {delivery: d1, submission: SUB-001, commit: beef001}
+        key: d1
+        expect: {result: ok, state: {attempts: {att_0001: {state: changes_requested, reason: deliverable_changed}}}}
+      - at: "+0m"
+        actor: forge
+        op: deliverable_changed
+        input: {delivery: d2, submission: SUB-002, commit: beef002}
+        key: d2
+        expect: {result: ok, state: {attempts: {att_0002: {state: changes_requested, reason: deliverable_changed}}}}
+
+  - id: CT-059
+    title: Modification triviale qualifiée par le porteur
+    covers: ["T15:deliverable_changed", "T20:approve_submission", "M12:attempt_accepted"]
+    rules: [W1]
+    given:
+      missions:
+        - {id: DM-001, state: in_progress, generation: 1}
+        - {id: DM-002, state: in_progress, generation: 1}
+      attempts:
+        - {id: att_0001, mission: DM-001, agent: agt_alice, state: in_review, generation: 1}
+        - {id: att_0002, mission: DM-002, agent: agt_bob, state: changes_requested, generation: 1, changes_due_at: "+14d", reason: verdict}
+      submissions:
+        - {id: SUB-001, attempt: att_0001, state: current, commit: c0ffee1, contract_version: 1, decided_verdict: pass, approval: pending}
+        - {id: SUB-002, attempt: att_0002, state: current, commit: c0ffee2, contract_version: 1, decided_verdict: changes_requested}
+      reviews:
+        - {submission: SUB-001, agent: agt_carol, verdict: pass, commit: c0ffee1, state: valid}
+    steps:
+      - at: "+0m"
+        actor: forge
+        op: deliverable_changed
+        input: {delivery: d1, submission: SUB-001, commit: beef002}
+        key: d1
+        expect: {result: ok, state: {attempts: {att_0001: {state: changes_requested, reason: deliverable_changed}}}}
+      - at: "+1h"
+        actor: user:pat
+        op: approve_submission
+        input: {submission: SUB-001}
+        if_match: current
+        key: k1
+        expect: {result: error, error: invalid_transition}
+      - at: "+1h"
+        actor: user:pat
+        op: approve_submission
+        input: {submission: SUB-001, trivial_change: true, reason: Coquille corrigée par le porteur}
+        if_match: current
+        key: k2
+        expect:
+          result: ok
+          state:
+            attempts: {att_0001: {state: accepted}}
+            submissions: {SUB-001: {state: accepted, commit: beef002, trivial_from: c0ffee1}}
+            missions: {DM-001: {state: accepted}}
+      - at: "+2h"
+        actor: user:pat
+        op: approve_submission
+        input: {submission: SUB-002, trivial_change: true, reason: Essai}
+        if_match: current
+        key: k3
+        expect: {result: error, error: invalid_transition}
+
+  - id: CT-060
+    title: Délai de nouvelle soumission écoulé
+    covers: ["T18:report_progress", "T21:changes_timeout", "M06:attempt_ended"]
+    rules: [B2, R1]
+    given:
+      missions: [{id: DM-001, state: in_progress, generation: 1}]
+      attempts:
+        - {id: att_0001, mission: DM-001, agent: agt_alice, state: changes_requested, generation: 1, changes_due_at: "+14d", reason: verdict}
+      submissions:
+        - {id: SUB-001, attempt: att_0001, state: current, commit: c0ffee1, contract_version: 1, decided_verdict: changes_requested}
+    steps:
+      - at: "+13d"
+        actor: agt_alice
+        op: report_progress
+        input: {attempt: att_0001, generation: 1, checkpoint: {summary: Corrections à moitié faites}}
+        key: k1
+        expect: {result: ok}
+      - at: "+14d"
+        expect:
+          state:
+            attempts: {att_0001: {state: expired, ended_at: "+14d"}}
+            missions: {DM-001: {state: open}}
+      - at: "+15d"
+        actor: agt_bob
+        op: claim_mission
+        input: {mission: DM-001}
+        key: k2
+        expect: {result: ok, response: {attempt: {generation: 2, resume_from: {attempt: att_0001, checkpoint: {summary: Corrections à moitié faites}}}}}
+
+  - id: CT-061
+    title: Rapport de revue sur un état qui n'est pas celui de la soumission
+    covers: ["T14:submit_review"]
+    rules: [V5]
+    given:
+      missions: [{id: DM-001, state: in_progress, generation: 1}]
+      attempts:
+        - {id: att_0001, mission: DM-001, agent: agt_alice, state: in_review, generation: 1}
+      submissions:
+        - {id: SUB-001, attempt: att_0001, state: current, commit: c0ffee1, contract_version: 1, submitted_at: "-1d"}
+      assignments:
+        - {id: rva_0001, submission: SUB-001, agent: agt_carol, state: assigned, due_at: "+20h"}
+    steps:
+      - at: "+0m"
+        actor: agt_carol
+        op: submit_review
+        input: {assignment: rva_0001, report: {"@": report_pass, reviewed_state: {contract_version: 1, commit: beef002}}}
+        key: k1
+        expect: {result: error, error: review_state_mismatch}
+      - at: "+1m"
+        actor: agt_carol
+        op: submit_review
+        input: {assignment: rva_0001, report: {"@": report_pass, reviewed_state: {contract_version: 2, commit: c0ffee1}}}
+        key: k2
+        expect: {result: error, error: review_state_mismatch}
+      - at: "+2m"
+        actor: agt_carol
+        op: submit_review
+        input: {assignment: rva_0001, report: {"@": report_pass, reviewer_agent: agt_dan}}
+        key: k3
+        expect: {result: error, error: invalid_request}
+      - at: "+3m"
+        actor: agt_carol
+        op: submit_review
+        input: {assignment: rva_0001, report: "@report_pass"}
+        key: k4
+        expect: {result: ok, state: {submissions: {SUB-001: {decided_verdict: pass}}}}
+
+  # ---------------------------------------------------------------- Libérations depuis chaque état actif
+  - id: CT-062
+    title: L'agent libère sa tentative depuis chaque état actif
+    covers: ["T08:release_mission", "T22:release_mission", "T23:release_mission", "T24:release_mission", "T25:release_mission", "M10:attempt_ended", "RV05:attempt_left_review"]
+    rules: []
+    given:
+      missions:
+        - {id: DM-001, state: awaiting_decision, generation: 1}
+        - {id: DM-002, state: in_progress, generation: 1}
+        - {id: DM-003, state: in_progress, generation: 1}
+        - {id: DM-004, state: in_progress, generation: 1}
+        - {id: DM-005, state: in_progress, generation: 1}
+      attempts:
+        - {id: att_0001, mission: DM-001, agent: agt_alice, state: awaiting_decision, generation: 1, active_minutes: 15, request: req_0001}
+        - {id: att_0002, mission: DM-002, agent: agt_alice, state: changes_requested, generation: 1, changes_due_at: "+14d", reason: verdict}
+        - {id: att_0003, mission: DM-003, agent: agt_alice, state: submitted, generation: 1}
+        - {id: att_0004, mission: DM-004, agent: agt_alice, state: awaiting_reviewer, generation: 1}
+        - {id: att_0005, mission: DM-005, agent: agt_alice, state: in_review, generation: 1}
+      requests:
+        - {id: req_0001, fixture: request_switch, attempt: att_0001, state: open}
+      submissions:
+        - {id: SUB-002, attempt: att_0002, state: current, commit: c0ffee2, contract_version: 1, decided_verdict: changes_requested}
+        - {id: SUB-003, attempt: att_0003, state: current, commit: c0ffee3, contract_version: 1}
+        - {id: SUB-004, attempt: att_0004, state: current, commit: c0ffee4, contract_version: 1}
+        - {id: SUB-005, attempt: att_0005, state: current, commit: c0ffee5, contract_version: 1}
+      assignments:
+        - {id: rva_0005, submission: SUB-005, agent: agt_carol, state: assigned, due_at: "+20h"}
+    steps:
+      - at: "+0m"
+        actor: agt_alice
+        op: release_mission
+        input: {attempt: att_0001, generation: 1, reason: Retrait}
+        key: k1
+        expect: {result: ok, state: {attempts: {att_0001: {state: released}}, missions: {DM-001: {state: open}}}}
+      - at: "+0m"
+        actor: agt_alice
+        op: release_mission
+        input: {attempt: att_0002, generation: 1, reason: Retrait}
+        key: k2
+        expect: {result: ok, state: {attempts: {att_0002: {state: released}}, missions: {DM-002: {state: open}}}}
+      - at: "+0m"
+        actor: agt_alice
+        op: release_mission
+        input: {attempt: att_0003, generation: 1, reason: Retrait}
+        key: k3
+        expect: {result: ok, state: {attempts: {att_0003: {state: released}}, submissions: {SUB-003: {state: withdrawn}}}}
+      - at: "+0m"
+        actor: agt_alice
+        op: release_mission
+        input: {attempt: att_0004, generation: 1, reason: Retrait}
+        key: k4
+        expect: {result: ok, state: {attempts: {att_0004: {state: released}}}}
+      - at: "+0m"
+        actor: agt_alice
+        op: release_mission
+        input: {attempt: att_0005, generation: 1, reason: Retrait}
+        key: k5
+        expect:
+          result: ok
+          state:
+            attempts: {att_0005: {state: released}}
+            assignments: {rva_0005: {state: cancelled}}
+            missions: {DM-005: {state: open}}
+
+  - id: CT-063
+    title: Le contributeur ou un administrateur libère une tentative
+    covers: ["T06:release_attempt", "T08:release_attempt", "T22:release_attempt", "T23:release_attempt", "T24:release_attempt", "T25:release_attempt"]
+    rules: [A8]
+    given:
+      missions:
+        - {id: DM-001, state: in_progress, generation: 1}
+        - {id: DM-002, state: awaiting_decision, generation: 1}
+        - {id: DM-003, state: in_progress, generation: 1}
+        - {id: DM-004, state: in_progress, generation: 1}
+        - {id: DM-005, state: in_progress, generation: 1}
+        - {id: DM-006, state: in_progress, generation: 1}
+      attempts:
+        - {id: att_0001, mission: DM-001, agent: agt_alice, state: claimed, generation: 1, claimed_at: "+0m", lease_expires_at: "+10m", deadline_at: "+60m"}
+        - {id: att_0002, mission: DM-002, agent: agt_alice, state: awaiting_decision, generation: 1, active_minutes: 15, request: req_0002}
+        - {id: att_0003, mission: DM-003, agent: agt_alice, state: changes_requested, generation: 1, changes_due_at: "+14d", reason: verdict}
+        - {id: att_0004, mission: DM-004, agent: agt_alice, state: submitted, generation: 1}
+        - {id: att_0005, mission: DM-005, agent: agt_alice, state: awaiting_reviewer, generation: 1}
+        - {id: att_0006, mission: DM-006, agent: agt_alice, state: in_review, generation: 1}
+      requests:
+        - {id: req_0002, fixture: request_switch, attempt: att_0002, state: open}
+      submissions:
+        - {id: SUB-003, attempt: att_0003, state: current, commit: c0ffee3, contract_version: 1, decided_verdict: changes_requested}
+        - {id: SUB-004, attempt: att_0004, state: current, commit: c0ffee4, contract_version: 1}
+        - {id: SUB-005, attempt: att_0005, state: current, commit: c0ffee5, contract_version: 1}
+        - {id: SUB-006, attempt: att_0006, state: current, commit: c0ffee6, contract_version: 1}
+    steps:
+      - at: "+1m"
+        actor: user:carol
+        op: release_attempt
+        input: {attempt: att_0001, reason: Essai}
+        key: k0
+        expect: {result: error, error: forbidden_role}
+      - at: "+1m"
+        actor: user:alice
+        op: release_attempt
+        input: {attempt: att_0001, reason: Session interrompue}
+        key: k1
+        expect: {result: ok, state: {attempts: {att_0001: {state: released, released_by: alice}}}}
+      - at: "+1m"
+        actor: user:alice
+        op: release_attempt
+        input: {attempt: att_0002, reason: Session interrompue}
+        key: k2
+        expect: {result: ok, state: {attempts: {att_0002: {state: released}}}}
+      - at: "+1m"
+        actor: user:alice
+        op: release_attempt
+        input: {attempt: att_0003, reason: Session interrompue}
+        key: k3
+        expect: {result: ok, state: {attempts: {att_0003: {state: released}}}}
+      - at: "+1m"
+        actor: user:root
+        op: release_attempt
+        input: {attempt: att_0004, reason: Incident d'exploitation}
+        key: k4
+        expect: {result: ok, state: {attempts: {att_0004: {state: released, released_by: root}}}}
+      - at: "+1m"
+        actor: user:root
+        op: release_attempt
+        input: {attempt: att_0005, reason: Incident d'exploitation}
+        key: k5
+        expect: {result: ok, state: {attempts: {att_0005: {state: released}}}}
+      - at: "+1m"
+        actor: user:root
+        op: release_attempt
+        input: {attempt: att_0006, reason: Incident d'exploitation}
+        key: k6
+        expect: {result: ok, state: {attempts: {att_0006: {state: released}}}}
+
+  - id: CT-064
+    title: Conduite stop depuis chaque état actif
+    covers: ["T08:request_arbitration", "T22:request_arbitration", "T23:request_arbitration", "T24:request_arbitration", "T25:request_arbitration"]
+    rules: []
+    given:
+      missions:
+        - {id: DM-001, state: awaiting_decision, generation: 1}
+        - {id: DM-002, state: in_progress, generation: 1}
+        - {id: DM-003, state: in_progress, generation: 1}
+        - {id: DM-004, state: in_progress, generation: 1}
+        - {id: DM-005, state: in_progress, generation: 1}
+      attempts:
+        - {id: att_0001, mission: DM-001, agent: agt_alice, state: awaiting_decision, generation: 1, active_minutes: 15, request: req_0001}
+        - {id: att_0002, mission: DM-002, agent: agt_alice, state: changes_requested, generation: 1, changes_due_at: "+14d", reason: verdict}
+        - {id: att_0003, mission: DM-003, agent: agt_alice, state: submitted, generation: 1}
+        - {id: att_0004, mission: DM-004, agent: agt_alice, state: awaiting_reviewer, generation: 1}
+        - {id: att_0005, mission: DM-005, agent: agt_alice, state: in_review, generation: 1}
+      requests:
+        - {id: req_0001, fixture: request_switch, attempt: att_0001, state: open}
+      submissions:
+        - {id: SUB-002, attempt: att_0002, state: current, commit: c0ffee2, contract_version: 1, decided_verdict: changes_requested}
+        - {id: SUB-003, attempt: att_0003, state: current, commit: c0ffee3, contract_version: 1}
+        - {id: SUB-004, attempt: att_0004, state: current, commit: c0ffee4, contract_version: 1}
+        - {id: SUB-005, attempt: att_0005, state: current, commit: c0ffee5, contract_version: 1}
+    steps:
+      - at: "+0m"
+        actor: agt_alice
+        op: request_arbitration
+        input: {attempt: att_0001, generation: 1, request: {"@": request_stop, blocked_missions: [DM-001]}}
+        key: k1
+        expect: {result: ok, state: {attempts: {att_0001: {state: released, reason: stopped}}, missions: {DM-001: {state: awaiting_decision}}}}
+      - at: "+0m"
+        actor: agt_alice
+        op: request_arbitration
+        input: {attempt: att_0002, generation: 1, request: {"@": request_stop, blocked_missions: [DM-002]}}
+        key: k2
+        expect: {result: ok, state: {attempts: {att_0002: {state: released}}, missions: {DM-002: {state: awaiting_decision}}}}
+      - at: "+0m"
+        actor: agt_alice
+        op: request_arbitration
+        input: {attempt: att_0003, generation: 1, request: {"@": request_stop, blocked_missions: [DM-003]}}
+        key: k3
+        expect: {result: ok, state: {attempts: {att_0003: {state: released}}}}
+      - at: "+0m"
+        actor: agt_alice
+        op: request_arbitration
+        input: {attempt: att_0004, generation: 1, request: {"@": request_stop, blocked_missions: [DM-004]}}
+        key: k4
+        expect: {result: ok, state: {attempts: {att_0004: {state: released}}}}
+      - at: "+0m"
+        actor: agt_alice
+        op: request_arbitration
+        input: {attempt: att_0005, generation: 1, request: {"@": request_stop, blocked_missions: [DM-005]}}
+        key: k5
+        expect: {result: ok, state: {attempts: {att_0005: {state: released}}, missions: {DM-005: {state: awaiting_decision}}}}
+
+  - id: CT-065
+    title: Annulation d'une mission avec des tentatives dans chaque état actif
+    covers: ["M19:cancel_mission", "T06:mission_cancelled", "T08:mission_cancelled", "T22:mission_cancelled", "T23:mission_cancelled", "T24:mission_cancelled", "T25:mission_cancelled", "RV05:mission_cancelled"]
+    rules: [C2]
+    given:
+      missions: [{id: DM-001, state: in_progress, generation: 6, attempts: {mode: parallel, max: 6}}]
+      attempts:
+        - {id: att_0001, mission: DM-001, agent: agt_alice, state: claimed, generation: 1, claimed_at: "+0m", lease_expires_at: "+10m", deadline_at: "+60m"}
+        - {id: att_0002, mission: DM-001, agent: agt_bob, state: awaiting_decision, generation: 2, active_minutes: 15, request: req_0002}
+        - {id: att_0003, mission: DM-001, agent: agt_carol, state: submitted, generation: 3}
+        - {id: att_0004, mission: DM-001, agent: agt_dan, state: awaiting_reviewer, generation: 4}
+        - {id: att_0005, mission: DM-001, agent: agt_erin, state: in_review, generation: 5}
+        - {id: att_0006, mission: DM-001, agent: agt_frank, state: changes_requested, generation: 6, changes_due_at: "+14d", reason: verdict}
+      requests:
+        - {id: req_0002, fixture: request_switch, attempt: att_0002, state: open}
+      submissions:
+        - {id: SUB-003, attempt: att_0003, state: current, commit: c0ffee3, contract_version: 1}
+        - {id: SUB-004, attempt: att_0004, state: current, commit: c0ffee4, contract_version: 1}
+        - {id: SUB-005, attempt: att_0005, state: current, commit: c0ffee5, contract_version: 1}
+        - {id: SUB-006, attempt: att_0006, state: current, commit: c0ffee6, contract_version: 1, decided_verdict: changes_requested}
+      assignments:
+        - {id: rva_0005, submission: SUB-005, agent: agt_gina, state: assigned, due_at: "+20h"}
+    steps:
+      - at: "+1m"
+        actor: user:pat
+        op: cancel_mission
+        input: {mission: DM-001, reason: Besoin abandonné par le projet}
+        key: k1
+        expect:
+          result: ok
+          state:
+            missions: {DM-001: {state: cancelled, active_attempts: 0}}
+            attempts:
+              att_0001: {state: released, reason: mission_cancelled}
+              att_0002: {state: released, reason: mission_cancelled}
+              att_0003: {state: released, reason: mission_cancelled}
+              att_0004: {state: released, reason: mission_cancelled}
+              att_0005: {state: released, reason: mission_cancelled}
+              att_0006: {state: released, reason: mission_cancelled}
+            assignments: {rva_0005: {state: cancelled}}
+      - at: "+2m"
+        actor: agt_alice
+        op: heartbeat
+        input: {attempt: att_0001, generation: 1}
+        key: k2
+        expect: {result: error, error: attempt_closed}
+
+  - id: CT-066
+    title: Acceptation dans une mission parallèle - tentatives sœurs libérées
+    covers: ["T16:approve_submission", "M12:attempt_accepted", "T06:sibling_accepted", "T08:sibling_accepted", "T22:sibling_accepted", "T23:sibling_accepted", "T24:sibling_accepted", "T25:sibling_accepted", "RV05:attempt_left_review"]
+    rules: [C2]
+    given:
+      missions: [{id: DM-001, state: in_progress, generation: 7, attempts: {mode: parallel, max: 7}}]
+      attempts:
+        - {id: att_0001, mission: DM-001, agent: agt_alice, state: in_review, generation: 1}
+        - {id: att_0002, mission: DM-001, agent: agt_bob, state: claimed, generation: 2, claimed_at: "+0m", lease_expires_at: "+10m", deadline_at: "+60m"}
+        - {id: att_0003, mission: DM-001, agent: agt_carol, state: awaiting_decision, generation: 3, active_minutes: 15, request: req_0003}
+        - {id: att_0004, mission: DM-001, agent: agt_dan, state: submitted, generation: 4}
+        - {id: att_0005, mission: DM-001, agent: agt_erin, state: awaiting_reviewer, generation: 5}
+        - {id: att_0006, mission: DM-001, agent: agt_frank, state: in_review, generation: 6}
+        - {id: att_0007, mission: DM-001, agent: agt_gina, state: changes_requested, generation: 7, changes_due_at: "+14d", reason: verdict}
+      requests:
+        - {id: req_0003, fixture: request_switch, attempt: att_0003, state: open}
+      submissions:
+        - {id: SUB-001, attempt: att_0001, state: current, commit: c0ffee1, contract_version: 1, decided_verdict: pass, approval: pending}
+        - {id: SUB-004, attempt: att_0004, state: current, commit: c0ffee4, contract_version: 1}
+        - {id: SUB-005, attempt: att_0005, state: current, commit: c0ffee5, contract_version: 1}
+        - {id: SUB-006, attempt: att_0006, state: current, commit: c0ffee6, contract_version: 1}
+        - {id: SUB-007, attempt: att_0007, state: current, commit: c0ffee7, contract_version: 1, decided_verdict: changes_requested}
+      reviews:
+        - {submission: SUB-001, agent: agt_hugo, verdict: pass, commit: c0ffee1, state: valid}
+      assignments:
+        - {id: rva_0006, submission: SUB-006, agent: agt_hugo, state: assigned, due_at: "+20h"}
+    steps:
+      - at: "+1m"
+        actor: user:pat
+        op: approve_submission
+        input: {submission: SUB-001}
+        if_match: current
+        key: k1
+        expect:
+          result: ok
+          state:
+            missions: {DM-001: {state: accepted, active_attempts: 0}}
+            attempts:
+              att_0001: {state: accepted}
+              att_0002: {state: released, reason: sibling_accepted}
+              att_0003: {state: released, reason: sibling_accepted}
+              att_0004: {state: released, reason: sibling_accepted}
+              att_0005: {state: released, reason: sibling_accepted}
+              att_0006: {state: released, reason: sibling_accepted}
+              att_0007: {state: released, reason: sibling_accepted}
+            assignments: {rva_0006: {state: cancelled}}
+
+  # ---------------------------------------------------------------- États de mission
+  - id: CT-067
+    title: Publication d'une mission - ouverte ou bloquée
+    covers: ["M01:index_contract", "M02:index_contract"]
+    rules: []
+    given:
+      missions:
+        - {id: DM-001, state: draft}
+        - {id: DM-002, state: draft, dependencies: [DM-009]}
+        - {id: DM-009}
+    steps:
+      - at: "+0m"
+        actor: agt_alice
+        op: claim_mission
+        input: {mission: DM-001}
+        key: k1
+        expect: {result: error, error: mission_unavailable}
+      - at: "+1m"
+        actor: forge
+        op: index_contract
+        input: {delivery: d1, missions: [{id: DM-001, version: 2, changes: [status], set: {status: open}}, {id: DM-002, version: 2, changes: [status], set: {status: open}}]}
+        key: d1
+        expect:
+          result: ok
+          state:
+            missions: {DM-001: {state: open}, DM-002: {state: blocked}}
+      - at: "+2m"
+        actor: agt_alice
+        op: claim_mission
+        input: {mission: DM-002}
+        key: k2
+        expect: {result: error, error: mission_unavailable}
+
+  - id: CT-068
+    title: Dépendance intégrée, puis nouvelle dépendance
+    covers: ["M13:merged", "M04:dependency_integrated", "M03:index_contract"]
+    rules: []
+    given:
+      missions:
+        - {id: DM-002, state: blocked, dependencies: [DM-009]}
+        - {id: DM-009, state: accepted, generation: 1}
+        - {id: DM-010}
+      attempts:
+        - {id: att_0009, mission: DM-009, agent: agt_bob, state: accepted, generation: 1}
+      submissions:
+        - {id: SUB-009, attempt: att_0009, state: accepted, commit: c0ffee9, contract_version: 1}
+    steps:
+      - at: "+0m"
+        actor: forge
+        op: merged
+        input: {delivery: d1, submission: SUB-009, commit: c0ffee9}
+        key: d1
+        expect:
+          result: ok
+          state:
+            missions: {DM-009: {state: integrated}, DM-002: {state: open}}
+      - at: "+1h"
+        actor: forge
+        op: index_contract
+        input: {delivery: d2, missions: [{id: DM-002, version: 2, changes: [dependencies], set: {dependencies: [DM-009, DM-010]}}]}
+        key: d2
+        expect:
+          result: ok
+          state:
+            missions: {DM-002: {state: blocked}}
+
+  - id: CT-069
+    title: Fin de la dernière tentative quand une dépendance manque
+    covers: ["M07:attempt_ended", "T06:release_mission"]
+    rules: [V3]
+    given:
+      missions:
+        - {id: DM-001, state: in_progress, generation: 1}
+        - {id: DM-010}
+      attempts:
+        - {id: att_0001, mission: DM-001, agent: agt_alice, state: claimed, generation: 1, claimed_at: "+0m", lease_expires_at: "+10m", deadline_at: "+60m"}
+    steps:
+      - at: "+1m"
+        actor: forge
+        op: index_contract
+        input: {delivery: d1, missions: [{id: DM-001, version: 2, changes: [dependencies], set: {dependencies: [DM-010]}}]}
+        key: d1
+        expect:
+          result: ok
+          state:
+            missions: {DM-001: {state: in_progress}}
+            attempts: {att_0001: {state: claimed, contract: {choice_required: true}}}
+      - at: "+2m"
+        actor: agt_alice
+        op: release_mission
+        input: {attempt: att_0001, generation: 1, reason: Dépendance ajoutée}
+        key: k1
+        expect: {result: ok, state: {missions: {DM-001: {state: blocked}}}}
+
+  - id: CT-070
+    title: Intégration puis clôture par retour ou par délai
+    covers: ["M13:merged", "M15:record_feedback", "M15:feedback_timeout"]
+    rules: []
+    given:
+      missions:
+        - {id: DM-001, state: accepted, generation: 1}
+        - {id: DM-002, state: integrated, generation: 1, integrated_at: "+0m"}
+        - {id: DM-003}
+      attempts:
+        - {id: att_0001, mission: DM-001, agent: agt_alice, state: accepted, generation: 1}
+      submissions:
+        - {id: SUB-001, attempt: att_0001, state: accepted, commit: c0ffee1, contract_version: 1}
+    steps:
+      - at: "+1h"
+        actor: forge
+        op: merged
+        input: {delivery: d1, submission: SUB-001, commit: c0ffee1}
+        key: d1
+        expect: {result: ok, state: {missions: {DM-001: {state: integrated}}}}
+      - at: "+31d"
+        actor: user:pat
+        op: record_feedback
+        input: {mission: DM-001, answers: {service: oui, worth: oui, corrections: aucune}}
+        key: k1
+        expect: {result: ok, state: {missions: {DM-001: {state: closed}}}}
+      - at: "+31d"
+        actor: user:pat
+        op: record_feedback
+        input: {mission: DM-003, answers: {service: oui, worth: oui, corrections: aucune}}
+        key: k2
+        expect: {result: error, error: invalid_transition}
+      - at: "+59d23h"
+        expect: {state: {missions: {DM-002: {state: integrated}}}}
+      - at: "+60d"
+        expect: {state: {missions: {DM-002: {state: closed, flags: [closed_without_feedback]}}}}
+
+  - id: CT-071
+    title: Fusion d'un livrable non accepté
+    covers: ["M14:merged"]
+    rules: [A9]
+    given:
+      missions: [{id: DM-001, state: in_progress, generation: 1}]
+      attempts:
+        - {id: att_0001, mission: DM-001, agent: agt_alice, state: in_review, generation: 1}
+      submissions:
+        - {id: SUB-001, attempt: att_0001, state: current, commit: c0ffee1, contract_version: 1, submitted_at: "-1d"}
+    steps:
+      - at: "+0m"
+        actor: forge
+        op: merged
+        input: {delivery: d1, submission: SUB-001, commit: c0ffee1}
+        key: d1
+        expect:
+          result: ok
+          state:
+            missions: {DM-001: {state: integrated, flags: [integrated_without_acceptance]}}
+            attempts: {att_0001: {state: in_review}}
+      - at: "+1m"
+        actor: agt_bob
+        op: claim_mission
+        input: {mission: DM-001}
+        key: k1
+        expect: {result: error, error: mission_unavailable}
+
+  - id: CT-072
+    title: Annulation par le porteur depuis chaque état de mission
+    covers: ["M16:cancel_mission", "M17:cancel_mission", "M18:cancel_mission", "M20:cancel_mission", "M21:cancel_mission", "T08:mission_cancelled"]
+    rules: []
+    given:
+      missions:
+        - {id: DM-001, state: draft}
+        - {id: DM-002}
+        - {id: DM-003, state: blocked, dependencies: [DM-009]}
+        - {id: DM-004, state: awaiting_decision, generation: 1}
+        - {id: DM-005, state: accepted, generation: 1}
+        - {id: DM-006, state: integrated, generation: 1, integrated_at: "-1d"}
+        - {id: DM-009}
+      attempts:
+        - {id: att_0004, mission: DM-004, agent: agt_alice, state: awaiting_decision, generation: 1, active_minutes: 15, request: req_0004}
+        - {id: att_0005, mission: DM-005, agent: agt_bob, state: accepted, generation: 1}
+      requests:
+        - {id: req_0004, fixture: request_switch, attempt: att_0004, state: open}
+    steps:
+      - at: "+0m"
+        actor: user:pat
+        op: cancel_mission
+        input: {mission: DM-001, reason: Besoin retiré}
+        key: k1
+        expect: {result: ok, state: {missions: {DM-001: {state: cancelled}}}}
+      - at: "+0m"
+        actor: user:pat
+        op: cancel_mission
+        input: {mission: DM-002, reason: Besoin retiré}
+        key: k2
+        expect: {result: ok, state: {missions: {DM-002: {state: cancelled}}}}
+      - at: "+0m"
+        actor: user:pat
+        op: cancel_mission
+        input: {mission: DM-003, reason: Besoin retiré}
+        key: k3
+        expect: {result: ok, state: {missions: {DM-003: {state: cancelled}}}}
+      - at: "+0m"
+        actor: user:pat
+        op: cancel_mission
+        input: {mission: DM-004, reason: Besoin retiré}
+        key: k4
+        expect: {result: ok, state: {missions: {DM-004: {state: cancelled}}, attempts: {att_0004: {state: released, reason: mission_cancelled}}}}
+      - at: "+0m"
+        actor: user:pat
+        op: cancel_mission
+        input: {mission: DM-005, reason: Le projet ne fusionnera pas}
+        key: k5
+        expect: {result: ok, state: {missions: {DM-005: {state: cancelled}}, attempts: {att_0005: {state: accepted}}}}
+      - at: "+0m"
+        actor: user:pat
+        op: cancel_mission
+        input: {mission: DM-006, reason: Essai}
+        key: k6
+        expect: {result: error, error: invalid_transition}
+
+  - id: CT-073
+    title: Contrat retiré du dépôt
+    covers: ["M16:index_contract", "M17:index_contract", "M18:index_contract", "M19:index_contract", "M20:index_contract", "M21:index_contract", "T06:mission_cancelled"]
+    rules: []
+    given:
+      missions:
+        - {id: DM-001, state: draft}
+        - {id: DM-002}
+        - {id: DM-003, state: blocked, dependencies: [DM-009]}
+        - {id: DM-004, state: in_progress, generation: 1}
+        - {id: DM-005, state: awaiting_decision, generation: 0}
+        - {id: DM-006, state: accepted, generation: 1}
+        - {id: DM-009}
+      attempts:
+        - {id: att_0004, mission: DM-004, agent: agt_alice, state: claimed, generation: 1, claimed_at: "+0m", lease_expires_at: "+10m", deadline_at: "+60m"}
+        - {id: att_0006, mission: DM-006, agent: agt_bob, state: accepted, generation: 1}
+      requests:
+        - {id: req_0005, fixture: request_human, state: open, blocked_missions: [DM-005]}
+    steps:
+      - at: "+1m"
+        actor: forge
+        op: index_contract
+        input:
+          delivery: d1
+          missions:
+            - {id: DM-001, removed: true}
+            - {id: DM-002, removed: true}
+            - {id: DM-003, removed: true}
+            - {id: DM-004, removed: true}
+            - {id: DM-005, removed: true}
+            - {id: DM-006, version: 2, changes: [status], set: {status: cancelled}}
+        key: d1
+        expect:
+          result: ok
+          state:
+            missions:
+              DM-001: {state: cancelled}
+              DM-002: {state: cancelled}
+              DM-003: {state: cancelled}
+              DM-004: {state: cancelled}
+              DM-005: {state: cancelled}
+              DM-006: {state: cancelled}
+            attempts: {att_0004: {state: released, reason: mission_cancelled}}
+
+  - id: CT-074
+    title: Réservation parallèle d'une mission en attente de décision
+    covers: ["M09:claim_mission"]
+    rules: [C2]
+    given:
+      missions:
+        - {id: DM-001, state: awaiting_decision, generation: 1, attempts: {mode: parallel, max: 2}}
+        - {id: DM-002, state: awaiting_decision, generation: 1, attempts: {mode: parallel, max: 2}}
+      attempts:
+        - {id: att_0001, mission: DM-001, agent: agt_alice, state: awaiting_decision, generation: 1, active_minutes: 15, request: req_0001}
+        - {id: att_0002, mission: DM-002, agent: agt_alice, state: awaiting_decision, generation: 1, active_minutes: 15, request: req_0002}
+      requests:
+        - {id: req_0001, fixture: request_switch, attempt: att_0001, state: open}
+        - {id: req_0002, fixture: request_switch, attempt: att_0002, state: open, blocked_missions: [DM-002]}
+    steps:
+      - at: "+0m"
+        actor: agt_bob
+        op: claim_mission
+        input: {mission: DM-001}
+        key: k1
+        expect:
+          result: ok
+          response: {attempt: {generation: 2}}
+          state:
+            missions: {DM-001: {state: in_progress, active_attempts: 2}}
+      - at: "+0m"
+        actor: agt_bob
+        op: claim_mission
+        input: {mission: DM-002}
+        key: k2
+        expect: {result: error, error: mission_unavailable}
+
+  # ---------------------------------------------------------------- Autorisations et éligibilité
+  - id: CT-075
+    title: Un jeton d'agent n'accède à aucune opération humaine
+    covers: []
+    rules: [A1, A9]
+    given:
+      missions: [{id: DM-001, state: in_progress, generation: 1}]
+      attempts:
+        - {id: att_0001, mission: DM-001, agent: agt_alice, state: in_review, generation: 1}
+      submissions:
+        - {id: SUB-001, attempt: att_0001, state: current, commit: c0ffee1, contract_version: 1, decided_verdict: pass, approval: pending}
+      requests:
+        - {id: req_0009, fixture: request_human, state: open}
+    steps:
+      - {at: "+0m", actor: agt_carol, entry: rest, op: approve_submission, input: {submission: SUB-001}, if_match: current, key: k1, expect: {result: error, error: forbidden_role}}
+      - {at: "+0m", actor: agt_carol, entry: rest, op: request_changes, input: {submission: SUB-001, reason: Essai}, key: k2, expect: {result: error, error: forbidden_role}}
+      - {at: "+0m", actor: agt_carol, entry: rest, op: reject_submission, input: {submission: SUB-001, reason: Essai}, key: k3, expect: {result: error, error: forbidden_role}}
+      - {at: "+0m", actor: agt_carol, entry: rest, op: cancel_mission, input: {mission: DM-001, reason: Essai}, key: k4, expect: {result: error, error: forbidden_role}}
+      - {at: "+0m", actor: agt_carol, entry: rest, op: declare_contract_compatibility, input: {mission: DM-001, version: 1, classification: compatible, reason: Essai}, key: k5, expect: {result: error, error: forbidden_role}}
+      - {at: "+0m", actor: agt_carol, entry: rest, op: publish_decision, input: {request: req_0009, option: A}, key: k6, expect: {result: error, error: forbidden_role}}
+      - {at: "+0m", actor: agt_carol, entry: rest, op: record_feedback, input: {mission: DM-001, answers: {service: oui, worth: oui, corrections: aucune}}, key: k7, expect: {result: error, error: forbidden_role}}
+      - {at: "+0m", actor: agt_carol, entry: rest, op: release_attempt, input: {attempt: att_0001, reason: Essai}, key: k8, expect: {result: error, error: forbidden_role}}
+      - {at: "+0m", actor: agt_carol, entry: rest, op: suspend_project, input: {project: demo, decision: DEC-2026-999}, key: k9, expect: {result: error, error: forbidden_role}}
+      - {at: "+0m", actor: agt_carol, entry: rest, op: revoke_authorization, input: {authorization: aut_alice}, key: k10, expect: {result: error, error: forbidden_role}}
+      - at: "+0m"
+        actor: agt_carol
+        entry: mcp
+        op: list_tools
+        input: {}
+        expect:
+          result: ok
+          excludes:
+            path: tools
+            values: [approve_submission, request_changes, reject_submission, cancel_mission, declare_contract_compatibility, publish_decision, record_feedback, release_attempt, suspend_project, revoke_authorization, merge, vote, sign]
+          state:
+            attempts: {att_0001: {state: in_review}}
+            missions: {DM-001: {state: in_progress}}
+
+  - id: CT-076
+    title: Un jeton humain n'accède pas aux outils d'agent
+    covers: []
+    rules: [A2]
+    given:
+      missions: [{id: DM-001}]
+    steps:
+      - {at: "+0m", actor: user:pat, entry: rest, op: claim_mission, input: {mission: DM-001}, key: k1, expect: {result: error, error: forbidden_role}}
+      - {at: "+0m", actor: user:carol, entry: rest, op: claim_review, input: {}, key: k2, expect: {result: error, error: forbidden_role, state: {missions: {DM-001: {state: open, generation: 0}}}}}
+
+  - id: CT-077
+    title: Autorisation révoquée ou échue en cours de tentative
+    covers: ["T05:lease_timeout"]
+    rules: [A6, F2]
+    given:
+      missions:
+        - {id: DM-001, state: in_progress, generation: 1}
+        - {id: DM-002, state: in_progress, generation: 1}
+        - {id: DM-003}
+      authorizations:
+        - {id: aut_bob, expires_at: "+8m"}
+      attempts:
+        - {id: att_0001, mission: DM-001, agent: agt_alice, state: claimed, generation: 1, claimed_at: "+0m", lease_expires_at: "+10m", deadline_at: "+60m"}
+        - {id: att_0002, mission: DM-002, agent: agt_bob, state: claimed, generation: 1, claimed_at: "+0m", lease_expires_at: "+10m", deadline_at: "+60m"}
+    steps:
+      - at: "+5m"
+        actor: user:alice
+        op: revoke_authorization
+        input: {authorization: aut_alice}
+        key: k1
+        expect: {result: ok}
+      - at: "+6m"
+        actor: agt_alice
+        op: heartbeat
+        input: {attempt: att_0001, generation: 1}
+        key: k2
+        expect: {result: error, error: authorization_inactive}
+      - at: "+6m"
+        actor: agt_alice
+        op: claim_mission
+        input: {mission: DM-003}
+        key: k3
+        expect: {result: error, error: authorization_inactive}
+      - at: "+8m"
+        actor: agt_bob
+        op: heartbeat
+        input: {attempt: att_0002, generation: 1}
+        key: k4
+        expect: {result: error, error: authorization_inactive}
+      - at: "+10m"
+        expect:
+          state:
+            attempts:
+              att_0001: {state: expired, ended_at: "+10m"}
+              att_0002: {state: expired, ended_at: "+10m"}
+
+  - id: CT-078
+    title: Porteur d'un autre projet, administrateur et mandaté
+    covers: []
+    rules: [A4, A7]
+    given:
+      missions: [{id: DM-001, state: in_progress, generation: 1}]
+      attempts:
+        - {id: att_0001, mission: DM-001, agent: agt_alice, state: in_review, generation: 1}
+      submissions:
+        - {id: SUB-001, attempt: att_0001, state: current, commit: c0ffee1, contract_version: 1, decided_verdict: pass, approval: pending}
+      requests:
+        - {id: req_0009, fixture: request_human, state: open}
+    steps:
+      - {at: "+0m", actor: user:quinn, op: approve_submission, input: {submission: SUB-001}, if_match: current, key: k1, expect: {result: error, error: forbidden_role}}
+      - {at: "+0m", actor: user:root, op: approve_submission, input: {submission: SUB-001}, if_match: current, key: k2, expect: {result: error, error: forbidden_role}}
+      - {at: "+0m", actor: user:root, op: publish_decision, input: {request: req_0009, option: A}, key: k3, expect: {result: error, error: forbidden_role}}
+      - {at: "+1m", actor: user:mia, op: publish_decision, input: {request: req_0009, option: A}, key: k4, expect: {result: ok, state: {requests: {req_0009: {state: decided}}}}}
+      - {at: "+2m", actor: user:pat, op: approve_submission, input: {submission: SUB-001}, if_match: stale, key: k5, expect: {result: error, error: precondition_failed}}
+
+  - id: CT-079
+    title: Plafonds de flux du projet
+    covers: ["T03:submit_work", "T10:claim_review"]
+    rules: [F1]
+    given:
+      projects:
+        - {id: demo, flow_limits: {max_in_production: 2, max_awaiting_review_or_integration: 1}}
+      missions:
+        - {id: DM-001, state: in_progress, generation: 1}
+        - {id: DM-002, state: in_progress, generation: 1}
+        - {id: DM-003}
+      attempts:
+        - {id: att_0001, mission: DM-001, agent: agt_alice, state: claimed, generation: 1, claimed_at: "+0m", lease_expires_at: "+10m", deadline_at: "+60m"}
+        - {id: att_0002, mission: DM-002, agent: agt_bob, state: changes_requested, generation: 1, changes_due_at: "+14d", reason: verdict}
+      submissions:
+        - {id: SUB-002, attempt: att_0002, state: current, commit: c0ffee2, contract_version: 1, decided_verdict: changes_requested}
+    steps:
+      - at: "+1m"
+        actor: agt_carol
+        op: claim_mission
+        input: {mission: DM-003}
+        key: k1
+        expect: {result: error, error: flow_limit_reached, response: {error: {details: {limit: max_in_production}}}}
+      - at: "+2m"
+        actor: agt_alice
+        op: submit_work
+        input: {attempt: att_0001, generation: 1, contract_version: 1, deliverable: "@pr", usage_report: "@usage"}
+        key: k2
+        expect: {result: ok}
+      - at: "+3m"
+        actor: agt_carol
+        op: claim_mission
+        input: {mission: DM-003}
+        key: k3
+        expect: {result: error, error: flow_limit_reached, response: {error: {details: {limit: max_awaiting_review_or_integration}}}}
+      - at: "+4m"
+        actor: agt_dan
+        op: claim_review
+        input: {}
+        key: k4
+        expect: {result: ok, response: {assignment: {attempt: att_0001}}}
+
+  - id: CT-080
+    title: Budget épuisé - nouvelles réservations refusées, tentative en cours préservée
+    covers: ["T02:heartbeat"]
+    rules: [F2]
+    given:
+      missions:
+        - {id: DM-001}
+        - {id: DM-002}
+      authorizations:
+        - {id: aut_alice, budget: {unit: missions, value: 1}}
+    steps:
+      - at: "+0m"
+        actor: agt_alice
+        op: claim_mission
+        input: {mission: DM-001}
+        key: k1
+        expect: {result: ok, save: {a1: attempt.id}}
+      - at: "+1m"
+        actor: agt_alice
+        op: claim_mission
+        input: {mission: DM-002}
+        key: k2
+        expect: {result: error, error: budget_exhausted}
+      - at: "+2m"
+        actor: agt_alice
+        op: heartbeat
+        input: {attempt: $a1, generation: 1}
+        key: k3
+        expect: {result: ok, response: {attempt: {lease_expires_at: "+12m"}}}
+
+  - id: CT-081
+    title: Environnement, risque et portée de l'autorisation
+    covers: ["T01:claim_mission"]
+    rules: [F3]
+    given:
+      missions:
+        - {id: DM-001, risk: medium}
+        - {id: DM-002, environment: vm}
+        - {id: DM-003, project: autre}
+    steps:
+      - {at: "+0m", actor: agt_bob, op: claim_mission, input: {mission: DM-001}, key: k1, expect: {result: error, error: not_eligible, response: {error: {details: {reasons: [environment]}}}}}
+      - {at: "+0m", actor: agt_bob, op: claim_mission, input: {mission: DM-002}, key: k2, expect: {result: error, error: not_eligible, response: {error: {details: {reasons: [environment]}}}}}
+      - {at: "+0m", actor: agt_alice, op: claim_mission, input: {mission: DM-003}, key: k3, expect: {result: error, error: not_eligible, response: {error: {details: {reasons: [authorization_scope]}}}}}
+      - {at: "+1m", actor: agt_alice, op: claim_mission, input: {mission: DM-001}, key: k4, expect: {result: ok}}
+      - {at: "+1m", actor: agt_dan, op: claim_mission, input: {mission: DM-002}, key: k5, expect: {result: ok}}
+
+  - id: CT-082
+    title: Tentatives simultanées d'un agent
+    covers: ["T01:claim_mission"]
+    rules: [C2]
+    given:
+      missions:
+        - {id: DM-001}
+        - {id: DM-002}
+        - {id: DM-003}
+        - {id: DM-004, attempts: {mode: parallel, max: 3}}
+      authorizations:
+        - {id: aut_alice, max_concurrent: 2}
+    steps:
+      - {at: "+0m", actor: agt_alice, op: claim_mission, input: {mission: DM-001}, key: k1, expect: {result: ok}}
+      - {at: "+0m", actor: agt_alice, op: claim_mission, input: {mission: DM-002}, key: k2, expect: {result: ok}}
+      - {at: "+0m", actor: agt_alice, op: claim_mission, input: {mission: DM-003}, key: k3, expect: {result: error, error: max_attempts_reached}}
+      - {at: "+1m", actor: agt_bob, op: claim_mission, input: {mission: DM-004}, key: k4, expect: {result: ok}}
+      - at: "+1m"
+        actor: agt_bob
+        op: claim_mission
+        input: {mission: DM-004}
+        key: k5
+        expect:
+          result: error
+          error: mission_already_claimed
+          state:
+            missions: {DM-004: {active_attempts: 1, generation: 1}}
+
+  - id: CT-083
+    title: Projet suspendu
+    covers: ["T02:heartbeat"]
+    rules: [F4]
+    given:
+      missions:
+        - {id: DM-001, state: in_progress, generation: 1}
+        - {id: DM-002, state: in_progress, generation: 1}
+        - {id: DM-003}
+      attempts:
+        - {id: att_0001, mission: DM-001, agent: agt_alice, state: claimed, generation: 1, claimed_at: "+0m", lease_expires_at: "+10m", deadline_at: "+60m"}
+        - {id: att_0002, mission: DM-002, agent: agt_bob, state: submitted, generation: 1}
+      submissions:
+        - {id: SUB-002, attempt: att_0002, state: current, commit: c0ffee2, contract_version: 1, submitted_at: "-1h"}
+    steps:
+      - at: "+1m"
+        actor: user:root
+        op: suspend_project
+        input: {project: demo, decision: DEC-2026-999}
+        key: k1
+        expect: {result: ok}
+      - {at: "+2m", actor: agt_carol, op: claim_mission, input: {mission: DM-003}, key: k2, expect: {result: error, error: project_inactive}}
+      - {at: "+2m", actor: agt_alice, op: heartbeat, input: {attempt: att_0001, generation: 1}, key: k3, expect: {result: ok, response: {attempt: {lease_expires_at: "+12m"}}}}
+      - {at: "+3m", actor: agt_dan, op: claim_review, input: {}, key: k4, expect: {result: ok, response: {assignment: null}, state: {attempts: {att_0002: {state: submitted}}}}}
+
+  - id: CT-084
+    title: Soumission sans rapport de consommation
+    covers: ["T03:submit_work"]
+    rules: [F5]
+    given:
+      missions: [{id: DM-001, state: in_progress, generation: 1}]
+      attempts:
+        - {id: att_0001, mission: DM-001, agent: agt_alice, state: claimed, generation: 1, claimed_at: "+0m", lease_expires_at: "+10m", deadline_at: "+60m"}
+    steps:
+      - at: "+5m"
+        actor: agt_alice
+        op: submit_work
+        input: {attempt: att_0001, generation: 1, contract_version: 1, deliverable: "@pr"}
+        key: k1
+        expect: {result: error, error: usage_report_required, state: {attempts: {att_0001: {state: claimed}}}}
+      - at: "+6m"
+        actor: agt_alice
+        op: submit_work
+        input: {attempt: att_0001, generation: 1, contract_version: 1, deliverable: "@pr", usage_report: "@usage"}
+        key: k2
+        expect: {result: ok}
+
+  - id: CT-085
+    title: Opérations impossibles dans l'état de la tentative
+    covers: []
+    rules: [G4]
+    given:
+      missions:
+        - {id: DM-001, state: awaiting_decision, generation: 1}
+        - {id: DM-002, state: in_progress, generation: 1}
+        - {id: DM-003, state: in_progress, generation: 1}
+        - {id: DM-004, state: in_progress, generation: 1}
+      attempts:
+        - {id: att_0001, mission: DM-001, agent: agt_alice, state: awaiting_decision, generation: 1, active_minutes: 15, request: req_0001}
+        - {id: att_0002, mission: DM-002, agent: agt_alice, state: submitted, generation: 1}
+        - {id: att_0003, mission: DM-003, agent: agt_alice, state: in_review, generation: 1}
+        - {id: att_0004, mission: DM-004, agent: agt_alice, state: claimed, generation: 1, claimed_at: "+0m", lease_expires_at: "+10m", deadline_at: "+60m"}
+      requests:
+        - {id: req_0001, fixture: request_switch, attempt: att_0001, state: open}
+      submissions:
+        - {id: SUB-002, attempt: att_0002, state: current, commit: c0ffee2, contract_version: 1}
+        - {id: SUB-003, attempt: att_0003, state: current, commit: c0ffee3, contract_version: 1}
+    steps:
+      - {at: "+1m", actor: agt_alice, op: submit_work, input: {attempt: att_0001, generation: 1, contract_version: 1, deliverable: "@pr", usage_report: "@usage"}, key: k1, expect: {result: error, error: invalid_transition}}
+      - {at: "+1m", actor: agt_alice, op: report_progress, input: {attempt: att_0001, generation: 1, checkpoint: {summary: Essai}}, key: k2, expect: {result: error, error: invalid_transition}}
+      - {at: "+1m", actor: agt_alice, op: heartbeat, input: {attempt: att_0002, generation: 1}, key: k3, expect: {result: error, error: invalid_transition}}
+      - {at: "+1m", actor: agt_alice, op: report_progress, input: {attempt: att_0002, generation: 1, checkpoint: {summary: Essai}}, key: k4, expect: {result: error, error: invalid_transition}}
+      - {at: "+1m", actor: agt_alice, op: submit_work, input: {attempt: att_0003, generation: 1, contract_version: 1, deliverable: "@pr", usage_report: "@usage"}, key: k5, expect: {result: error, error: invalid_transition}}
+      - {at: "+1m", actor: agt_alice, op: contest_review, input: {attempt: att_0003, generation: 1, submission: SUB-003, reason: Essai}, key: k6, expect: {result: error, error: invalid_transition}}
+      - at: "+1m"
+        actor: agt_alice
+        op: contest_review
+        input: {attempt: att_0004, generation: 1, submission: SUB-003, reason: Essai}
+        key: k7
+        expect:
+          result: error
+          error: invalid_transition
+          state:
+            attempts:
+              att_0001: {state: awaiting_decision}
+              att_0002: {state: submitted}
+              att_0003: {state: in_review}
+              att_0004: {state: claimed}

@@ -1,0 +1,579 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://tokenhood.kosm.io/schemas/2.1/protocol.schema.json",
+  "title": "Tokenhood · contrats des opérations du protocole de coordination",
+  "description": "Entrées et sorties des opérations d'agent (serveur MCP et API REST) et des principales opérations humaines, enveloppe d'erreur. Une définition <operation>_input ou <operation>_output par opération de schemas/protocole/machine.yaml. Référence : docs/specs/protocole.md (TH-009).",
+  "$defs": {
+    "generation": {
+      "description": "Génération de la tentative, présentée à chaque opération ; commence à 1.",
+      "type": "integer",
+      "minimum": 1
+    },
+    "contractVersion": { "type": "integer", "minimum": 1 },
+    "timestamp": {
+      "description": "Date UTC (RFC 3339) fixée par l'horloge de la plateforme.",
+      "type": "string",
+      "format": "date-time"
+    },
+    "nullableTimestamp": {
+      "oneOf": [{ "$ref": "#/$defs/timestamp" }, { "type": "null" }]
+    },
+    "idempotencyKey": {
+      "description": "Valeur de l'en-tête Idempotency-Key (REST) ou de l'argument idempotency_key (MCP). UUID recommandé.",
+      "type": "string",
+      "pattern": "^[A-Za-z0-9._:-]{1,255}$"
+    },
+    "requestId": { "type": "string", "pattern": "^req_[A-Za-z0-9]{4,}$" },
+    "assignmentId": { "type": "string", "pattern": "^rva_[A-Za-z0-9]{4,}$" },
+    "authorizationId": { "type": "string", "pattern": "^aut_[A-Za-z0-9]{3,}$" },
+    "reason": { "type": "string", "minLength": 1, "maxLength": 2000 },
+    "attemptState": {
+      "enum": ["claimed", "awaiting_decision", "submitted", "awaiting_reviewer", "in_review", "changes_requested", "accepted", "rejected", "expired", "released"]
+    },
+    "attemptRef": {
+      "description": "Toute opération sur une tentative présente son identifiant et sa génération.",
+      "type": "object",
+      "required": ["attempt", "generation"],
+      "properties": {
+        "attempt": { "$ref": "common.schema.json#/$defs/attemptId" },
+        "generation": { "$ref": "#/$defs/generation" }
+      }
+    },
+    "checkpointFields": {
+      "type": "object",
+      "properties": {
+        "summary": { "type": "string", "minLength": 1, "maxLength": 4000 },
+        "next_steps": { "type": "string", "maxLength": 4000 },
+        "ref": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "branch": { "type": "string", "minLength": 1 },
+            "commit": { "$ref": "common.schema.json#/$defs/commitSha" }
+          }
+        },
+        "artifact_sha256": { "$ref": "common.schema.json#/$defs/sha256" }
+      }
+    },
+    "checkpointInput": {
+      "description": "Point d'avancement : de quoi reprendre le travail sans la session qui l'a produit. Aucun secret ni donnée personnelle non publique.",
+      "$ref": "#/$defs/checkpointFields",
+      "required": ["summary"],
+      "unevaluatedProperties": false
+    },
+    "checkpoint": {
+      "description": "Point d'avancement enregistré, immuable ; séquence attribuée par la plateforme.",
+      "$ref": "#/$defs/checkpointFields",
+      "required": ["sequence", "recorded_at", "summary"],
+      "properties": {
+        "sequence": { "type": "integer", "minimum": 1 },
+        "recorded_at": { "$ref": "#/$defs/timestamp" }
+      },
+      "unevaluatedProperties": false
+    },
+    "resumeFrom": {
+      "description": "Dernier point d'avancement d'une tentative expirée ou libérée de la mission (règle R1).",
+      "type": "object",
+      "required": ["attempt", "generation", "contract_version", "checkpoint"],
+      "additionalProperties": false,
+      "properties": {
+        "attempt": { "$ref": "common.schema.json#/$defs/attemptId" },
+        "generation": { "$ref": "#/$defs/generation" },
+        "contract_version": { "$ref": "#/$defs/contractVersion" },
+        "checkpoint": { "$ref": "#/$defs/checkpoint" }
+      }
+    },
+    "contractStatus": {
+      "description": "Version figée de la tentative face à la dernière version indexée du contrat.",
+      "type": "object",
+      "required": ["frozen_version", "latest_version", "change", "choice_required"],
+      "additionalProperties": false,
+      "properties": {
+        "frozen_version": { "$ref": "#/$defs/contractVersion" },
+        "latest_version": { "$ref": "#/$defs/contractVersion" },
+        "change": { "enum": ["none", "compatible", "incompatible"] },
+        "choice_required": { "type": "boolean" }
+      }
+    },
+    "attemptStatus": {
+      "description": "État courant d'une tentative, renvoyé par les opérations qui la visent.",
+      "type": "object",
+      "required": ["id", "mission", "state", "generation", "contract_version", "lease_expires_at", "deadline_at"],
+      "additionalProperties": false,
+      "properties": {
+        "id": { "$ref": "common.schema.json#/$defs/attemptId" },
+        "mission": { "$ref": "common.schema.json#/$defs/missionId" },
+        "state": { "$ref": "#/$defs/attemptState" },
+        "generation": { "$ref": "#/$defs/generation" },
+        "contract_version": { "$ref": "#/$defs/contractVersion" },
+        "lease_expires_at": {
+          "description": "Null hors de l'état claimed.",
+          "$ref": "#/$defs/nullableTimestamp"
+        },
+        "deadline_at": {
+          "description": "Fin de la durée active (max_lease_minutes) ; null hors de l'état claimed.",
+          "$ref": "#/$defs/nullableTimestamp"
+        },
+        "changes_due_at": { "$ref": "#/$defs/timestamp" },
+        "reason": {
+          "description": "Motif du dernier changement d'état décidé hors de l'agent.",
+          "enum": ["verdict", "maintainer", "deliverable_changed", "stopped", "mission_cancelled", "sibling_accepted", "resume_timeout", "released_by_contributor", "released_by_admin"]
+        }
+      }
+    },
+    "deliverable": {
+      "description": "Livrable soumis, lié à un état immuable.",
+      "type": "object",
+      "required": ["kind"],
+      "anyOf": [{ "required": ["commit"] }, { "required": ["artifact_sha256"] }],
+      "additionalProperties": false,
+      "properties": {
+        "kind": { "enum": ["pull_request", "artifact"] },
+        "url": { "type": "string", "format": "uri" },
+        "commit": { "$ref": "common.schema.json#/$defs/commitSha" },
+        "artifact_sha256": { "$ref": "common.schema.json#/$defs/sha256" }
+      }
+    },
+    "submission": {
+      "type": "object",
+      "required": ["id", "attempt", "state", "contract_version", "outdated_contract"],
+      "additionalProperties": false,
+      "properties": {
+        "id": { "$ref": "common.schema.json#/$defs/submissionId" },
+        "attempt": { "$ref": "common.schema.json#/$defs/attemptId" },
+        "state": {
+          "description": "current : soumission en cours ; outdated : livrable modifié depuis ; superseded : remplacée par une nouvelle soumission ; withdrawn : tentative terminée sans verdict.",
+          "enum": ["current", "outdated", "superseded", "accepted", "rejected", "withdrawn"]
+        },
+        "contract_version": { "$ref": "#/$defs/contractVersion" },
+        "commit": { "$ref": "common.schema.json#/$defs/commitSha" },
+        "artifact_sha256": { "$ref": "common.schema.json#/$defs/sha256" },
+        "outdated_contract": {
+          "description": "Une version incompatible du contrat a été indexée après la soumission (règle V5).",
+          "type": "boolean"
+        },
+        "decided_verdict": { "enum": ["pass", "changes_requested", "reject", null] },
+        "rejection_pending_until": { "$ref": "#/$defs/nullableTimestamp" },
+        "trivial_from": {
+          "description": "État revu, quand le porteur a qualifié de triviale la modification acceptée (T20).",
+          "$ref": "common.schema.json#/$defs/commitSha"
+        },
+        "etag": { "type": "string", "minLength": 1 }
+      }
+    },
+    "assignment": {
+      "type": "object",
+      "required": ["id", "submission", "mission", "attempt", "contract_version", "state", "due_at"],
+      "additionalProperties": false,
+      "properties": {
+        "id": { "$ref": "#/$defs/assignmentId" },
+        "submission": { "$ref": "common.schema.json#/$defs/submissionId" },
+        "mission": { "$ref": "common.schema.json#/$defs/missionId" },
+        "attempt": { "$ref": "common.schema.json#/$defs/attemptId" },
+        "contract_version": { "$ref": "#/$defs/contractVersion" },
+        "state": { "enum": ["assigned", "completed", "declined", "expired", "cancelled"] },
+        "due_at": { "$ref": "#/$defs/timestamp" }
+      }
+    },
+    "arbitrationSummary": {
+      "type": "object",
+      "required": ["id", "blocking", "state", "visibility"],
+      "additionalProperties": false,
+      "properties": {
+        "id": { "$ref": "#/$defs/requestId" },
+        "blocking": { "type": "boolean" },
+        "state": { "enum": ["open", "decided"] },
+        "visibility": {
+          "description": "private pour une demande security.emergency.",
+          "enum": ["public", "private"]
+        }
+      }
+    },
+
+    "claim_mission_input": {
+      "type": "object",
+      "required": ["mission"],
+      "additionalProperties": false,
+      "properties": {
+        "mission": { "$ref": "common.schema.json#/$defs/missionId" }
+      }
+    },
+    "claim_mission_output": {
+      "description": "Réponse à claim_mission : schemas/attempt.schema.json.",
+      "$ref": "attempt.schema.json"
+    },
+    "heartbeat_input": {
+      "$ref": "#/$defs/attemptRef",
+      "unevaluatedProperties": false
+    },
+    "heartbeat_output": {
+      "type": "object",
+      "required": ["attempt", "contract"],
+      "additionalProperties": false,
+      "properties": {
+        "attempt": { "$ref": "#/$defs/attemptStatus" },
+        "contract": { "$ref": "#/$defs/contractStatus" },
+        "decision": {
+          "description": "Décision publiée pour la demande bloquante de la tentative (reprise T07).",
+          "type": "object",
+          "required": ["request", "option", "published_at"],
+          "additionalProperties": false,
+          "properties": {
+            "request": { "$ref": "#/$defs/requestId" },
+            "option": { "type": "string", "pattern": "^[A-Z]$" },
+            "published_at": { "$ref": "#/$defs/timestamp" }
+          }
+        },
+        "notifications": { "type": "array", "items": { "type": "string", "minLength": 1 } }
+      }
+    },
+    "report_progress_input": {
+      "$ref": "#/$defs/attemptRef",
+      "required": ["checkpoint"],
+      "properties": {
+        "checkpoint": { "$ref": "#/$defs/checkpointInput" }
+      },
+      "unevaluatedProperties": false
+    },
+    "report_progress_output": {
+      "type": "object",
+      "required": ["checkpoint", "attempt"],
+      "additionalProperties": false,
+      "properties": {
+        "checkpoint": { "$ref": "#/$defs/checkpoint" },
+        "attempt": { "$ref": "#/$defs/attemptStatus" }
+      }
+    },
+    "submit_work_input": {
+      "$ref": "#/$defs/attemptRef",
+      "required": ["contract_version", "deliverable"],
+      "properties": {
+        "contract_version": {
+          "description": "Version figée de la tentative ; une autre valeur est refusée (contract_version_mismatch).",
+          "$ref": "#/$defs/contractVersion"
+        },
+        "deliverable": { "$ref": "#/$defs/deliverable" },
+        "usage_report": {
+          "description": "Exigé quand le manifeste du projet porte contributions.usage_report: required, sauf report_usage préalable lié à la tentative.",
+          "$ref": "usage-report.schema.json"
+        },
+        "report": {
+          "description": "Rapport de mission : preuves, écarts, questions signalées.",
+          "type": "string",
+          "maxLength": 50000
+        }
+      },
+      "unevaluatedProperties": false
+    },
+    "submit_work_output": {
+      "type": "object",
+      "required": ["submission", "attempt"],
+      "additionalProperties": false,
+      "properties": {
+        "submission": { "$ref": "#/$defs/submission" },
+        "attempt": { "$ref": "#/$defs/attemptStatus" }
+      }
+    },
+    "release_mission_input": {
+      "$ref": "#/$defs/attemptRef",
+      "required": ["reason"],
+      "properties": {
+        "reason": { "$ref": "#/$defs/reason" },
+        "checkpoint": {
+          "description": "Point d'avancement final, enregistré avant la libération.",
+          "$ref": "#/$defs/checkpointInput"
+        }
+      },
+      "unevaluatedProperties": false
+    },
+    "release_mission_output": {
+      "type": "object",
+      "required": ["attempt"],
+      "additionalProperties": false,
+      "properties": {
+        "attempt": { "$ref": "#/$defs/attemptStatus" },
+        "checkpoint": { "$ref": "#/$defs/checkpoint" }
+      }
+    },
+    "accept_contract_version_input": {
+      "$ref": "#/$defs/attemptRef",
+      "required": ["version"],
+      "properties": {
+        "version": {
+          "description": "Dernière version indexée, supérieure à la version figée.",
+          "$ref": "#/$defs/contractVersion"
+        }
+      },
+      "unevaluatedProperties": false
+    },
+    "accept_contract_version_output": {
+      "type": "object",
+      "required": ["attempt", "contract"],
+      "additionalProperties": false,
+      "properties": {
+        "attempt": { "$ref": "#/$defs/attemptStatus" },
+        "contract": { "$ref": "#/$defs/contractStatus" }
+      }
+    },
+    "request_arbitration_input": {
+      "description": "Demande d'un agent (attempt et generation obligatoires, raised_by conforme à l'appelant) ou d'un humain.",
+      "type": "object",
+      "required": ["request"],
+      "additionalProperties": false,
+      "dependentRequired": { "attempt": ["generation"], "generation": ["attempt"] },
+      "properties": {
+        "attempt": { "$ref": "common.schema.json#/$defs/attemptId" },
+        "generation": { "$ref": "#/$defs/generation" },
+        "request": { "$ref": "arbitration-request.schema.json" }
+      }
+    },
+    "request_arbitration_output": {
+      "type": "object",
+      "required": ["request"],
+      "additionalProperties": false,
+      "properties": {
+        "request": { "$ref": "#/$defs/arbitrationSummary" },
+        "attempt": { "$ref": "#/$defs/attemptStatus" }
+      }
+    },
+    "contest_review_input": {
+      "$ref": "#/$defs/attemptRef",
+      "required": ["submission", "reason"],
+      "properties": {
+        "submission": { "$ref": "common.schema.json#/$defs/submissionId" },
+        "reason": { "$ref": "#/$defs/reason" }
+      },
+      "unevaluatedProperties": false
+    },
+    "contest_review_output": {
+      "type": "object",
+      "required": ["submission", "attempt"],
+      "additionalProperties": false,
+      "properties": {
+        "submission": { "$ref": "#/$defs/submission" },
+        "attempt": { "$ref": "#/$defs/attemptStatus" }
+      }
+    },
+    "get_status_input": { "type": "object", "additionalProperties": false },
+    "get_status_output": {
+      "type": "object",
+      "required": ["attempts", "assignments"],
+      "additionalProperties": false,
+      "properties": {
+        "attempts": { "type": "array", "items": { "$ref": "#/$defs/attemptStatus" } },
+        "assignments": { "type": "array", "items": { "$ref": "#/$defs/assignment" } },
+        "notifications": { "type": "array", "items": { "type": "string", "minLength": 1 } }
+      }
+    },
+    "claim_review_input": { "type": "object", "additionalProperties": false },
+    "claim_review_output": {
+      "description": "assignment vaut null quand aucune soumission n'est attribuable à cet agent : ce n'est pas une erreur.",
+      "type": "object",
+      "required": ["assignment"],
+      "additionalProperties": false,
+      "properties": {
+        "assignment": { "oneOf": [{ "$ref": "#/$defs/assignment" }, { "type": "null" }] }
+      }
+    },
+    "get_review_package_input": {
+      "type": "object",
+      "required": ["assignment"],
+      "additionalProperties": false,
+      "properties": { "assignment": { "$ref": "#/$defs/assignmentId" } }
+    },
+    "get_review_package_output": {
+      "type": "object",
+      "required": ["assignment", "contract", "reviewed_state", "checks"],
+      "additionalProperties": false,
+      "properties": {
+        "assignment": { "$ref": "#/$defs/assignment" },
+        "contract": {
+          "description": "Contrat de mission dans sa version figée par la tentative.",
+          "$ref": "mission.schema.json"
+        },
+        "reviewed_state": {
+          "description": "État à examiner ; le rapport doit porter exactement sur lui.",
+          "type": "object",
+          "required": ["contract_version"],
+          "anyOf": [{ "required": ["commit"] }, { "required": ["artifact_sha256"] }],
+          "additionalProperties": false,
+          "properties": {
+            "contract_version": { "$ref": "#/$defs/contractVersion" },
+            "commit": { "$ref": "common.schema.json#/$defs/commitSha" },
+            "artifact_sha256": { "$ref": "common.schema.json#/$defs/sha256" },
+            "references": { "type": "array", "items": { "type": "string", "minLength": 1 } }
+          }
+        },
+        "checks": {
+          "description": "Résultats des niveaux 0 (plateforme) et 1 (CI du projet).",
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["level", "name", "status"],
+            "additionalProperties": false,
+            "properties": {
+              "level": { "enum": [0, 1] },
+              "name": { "type": "string", "minLength": 1 },
+              "status": { "enum": ["pass", "fail", "pending", "not_run"] },
+              "url": { "type": "string", "format": "uri" }
+            }
+          }
+        }
+      }
+    },
+    "submit_review_input": {
+      "type": "object",
+      "required": ["assignment", "report"],
+      "additionalProperties": false,
+      "properties": {
+        "assignment": { "$ref": "#/$defs/assignmentId" },
+        "report": { "$ref": "review-report.schema.json" }
+      }
+    },
+    "submit_review_output": {
+      "type": "object",
+      "required": ["assignment", "submission"],
+      "additionalProperties": false,
+      "properties": {
+        "assignment": { "$ref": "#/$defs/assignment" },
+        "submission": { "$ref": "#/$defs/submission" }
+      }
+    },
+    "decline_review_input": {
+      "type": "object",
+      "required": ["assignment", "reason"],
+      "additionalProperties": false,
+      "properties": {
+        "assignment": { "$ref": "#/$defs/assignmentId" },
+        "reason": { "$ref": "#/$defs/reason" }
+      }
+    },
+    "decline_review_output": {
+      "type": "object",
+      "required": ["assignment"],
+      "additionalProperties": false,
+      "properties": { "assignment": { "$ref": "#/$defs/assignment" } }
+    },
+
+    "release_attempt_input": {
+      "type": "object",
+      "required": ["attempt", "reason"],
+      "additionalProperties": false,
+      "properties": {
+        "attempt": { "$ref": "common.schema.json#/$defs/attemptId" },
+        "reason": { "$ref": "#/$defs/reason" }
+      }
+    },
+    "revoke_authorization_input": {
+      "type": "object",
+      "required": ["authorization"],
+      "additionalProperties": false,
+      "properties": { "authorization": { "$ref": "#/$defs/authorizationId" } }
+    },
+    "approve_submission_input": {
+      "description": "Avec l'en-tête If-Match (ETag de la soumission). trivial_change qualifie une modification observée après le verdict (T20).",
+      "type": "object",
+      "required": ["submission"],
+      "additionalProperties": false,
+      "dependentRequired": { "trivial_change": ["reason"] },
+      "properties": {
+        "submission": { "$ref": "common.schema.json#/$defs/submissionId" },
+        "trivial_change": { "type": "boolean" },
+        "reason": { "$ref": "#/$defs/reason" }
+      }
+    },
+    "request_changes_input": {
+      "type": "object",
+      "required": ["submission", "reason"],
+      "additionalProperties": false,
+      "properties": {
+        "submission": { "$ref": "common.schema.json#/$defs/submissionId" },
+        "reason": { "$ref": "#/$defs/reason" }
+      }
+    },
+    "reject_submission_input": { "$ref": "#/$defs/request_changes_input" },
+    "cancel_mission_input": {
+      "type": "object",
+      "required": ["mission", "reason"],
+      "additionalProperties": false,
+      "properties": {
+        "mission": { "$ref": "common.schema.json#/$defs/missionId" },
+        "reason": { "$ref": "#/$defs/reason" }
+      }
+    },
+    "declare_contract_compatibility_input": {
+      "type": "object",
+      "required": ["mission", "version", "classification", "reason"],
+      "additionalProperties": false,
+      "properties": {
+        "mission": { "$ref": "common.schema.json#/$defs/missionId" },
+        "version": { "$ref": "#/$defs/contractVersion" },
+        "classification": { "enum": ["compatible", "incompatible"] },
+        "reason": { "$ref": "#/$defs/reason" }
+      }
+    },
+    "publish_decision_input": {
+      "type": "object",
+      "required": ["request", "option"],
+      "additionalProperties": false,
+      "properties": {
+        "request": { "$ref": "#/$defs/requestId" },
+        "option": { "type": "string", "pattern": "^[A-Z]$" }
+      }
+    },
+    "record_feedback_input": {
+      "description": "Retour à 30 jours (docs/specs/valeur-nette.md).",
+      "type": "object",
+      "required": ["mission", "answers"],
+      "additionalProperties": false,
+      "properties": {
+        "mission": { "$ref": "common.schema.json#/$defs/missionId" },
+        "answers": {
+          "type": "object",
+          "required": ["service", "worth", "corrections"],
+          "additionalProperties": false,
+          "properties": {
+            "service": { "enum": ["oui", "en_partie", "non"] },
+            "worth": { "enum": ["oui", "a_peu_pres", "non"] },
+            "corrections": { "enum": ["aucune", "mineures", "importantes"] }
+          }
+        }
+      }
+    },
+    "suspend_project_input": {
+      "type": "object",
+      "required": ["project", "decision"],
+      "additionalProperties": false,
+      "properties": {
+        "project": { "type": "string", "minLength": 1 },
+        "decision": { "$ref": "common.schema.json#/$defs/decisionId" }
+      }
+    },
+
+    "errorCode": {
+      "enum": ["unauthenticated", "authorization_inactive", "forbidden_role", "invalid_request", "idempotency_key_required", "idempotency_conflict", "idempotency_in_progress", "mission_not_found", "attempt_not_found", "assignment_not_found", "submission_not_found", "request_not_found", "stale_generation", "lease_expired", "attempt_closed", "assignment_closed", "invalid_transition", "decision_pending", "contract_version_mismatch", "contract_choice_required", "project_inactive", "mission_unavailable", "mission_already_claimed", "not_eligible", "flow_limit_reached", "max_attempts_reached", "budget_exhausted", "usage_report_required", "review_state_mismatch", "reviews_incomplete", "precondition_failed", "rate_limited", "contract_invalid", "version_regression", "version_not_incremented"]
+    },
+    "error": {
+      "description": "Enveloppe d'erreur, identique en REST (corps de la réponse) et en MCP (structuredContent d'un résultat isError). message suit Accept-Language.",
+      "type": "object",
+      "required": ["error"],
+      "additionalProperties": false,
+      "properties": {
+        "error": {
+          "type": "object",
+          "required": ["code", "message", "retryable"],
+          "additionalProperties": false,
+          "properties": {
+            "code": { "$ref": "#/$defs/errorCode" },
+            "message": { "type": "string", "minLength": 1 },
+            "retryable": { "type": "boolean" },
+            "details": {
+              "description": "Faits utiles à la conduite de l'agent (state, reasons, limit, frozen_version, latest_version…), jamais l'identifiant ni l'agent d'une autre tentative.",
+              "type": "object"
+            }
+          }
+        }
+      }
+    }
+  }
+}

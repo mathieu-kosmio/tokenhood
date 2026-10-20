@@ -1,0 +1,254 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://tokenhood.kosm.io/schemas/2.1/protocol-machine.schema.json",
+  "title": "Tokenhood · forme exécutable du protocole de coordination",
+  "description": "Fichier schemas/protocole/machine.yaml : paramètres, états, dérivation de l'état de mission, ordre des contrôles, opérations, erreurs, autorisations, transitions et règles. Référence : docs/specs/protocole.md (TH-009).",
+  "type": "object",
+  "required": ["schema_version", "protocol", "version", "document", "parameters", "states", "mission_state_derivation", "check_order", "operations", "errors", "authorizations", "transitions", "rules"],
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": { "$ref": "common.schema.json#/$defs/schemaVersion" },
+    "protocol": { "const": "coordination" },
+    "version": { "type": "integer", "minimum": 1 },
+    "document": { "$ref": "common.schema.json#/$defs/relativePath" },
+    "parameters": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["id", "value", "unit", "source", "text"],
+        "additionalProperties": false,
+        "properties": {
+          "id": { "$ref": "#/$defs/identifier" },
+          "value": { "type": "number", "exclusiveMinimum": 0 },
+          "unit": { "enum": ["minutes", "hours", "days", "reviews"] },
+          "source": { "$ref": "#/$defs/source" },
+          "text": { "$ref": "#/$defs/text" }
+        }
+      }
+    },
+    "states": {
+      "type": "object",
+      "required": ["attempt", "mission", "assignment"],
+      "additionalProperties": false,
+      "properties": {
+        "attempt": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "required": ["id", "final", "text"],
+            "additionalProperties": false,
+            "properties": {
+              "id": { "$ref": "#/$defs/identifier" },
+              "final": { "type": "boolean" },
+              "flow": { "enum": ["production", "review"] },
+              "lease": { "enum": ["running", "suspended", "none"] },
+              "text": { "$ref": "#/$defs/text" }
+            },
+            "if": { "properties": { "final": { "const": false } } },
+            "then": { "required": ["flow", "lease"] }
+          }
+        },
+        "mission": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "required": ["id", "claimable", "text"],
+            "additionalProperties": false,
+            "properties": {
+              "id": { "$ref": "#/$defs/identifier" },
+              "claimable": { "enum": ["all", "parallel_slot", "none"] },
+              "text": { "$ref": "#/$defs/text" }
+            }
+          }
+        },
+        "assignment": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "required": ["id", "final", "text"],
+            "additionalProperties": false,
+            "properties": {
+              "id": { "$ref": "#/$defs/identifier" },
+              "final": { "type": "boolean" },
+              "text": { "$ref": "#/$defs/text" }
+            }
+          }
+        }
+      }
+    },
+    "mission_state_derivation": {
+      "description": "Première ligne vraie, dans l'ordre.",
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["state", "when"],
+        "additionalProperties": false,
+        "properties": {
+          "state": { "$ref": "#/$defs/identifier" },
+          "when": { "$ref": "#/$defs/text" }
+        }
+      }
+    },
+    "check_order": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["id", "errors"],
+        "additionalProperties": false,
+        "properties": {
+          "id": { "$ref": "#/$defs/identifier" },
+          "errors": { "type": "array", "items": { "$ref": "#/$defs/identifier" } },
+          "text": { "$ref": "#/$defs/text" }
+        }
+      }
+    },
+    "operations": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["id", "kind", "actors", "write", "bound", "source"],
+        "additionalProperties": false,
+        "properties": {
+          "id": { "$ref": "#/$defs/identifier" },
+          "kind": {
+            "description": "agent : outil MCP et route REST ; human : API REST et interface web ; forge : webhook signé.",
+            "enum": ["agent", "human", "forge"]
+          },
+          "actors": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/identifier" } },
+          "write": { "type": "boolean" },
+          "bound": {
+            "description": "Ressource que l'opération vise ; attempt : identifiant et génération présentés.",
+            "enum": ["none", "attempt", "attempt_optional", "attempt_id", "assignment", "submission", "mission", "request"]
+          },
+          "renews_lease": { "type": "boolean" },
+          "attempt_states": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/identifier" } },
+          "preconditions": { "type": "array", "items": { "$ref": "#/$defs/identifier" } },
+          "mcp": { "$ref": "#/$defs/identifier" },
+          "rest": { "type": "string", "pattern": "^(GET|POST|PUT|PATCH|DELETE) /v1/" },
+          "text": { "$ref": "#/$defs/text" },
+          "source": { "$ref": "#/$defs/source" }
+        },
+        "allOf": [
+          {
+            "if": { "properties": { "kind": { "const": "agent" } } },
+            "then": { "required": ["mcp", "rest"] }
+          },
+          {
+            "if": { "properties": { "kind": { "const": "human" } } },
+            "then": { "required": ["rest"], "not": { "required": ["mcp"] } }
+          }
+        ]
+      }
+    },
+    "errors": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["code", "http", "retryable", "conduct"],
+        "additionalProperties": false,
+        "properties": {
+          "code": { "$ref": "#/$defs/identifier" },
+          "http": { "type": "integer", "minimum": 400, "maximum": 599 },
+          "retryable": { "type": "boolean" },
+          "conduct": { "$ref": "#/$defs/text" }
+        }
+      }
+    },
+    "authorizations": {
+      "type": "object",
+      "required": ["actors", "invariants"],
+      "additionalProperties": false,
+      "properties": {
+        "actors": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "required": ["id", "text"],
+            "additionalProperties": false,
+            "properties": {
+              "id": { "$ref": "#/$defs/identifier" },
+              "text": { "$ref": "#/$defs/text" }
+            }
+          }
+        },
+        "invariants": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/rule" } }
+      }
+    },
+    "transitions": {
+      "type": "object",
+      "required": ["attempt", "mission", "assignment"],
+      "additionalProperties": false,
+      "properties": {
+        "attempt": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/transition" } },
+        "mission": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/transition" } },
+        "assignment": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/transition" } }
+      }
+    },
+    "rules": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "allOf": [{ "$ref": "#/$defs/rule" }],
+        "required": ["topic"],
+        "properties": {
+          "topic": { "enum": ["generation", "lease", "versions", "resumption", "idempotency", "concurrency", "eligibility", "review"] }
+        },
+        "unevaluatedProperties": false
+      }
+    }
+  },
+  "$defs": {
+    "identifier": { "type": "string", "pattern": "^[a-z][a-z0-9_]*$" },
+    "text": { "type": "string", "minLength": 1 },
+    "source": {
+      "description": "spec : fixé par les spécifications V2.1 ; th-009 : ajouté ou précisé par TH-009, à confirmer.",
+      "enum": ["spec", "th-009"]
+    },
+    "rule": {
+      "type": "object",
+      "required": ["id", "text"],
+      "properties": {
+        "id": { "type": "string", "pattern": "^[A-Z][0-9]{1,2}$" },
+        "text": { "$ref": "#/$defs/text" }
+      }
+    },
+    "transition": {
+      "type": "object",
+      "required": ["id", "from", "to", "source", "triggers"],
+      "additionalProperties": false,
+      "properties": {
+        "id": { "type": "string", "pattern": "^(T|M|RV)[0-9]{2}$" },
+        "from": {
+          "description": "null : création (réservation, assignation).",
+          "oneOf": [{ "$ref": "#/$defs/identifier" }, { "type": "null" }]
+        },
+        "to": { "$ref": "#/$defs/identifier" },
+        "source": { "$ref": "#/$defs/source" },
+        "triggers": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "required": ["id", "actors", "guard", "effects"],
+            "additionalProperties": false,
+            "properties": {
+              "id": { "$ref": "#/$defs/identifier" },
+              "actors": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/identifier" } },
+              "guard": { "$ref": "#/$defs/text" },
+              "effects": { "$ref": "#/$defs/text" }
+            }
+          }
+        }
+      }
+    }
+  }
+}
