@@ -1,0 +1,42 @@
+schema_version: "2.1"
+id: TH-029
+version: 1
+lot: 0
+title:
+  fr: "Qualificatif « éprouvé » du protocole de tokenpool dans la spécification"
+  en: "Proven qualifier of the tokenpool protocol in the specification"
+type: docs
+objective: "Retirer de docs/specs/coordination.md et de sa version anglaise le qualificatif « éprouvé » (« proven ») donné au protocole de tokenpool, que l'audit de TH-006 n'établit pas, sans préjuger de la décision ADR-001."
+scope:
+  paths: [docs/specs/coordination.md, docs/specs/en/coordination.md]
+inputs:
+  paths: [decisions/ADR-001-dossier-options.md, decisions/ADR-001-coordination.md, docs/specs/coordination.md, docs/specs/en/coordination.md]
+outputs:
+  kind: pull_request
+acceptance:
+  requirements:
+    - "La phrase d'ouverture de coordination.md et de en/coordination.md ne qualifie plus le protocole de tokenpool d'éprouvé (proven) : elle dit ce qui en est repris, sans jugement de maturité que l'audit n'établit pas, et renvoie au dossier d'options d'ADR-001"
+    - "Aucune autre modification du module : les mécanismes cités (réservations atomiques, preuves, bail, idempotence, préparation en lecture seule) restent ; ce que la coordination reprend ou non de tokenpool relève d'ADR-001, pas de cette mission"
+    - "Les deux langues disent la même chose ; le statut de traduction de la version anglaise est conservé"
+    - "Les autres emplois d'« éprouvé » dans docs/specs/ (processus d'admission, roadmap) ne visent pas tokenpool et restent inchangés"
+dependencies:
+  - mission: TH-006
+    type: integrated
+skills: [tokenhood-contribute@0.1]
+languages:
+  source: fr
+  targets: [en]
+estimate:
+  size: S
+  tokens_eq: null          # à produire par l'agent au cadrage
+  source: agent
+risk: low
+attempts: {mode: exclusive}
+execution:
+  max_lease_minutes: 240
+  environment: any
+verification:
+  reviewers: 1
+  prefer_different_model_family: false
+  maintainer_approval: true
+status: open

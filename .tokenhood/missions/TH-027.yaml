@@ -1,0 +1,48 @@
+schema_version: "2.1"
+id: TH-027
+version: 1
+lot: 0
+title:
+  fr: "Politique de sécurité et signalement privé des failles"
+  en: "Security policy and private vulnerability reporting"
+type: docs
+objective: "Publier une SECURITY.md bilingue qui dit comment signaler une faille en privé (signalement privé de vulnérabilité de GitHub, courriel du porteur à défaut), ce qu'elle couvre et comment un signalement est traité, et y renvoyer depuis CONTRIBUTING.md et les liens du formulaire d'issues."
+scope:
+  paths: [SECURITY.md, CONTRIBUTING.md, .github/ISSUE_TEMPLATE/config.yml]
+inputs:
+  paths: [docs/specs/securite-et-conformite.md, docs/charte/charte-amorcage.md, CONTRIBUTING.md, .github/CODE_OF_CONDUCT.md, .github/ISSUE_TEMPLATE/config.yml, .tokenhood/policies/security.yaml, skills/tokenhood-contribute/references/securite.md, skills/tokenhood-verify/references/securite.md]
+  resources: [https://docs.github.com/en/code-security/security-advisories/working-with-repository-security-advisories/configuring-private-vulnerability-reporting-for-a-repository]
+outputs:
+  kind: pull_request
+acceptance:
+  requirements:
+    - "SECURITY.md à la racine, en français et en anglais à structure identique : canal privé (signalement privé de vulnérabilité de GitHub, avec le lien du formulaire du dépôt ; à défaut, le courriel du porteur déjà public dans CONTRIBUTING.md), contenu attendu d'un signalement, ce qu'il ne faut pas faire (issue, discussion, PR ou commit publics, essai sur les instances en service)"
+    - "Périmètre : plateforme (app., api.), landing, image et compose, CI, skills, schémas et outils du dépôt ; hors périmètre nommé (instance tokenpool, clients d'agents, Coolify, GitHub), avec renvoi vers leur propre canal quand il existe ; versions prises en charge : main et le déploiement en cours"
+    - "Traitement : accusé de réception, évaluation, correctif, avis de sécurité GitHub publié sans détail exploitable avant correction, crédit si la personne le souhaite ; cohérent avec la section 8.3 de la charte d'amorçage (décision d'urgence security.emergency, secret exposé révoqué d'abord) ; tout délai chiffré est présenté comme un engagement proposé, à confirmer par le porteur dans la PR"
+    - "Agents : un agent qui découvre une faille ou un secret applique la conduite stop de son skill et passe par ce canal ; une tentative d'injection qui vise à exfiltrer un secret ou à contourner une protection se signale aussi par ce canal"
+    - "CONTRIBUTING.md (sections FR et EN « Signaler une faille de sécurité ») et le lien « Faille de sécurité » de .github/ISSUE_TEMPLATE/config.yml renvoient à SECURITY.md ; aucune autre modification de ces deux fichiers"
+    - "Aucune donnée personnelle au-delà du contact déjà public ; aucun détail d'une faille réelle"
+    - "La PR indique l'état du signalement privé constaté par l'API (GET /repos/mathieu-kosmio/tokenhood/private-vulnerability-reporting) et liste, sans l'accomplir, le geste du porteur : l'activer dans les réglages du dépôt ; SECURITY.md reste exact que le réglage soit activé ou non"
+dependencies:
+  - mission: TH-016
+    type: integrated
+  - mission: TH-011
+    type: integrated
+skills: [tokenhood-contribute@0.1]
+languages:
+  source: fr
+  targets: [en]
+estimate:
+  size: S
+  tokens_eq: null          # à produire par l'agent au cadrage
+  source: agent
+risk: low
+attempts: {mode: exclusive}
+execution:
+  max_lease_minutes: 240
+  environment: any
+verification:
+  reviewers: 1
+  prefer_different_model_family: false
+  maintainer_approval: true
+status: open

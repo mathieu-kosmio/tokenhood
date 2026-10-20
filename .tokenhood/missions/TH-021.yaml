@@ -1,0 +1,47 @@
+schema_version: "2.1"
+id: TH-021
+version: 1
+lot: 0
+title:
+  fr: "Forme exécutable du protocole contrôlée par la CI"
+  en: "Executable protocol form checked by CI"
+type: code
+objective: "Faire contrôler par tools/validate, dans le job validation .tokenhood, la forme exécutable du protocole versée par TH-009 (schemas/protocole/machine.yaml et conformite.yaml) : conformité aux schémas, couverture de chaque couple transition:déclencheur, cohérence des références ; et compléter les exemples de tentative avec deadline_at et resume_from."
+scope:
+  paths: [tools/validate/validate.mjs, tools/validate/test/, examples/attempt/valid/, examples/attempt/invalid/, examples/protocol-machine/, examples/protocol-conformance/, schemas/README.md, .github/workflows/tokenhood.yml]
+inputs:
+  paths: [docs/specs/protocole.md, schemas/protocole/machine.yaml, schemas/protocole/conformite.yaml, schemas/protocol.schema.json, schemas/protocol-machine.schema.json, schemas/protocol-conformance.schema.json, schemas/attempt.schema.json, tools/validate/, examples/attempt/]
+outputs:
+  kind: pull_request
+acceptance:
+  commands:
+    - "cd tools/validate && npm ci --ignore-scripts && npm test"
+    - "node tools/validate/validate.mjs ."
+  requirements:
+    - "validate.mjs contrôle schemas/protocole/machine.yaml et schemas/protocole/conformite.yaml en YAML strict et contre protocol-machine.schema.json et protocol-conformance.schema.json ; les deux fichiers figurent dans son rapport"
+    - "Couverture : chaque couple transition:déclencheur de la machine est cité par le champ covers d'au moins un cas, chaque règle et chaque invariant d'autorisation par au moins un cas ; un covers qui désigne un couple inexistant est refusé ; le message d'erreur nomme le couple ou la règle en cause"
+    - "Références : chaque opération, erreur, état, gabarit (defaults.fixtures) et variable ($nom) employés par la suite existe ; chaque changement d'état attendu suit une transition de la machine (état de départ, état d'arrivée, déclencheur)"
+    - "Entrées : l'entrée de chaque étape, gabarits et variables résolus selon les conventions écrites en tête de conformite.yaml, est conforme à <opération>_input de protocol.schema.json ; toute exception est listée dans le code avec son motif"
+    - "Tests par mutation (node --test, lancés par npm test) : pour chaque contrôle, une copie altérée de la machine ou de la suite est refusée avec le message attendu (couple non couvert, règle jamais citée, opération, erreur ou état inconnus, transition inexistante, entrée non conforme) ; les fichiers actuels passent"
+    - "Exemples de tentative : examples/attempt/valid/ gagne au moins un exemple avec deadline_at et resume_from renseignés et un avec resume_from: null ; examples/attempt/invalid/ au moins un exemple refusé pour l'un de ces deux champs ; chaque exemple invalide donne en tête la raison du refus"
+    - "Le job validation .tokenhood garde son nom (statut requis sur main) et aucun job n'est ajouté ; aucune dépendance nouvelle hors de ajv, ajv-formats et yaml, déjà utilisées par tools/validate"
+    - "schemas/README.md (FR et EN) dit que le validateur contrôle la forme exécutable et liste ses contrôles"
+    - "machine.yaml, conformite.yaml, les schémas JSON et docs/specs/protocole.md restent hors périmètre : un défaut que les nouveaux contrôles y révèlent se signale par une demande d'arbitrage spec.clarification (conduite switch_mission s'il empêche la CI de passer), sans correction dans cette PR"
+dependencies:
+  - mission: TH-009
+    type: integrated
+skills: [tokenhood-contribute@0.1]
+estimate:
+  size: M
+  tokens_eq: null          # à produire par l'agent au cadrage
+  source: agent
+risk: medium
+attempts: {mode: exclusive}
+execution:
+  max_lease_minutes: 240
+  environment: container
+verification:
+  reviewers: 1
+  prefer_different_model_family: false
+  maintainer_approval: true
+status: open

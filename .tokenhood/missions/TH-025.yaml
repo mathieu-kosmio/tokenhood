@@ -1,0 +1,44 @@
+schema_version: "2.1"
+id: TH-025
+version: 1
+lot: 0
+title:
+  fr: "Protocole de la campagne pilote en anglais"
+  en: "Pilot campaign protocol in English"
+type: i18n
+objective: "Traduire en anglais ce qui reste en français seul dans docs/pilote/ (TH-010) : protocole, gabarit du rapport de campagne, parties du retour à 30 jours et règles du journal, pour qu'un mainteneur ou un contributeur anglophone puisse suivre la campagne."
+scope:
+  paths: [docs/pilote/en/, docs/pilote/README.md, docs/pilote/protocole.md, docs/pilote/gabarit-rapport-de-campagne.md, docs/pilote/retour-a-30-jours.md]
+inputs:
+  paths: [docs/pilote/, docs/specs/en/campagne-pilote.md, docs/specs/en/valeur-nette.md, docs/specs/non-code-et-i18n.md]
+outputs:
+  kind: pull_request
+acceptance:
+  requirements:
+    - "docs/pilote/en/protocole.md et docs/pilote/en/gabarit-rapport-de-campagne.md traduisent toute la source : mêmes sections, tableaux et indicateurs, dans le même ordre ; identifiants, codes de réponse (yes, partial, no…), noms de champs et formules inchangés"
+    - "retour-a-30-jours.md : les sections encore en français seul deviennent bilingues dans le fichier, sur le modèle de ses sections déjà bilingues ; les trois questions gardent leur formulation de la spécification, sans changement"
+    - "Journal de campagne : docs/pilote/journal-de-campagne.md reste un registre en français, tenu par les PR d'intégration du porteur, et n'est pas modifié ; docs/pilote/en/journal-de-campagne.md traduit ses règles d'écriture et renvoie au registre français pour les entrées"
+    - "Terminologie alignée sur docs/specs/en/campagne-pilote.md et docs/specs/en/valeur-nette.md ; statut de traduction machine indiqué en tête de chaque fichier anglais"
+    - "Navigation : README.md mène aux versions anglaises ; une ligne en tête de protocole.md et de gabarit-rapport-de-campagne.md mène à leur traduction, sans autre modification de ces deux fichiers"
+    - "Liens relatifs et ancres résolus dans les deux langues (contrôle et résultat décrits dans la PR) ; aucun changement de sens, un passage ambigu se signale par une demande spec.clarification"
+dependencies:
+  - mission: TH-010
+    type: integrated
+skills: [tokenhood-contribute@0.1]
+languages:
+  source: fr
+  targets: [en]
+estimate:
+  size: M
+  tokens_eq: null          # à produire par l'agent au cadrage
+  source: agent
+risk: low
+attempts: {mode: exclusive}
+execution:
+  max_lease_minutes: 240
+  environment: any
+verification:
+  reviewers: 1
+  prefer_different_model_family: false
+  maintainer_approval: true
+status: open

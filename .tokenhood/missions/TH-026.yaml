@@ -1,0 +1,49 @@
+schema_version: "2.1"
+id: TH-026
+version: 1
+lot: 0
+title:
+  fr: "Skills tokenhood-contribute et tokenhood-verify en anglais"
+  en: "tokenhood-contribute and tokenhood-verify skills in English"
+type: i18n
+objective: "Produire la version anglaise des deux skills de plateforme, annoncée par DEC-2026-004, pour qu'un contributeur anglophone charge Tokenhood dans sa langue : un skill complet dans skills/<nom>/en/, traduction de la version française en vigueur, avec un test de parité."
+scope:
+  paths: [skills/tokenhood-contribute/en/, skills/tokenhood-verify/en/, skills/tokenhood-contribute/tests/en.test.mjs, skills/tokenhood-verify/tests/en.test.mjs]
+inputs:
+  paths: [skills/tokenhood-contribute/, skills/tokenhood-verify/, CONTRIBUTING.md, docs/specs/en/skills.md, docs/specs/en/, docs/specs/non-code-et-i18n.md]
+  decisions: [DEC-2026-004]
+outputs:
+  kind: pull_request
+acceptance:
+  commands:
+    - "cd tools/validate && npm ci --ignore-scripts"
+    - "node --test 'skills/*/tests/*.test.mjs'"
+  requirements:
+    - "skills/<nom>/en/ est un skill complet en anglais : SKILL.md (même name, même metadata.version que la version française, metadata.languages: en), references/, assets/, examples/ et README.md, mêmes fichiers et mêmes sections que la version française en vigueur sur main"
+    - "Identifiants, noms de champs, valeurs de code, conduites (continue, switch_mission, stop), noms d'outils et balise des contenus non fiables inchangés ; en mode amorçage, l'intitulé « Réservation TH-xxx » et le commentaire de réservation restent en français, comme le fixe DEC-2026-004 et comme le dit la section anglaise de CONTRIBUTING.md"
+    - "Exemples YAML traduits dans leurs champs de texte seulement, toujours conformes à leur schéma ; description du frontmatter en anglais, dans les limites que vérifient les tests de la version française"
+    - "tests/en.test.mjs de chaque skill : parité de structure avec la version française (fichiers, titres de sections, version, nom), chemins cités existants, exemples conformes aux schémas ; lancés par le job validation .tokenhood (motif skills/*/tests/*.test.mjs) sans modifier le workflow"
+    - "en/README.md : installation de la version anglaise (lien .claude/skills/<nom> ou ~/.claude/skills/<nom> vers skills/<nom>/en) et statut de traduction machine ; aucun fichier de la version française modifié"
+    - "Aucun changement de sens : une règle ambiguë de la version française se signale par une demande d'arbitrage, sans corriger la source"
+dependencies:
+  - mission: TH-022
+    type: integrated
+  - decision: DEC-2026-004
+skills: [tokenhood-contribute@0.1]
+languages:
+  source: fr
+  targets: [en]
+estimate:
+  size: M
+  tokens_eq: null          # à produire par l'agent au cadrage
+  source: agent
+risk: low
+attempts: {mode: exclusive}
+execution:
+  max_lease_minutes: 240
+  environment: any
+verification:
+  reviewers: 1
+  prefer_different_model_family: false
+  maintainer_approval: true
+status: open
