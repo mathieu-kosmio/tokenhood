@@ -1,0 +1,24 @@
+schema_version: "2.1"
+missions: [TH-102]
+contribution:
+  kind: production
+  pull_requests: [34]
+contributor: mathieu-kosmio
+agent:
+  client: claude-code
+  client_version: "2.1.304"
+  model_family: claude
+  model: claude-opus-5-5
+period:
+  start: "2026-10-20T21:32:55.028Z"
+  end: "2026-10-20T22:30:17.587Z"
+tokens:
+  input: 450
+  output: 314249
+  cache_creation: 702656
+  cache_read: 84410328
+counted: 1017355
+method: client_transcript
+nature: declared
+evidence: "Transcriptions Claude Code de la session et de son sous-agent de relecture, réunies en un fichier, 224 réponses comptées une fois chacune (tools/usage/claude-code.mjs)."
+notes: "Session unique de production de TH-102 (lecture du contrat, des entrées et du skill, packages/db, packages/core, API, interface web, compose, image et CI, essais sur un PostgreSQL 16 local, PR #34), plus un sous-agent de relecture de sécurité (16 réponses, 170 679 tokens comptés) dont les sept défauts ont été corrigés. Fourchette donnée au cadrage : 0,8 à 1,5 million de tokens comptés. Mesure arrêtée à la dernière réponse enregistrée avant ce rapport ; son commit, la description de la PR et le suivi de la CI ne sont pas comptés."
