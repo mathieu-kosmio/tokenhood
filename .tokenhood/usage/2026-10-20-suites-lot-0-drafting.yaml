@@ -1,0 +1,24 @@
+schema_version: "2.1"
+missions: [TH-021, TH-022, TH-023, TH-024, TH-025, TH-026, TH-027, TH-028, TH-029, TH-116]
+contribution:
+  kind: drafting
+  pull_requests: [31]
+contributor: mathieu-kosmio
+agent:
+  client: claude-code
+  client_version: "2.1.299"
+  model_family: claude
+  model: claude-opus-5-5
+period:
+  start: "2026-10-20T18:24:13.482Z"
+  end: "2026-10-20T18:39:05.582Z"
+tokens:
+  input: 152
+  output: 89842
+  cache_creation: 294322
+  cache_read: 17449257
+counted: 384316
+method: client_transcript
+nature: declared
+evidence: "Transcription Claude Code de la session, 76 réponses comptées une fois chacune (tools/usage/claude-code.mjs)."
+notes: "Rédaction des contrats de suite du lot 0 (TH-021 à TH-029) et de TH-116 publiés par la PR #31 (travail de cadrage hors mission, soumis à la décision du porteur) ; tokens de la session de l'agent du porteur. La mise à jour de la description de la PR et le suivi de la CI ne sont pas comptés."
