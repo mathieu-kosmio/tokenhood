@@ -1,0 +1,50 @@
+schema_version: "2.1"
+id: TH-114
+version: 1
+lot: 1
+title:
+  fr: "Observabilité : journaux structurés, OpenTelemetry, sonde de disponibilité, alertes"
+  en: "Observability: structured logs, OpenTelemetry, uptime probe, alerts"
+type: code
+objective: "Rendre la plateforme observable sans service tiers imposé : journaux JSON corrélés et expurgés, traces OpenTelemetry exportables à la demande, sonde de disponibilité externe et alerte publique en cas de panne."
+scope:
+  paths: [apps/api/src/server.ts, apps/api/src/app.ts, apps/api/src/telemetry/, apps/api/test/, apps/api/package.json, apps/web/src/hooks.server.ts, apps/web/src/instrumentation.server.ts, apps/web/src/lib/server/telemetry/, apps/web/vite.config.ts, apps/web/package.json, pnpm-lock.yaml, locales/fr.json, locales/en.json, compose.yaml, .github/workflows/uptime.yml, tools/uptime/, docs/observabilite/]
+inputs:
+  paths: [docs/specs/architecture-technique.md, docs/specs/securite-et-conformite.md, docs/specs/exploitation.md, docs/specs/plan-de-developpement.md, compose.yaml, packages/core/README.md]
+outputs:
+  kind: pull_request
+acceptance:
+  commands:
+    - "pnpm install --frozen-lockfile"
+    - "pnpm check"
+    - "TEST_DATABASE_URL=postgres://tokenhood:tokenhood@localhost:5432/tokenhood_test pnpm test:integration"
+    - "node --test 'tools/uptime/test/*.test.mjs'"
+  requirements:
+    - "Journaux de l'API et du web : un objet JSON par ligne avec date UTC, niveau, service, identifiant de requête, identifiants de trace et de span quand une trace est active, méthode, route sous forme de gabarit, statut et durée (tests sur journaux capturés)"
+    - "Aucun secret ni donnée personnelle dans les journaux : en-têtes Authorization, Cookie et Set-Cookie, jetons de session et d'agent, adresses email expurgés (tests)"
+    - "Identifiant de requête : x-request-id entrant repris s'il est bien formé, généré sinon, renvoyé dans la réponse (test)"
+    - "OpenTelemetry : traces des requêtes HTTP de l'API et du web et des requêtes PostgreSQL, exportées en OTLP/HTTP seulement si OTEL_EXPORTER_OTLP_ENDPOINT est défini ; sans cette variable, aucune connexion sortante (test) ; aucun point de collecte tiers écrit en dur ; services tokenhood-api et tokenhood-web, attributs de version et d'environnement"
+    - "GET /readyz de l'API : 200 si PostgreSQL répond en moins d'une seconde, 503 avec message localisé sinon (test d'intégration) ; /healthz et le HEALTHCHECK de l'image inchangés"
+    - "Sonde externe : workflow uptime.yml planifié (toutes les 10 minutes et à la demande), jamais déclenché par une PR ni requis sur main ; il interroge https://tokenhood.kosm.io/healthz, https://app.tokenhood.kosm.io/healthz et https://api.tokenhood.kosm.io/readyz"
+    - "Alerte : une panne n'est signalée qu'après trois échecs successifs espacés d'au moins 30 secondes ; elle ouvre une issue étiquetée incident, ou commente celle déjà ouverte ; le retour à la normale la commente et la ferme ; seul GITHUB_TOKEN avec la permission issues: write est utilisé. Logique dans tools/uptime/, testée avec des réponses simulées"
+    - "compose.yaml : variables OpenTelemetry déclarées sans valeur, LOG_LEVEL conservé ; aucun secret dans le dépôt"
+    - "docs/observabilite/README.md : champs journalisés, liste d'expurgation, branchement d'un collecteur OTLP auto-hébergé, traitement d'une alerte et destinataires"
+    - "Aucun fichier hors du périmètre ; packages/db n'est qu'importé"
+dependencies:
+  - mission: TH-102
+    type: integrated
+skills: [tokenhood-contribute@0.1]
+estimate:
+  size: M
+  tokens_eq: null          # à produire par l'agent au cadrage
+  source: plan
+risk: medium
+attempts: {mode: exclusive}
+execution:
+  max_lease_minutes: 240
+  environment: container
+verification:
+  reviewers: 1
+  prefer_different_model_family: false
+  maintainer_approval: true
+status: open

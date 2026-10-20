@@ -1,0 +1,48 @@
+schema_version: "2.1"
+id: TH-105
+version: 1
+lot: 1
+title:
+  fr: "Gouvernance : demande d'arbitrage, transitions, catégories"
+  en: "Governance: arbitration request, transitions, categories"
+type: code
+objective: "Modéliser la demande d'arbitrage (catégories 1 à 3, types de décision, origine humaine, agent ou règle) et son cycle de la proposition à la clôture, avec des transitions autorisées par rôle, datées et tracées, exposées par l'API REST."
+scope:
+  paths: [packages/core/src/arbitration/, packages/db/src/schema/arbitration.ts, packages/db/migrations/, apps/api/src/routes/arbitration/, locales/fr/arbitration.json, locales/en/arbitration.json]
+inputs:
+  paths: [docs/specs/gouvernance.md, docs/specs/annexes-formats.md, docs/specs/api-et-mcp.md, docs/specs/modele-de-donnees.md, schemas/arbitration-request.schema.json, examples/arbitration-request/, skills/tokenhood-contribute/, packages/core/README.md]
+outputs:
+  kind: pull_request
+acceptance:
+  commands:
+    - "pnpm install --frozen-lockfile"
+    - "pnpm check"
+    - "TEST_DATABASE_URL=postgres://tokenhood:tokenhood@localhost:5432/tokenhood_test pnpm test:integration"
+  requirements:
+    - "Une demande conserve tous les champs de schemas/arbitration-request.schema.json ; l'API refuse une demande non conforme et chaque exemple valide de examples/arbitration-request/ est accepté puis relu à l'identique (tests)"
+    - "Les types de décision de docs/specs/gouvernance.md (catégorie, mode, délai minimal) forment une configuration versionnée, marquée comme proposition en attente de la charte ; chaque type mène à sa catégorie, security.emergency hors catégorie (tests)"
+    - "Cycle documenté dans le module : proposée, qualifiée, en instruction, en délibération, au vote, close (décidée, irrecevable, fusionnée avec un doublon, retirée). Chaque transition permise a un test, chaque transition interdite est refusée par un test ; les transitions de vote et de décision sont définies ici, leurs effets relèvent de TH-106 et TH-107"
+    - "Qualification : recevabilité, catégorie confirmée ou modifiée, fusion des doublons, échéance calculée selon la catégorie et le type, en heures ouvrées pour la catégorie 1 (du lundi au vendredi, fuseau Europe/Paris, jours fériés hors périmètre) (tests)"
+    - "Rôles : tout utilisateur inscrit peut proposer ; la qualification et les transitions suivantes sont réservées au rôle administrateur provisoire de TH-102 jusqu'à TH-104 ; un acteur agent peut créer une demande, bloquante ou non, avec raised_by de type agent, mais ne peut jamais qualifier, voter, décider ni clore, quelle que soit la route (tests). Une demande de type rule ne se crée que par un service interne, sans route publique"
+    - "Chaque transition produit un événement d'audit (acteur, date UTC, état avant et après, motif) ; l'historique d'une demande est lisible par l'API"
+    - "API /v1/decision-requests : création, liste paginée par curseur et filtrée par catégorie et état, lecture, transitions ; Idempotency-Key sur les écritures, ETag et If-Match sur les transitions, erreurs localisées ; description OpenAPI"
+    - "Libellés des catégories, types et états en FR et EN dans locales/<lang>/arbitration.json ; aucune interface web dans cette mission (la console suit les maquettes de TH-110)"
+    - "Conventions de module de TH-102 respectées : aucun fichier hors du périmètre ; migration produite par drizzle-kit sur main à jour, jamais retouchée à la main, régénérée après rebase si une autre migration a été intégrée entre-temps"
+dependencies:
+  - mission: TH-102
+    type: integrated
+skills: [tokenhood-contribute@0.1]
+estimate:
+  size: M
+  tokens_eq: null          # à produire par l'agent au cadrage
+  source: plan
+risk: medium
+attempts: {mode: exclusive}
+execution:
+  max_lease_minutes: 240
+  environment: container
+verification:
+  reviewers: 1
+  prefer_different_model_family: false
+  maintainer_approval: true
+status: open

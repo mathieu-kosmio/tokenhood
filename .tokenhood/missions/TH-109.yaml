@@ -1,0 +1,49 @@
+schema_version: "2.1"
+id: TH-109
+version: 1
+lot: 1
+title:
+  fr: "Capacité : agents, autorisations, engagements et statuts"
+  en: "Capacity: agents, authorizations, pledges and statuses"
+type: code
+objective: "Permettre à un contributeur de déclarer ses agents, d'émettre pour eux des autorisations révocables à portée limitée et d'engager une capacité datée dans son unité native, avec des statuts calculés sans double comptage."
+scope:
+  paths: [packages/core/src/capacity/, packages/db/src/schema/capacity.ts, packages/db/migrations/, apps/api/src/routes/capacity/, apps/api/src/auth/, apps/web/src/routes/account/agents/, apps/web/src/routes/account/authorizations/, apps/web/src/routes/account/pledges/, locales/fr/capacity.json, locales/en/capacity.json]
+inputs:
+  paths: [docs/specs/inscription-et-identite.md, docs/specs/capacite.md, docs/specs/api-et-mcp.md, docs/specs/securite-et-conformite.md, docs/specs/modele-de-donnees.md, docs/specs/recette-mvp.md, schemas/usage-report.schema.json, packages/core/README.md]
+outputs:
+  kind: pull_request
+acceptance:
+  commands:
+    - "pnpm install --frozen-lockfile"
+    - "pnpm check"
+    - "TEST_DATABASE_URL=postgres://tokenhood:tokenhood@localhost:5432/tokenhood_test pnpm test:integration"
+  requirements:
+    - "Agent : nom unique par utilisateur, client, famille de modèle (valeurs de model_family de schemas/usage-report.schema.json), mode de capacité (API, abonnement, local), capacités, langues de travail, environnement (conteneur, VM, poste nu) ; modifiable, archivé et jamais effacé"
+    - "Autorisation : émise par l'humain pour un de ses agents, portée (projets désignés par la référence de dépôt de TH-102 ou pot commun, types de missions, plafond de capacité dans l'unité native, échéance obligatoire) ; elle produit un jeton propre à Tokenhood, montré une seule fois et conservé haché (tests)"
+    - "Un jeton valide authentifie un acteur agent (agent, autorisation, utilisateur responsable) ; après révocation ou échéance, toute requête qui le présente est refusée immédiatement (tests d'intégration)"
+    - "Un acteur agent ne peut ni déclarer d'agent, ni émettre ou révoquer d'autorisation, ni engager de capacité, ni modifier un profil ou des liens d'intérêt (tests) ; aucun champ n'accepte une clé ou un identifiant de fournisseur d'IA, toute propriété inconnue est refusée (test)"
+    - "Engagement : mode, unité native (tokens, montant, heures d'agent, missions), quantité, période, fléché vers un projet ou mutualisé dans le pot commun ; statut active, expired, withdrawn ou allocated, expired se déduisant de la période à la date de lecture, allocated réservé à la coordination du lot 2 (tests)"
+    - "Agrégation de la capacité promise par utilisateur, mode, unité et destination : exclut les engagements expirés, retirés et affectés, n'additionne jamais deux unités natives différentes et ne compte jamais deux fois une même enveloppe, ni entre fléché et mutualisé, ni entre deux périodes (tests sur jeux de données adverses)"
+    - "Création, modification, révocation et retrait produisent un événement d'audit"
+    - "API /v1/agents, /v1/authorizations et /v1/pledges décrites dans l'OpenAPI, Idempotency-Key sur les écritures, ETag et If-Match sur les modifications, erreurs localisées"
+    - "Rubriques « Agents », « Autorisations » et « Engagements » de l'espace Compte, en FR et EN, utilisables au clavier ; le jeton s'affiche une seule fois avec une consigne de conservation ; la révocation demande confirmation"
+    - "Conventions de module de TH-102 respectées : aucun fichier hors du périmètre ; dans apps/api/src/auth/, seul l'ajout de l'authentification par jeton d'agent ; migration produite par drizzle-kit sur main à jour, jamais retouchée à la main, régénérée après rebase si une autre migration a été intégrée entre-temps"
+dependencies:
+  - mission: TH-102
+    type: integrated
+skills: [tokenhood-contribute@0.1]
+estimate:
+  size: M
+  tokens_eq: null          # à produire par l'agent au cadrage
+  source: plan
+risk: medium
+attempts: {mode: exclusive}
+execution:
+  max_lease_minutes: 240
+  environment: container
+verification:
+  reviewers: 1
+  prefer_different_model_family: false
+  maintainer_approval: true
+status: open
