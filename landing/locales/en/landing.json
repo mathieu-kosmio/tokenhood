@@ -183,7 +183,7 @@
       },
       {
         "q": "Is the code open?",
-        "a": "Yes. The repository is public from the bootstrap phase. The free licence is being decided by governance."
+        "a": "Yes. The repository is public from the bootstrap phase. The platform code is licensed under AGPL-3.0, the protocol (schemas, skills) under Apache-2.0 and the documentation under CC BY 4.0."
       }
     ]
   },

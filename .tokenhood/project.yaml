@@ -2,7 +2,7 @@ schema_version: "2.1"
 project:
   id: tokenhood
   name: Tokenhood
-  license: TBD                 # AGPL-3.0-only proposée, décision de gouvernance au lot 0
+  license: AGPL-3.0-only      # DEC-2026-005 ; Apache-2.0 pour le protocole, CC-BY-4.0 pour docs/ et decisions/
   languages: [fr, en]
   repository:
     provider: github

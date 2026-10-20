@@ -39,7 +39,7 @@
         "title": "Propriété intellectuelle",
         "rows": [],
         "paragraphs": [
-          "Le code source de Tokenhood est public sur GitHub : https://github.com/mathieu-kosmio/tokenhood. Le choix de sa licence libre est en cours de décision par la gouvernance du projet.",
+          "Le code source de Tokenhood est public sur GitHub : https://github.com/mathieu-kosmio/tokenhood. La plateforme est publiée sous licence AGPL-3.0, le protocole (schémas, skills, outil de mesure) sous Apache-2.0 et la documentation sous CC BY 4.0 (décision DEC-2026-005).",
           "Le nom et le logo de Kosmio restent la propriété de Kosmio. Les polices Lexend, Public Sans et JetBrains Mono sont distribuées sous licence SIL Open Font License 1.1."
         ]
       }

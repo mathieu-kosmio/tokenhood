@@ -183,7 +183,7 @@
       },
       {
         "q": "Le code est-il ouvert ?",
-        "a": "Oui. Le dépôt est public dès l'amorçage. Le choix de la licence libre est en cours de décision par la gouvernance."
+        "a": "Oui. Le dépôt est public dès l'amorçage. Le code de la plateforme est sous licence AGPL-3.0, le protocole (schémas, skills) sous Apache-2.0 et la documentation sous CC BY 4.0."
       }
     ]
   },
