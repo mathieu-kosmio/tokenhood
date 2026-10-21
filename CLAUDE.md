@@ -19,9 +19,9 @@ Principes non négociables :
 - Plan de développement (56 missions, 5 lots) : https://claude.ai/code/artifact/c4fd5cb0-43b3-487d-a5a8-b98bf86c0a94
 - Décisions : `decisions/` (DEC-2026-001 direction artistique, DEC-2026-002 déploiement, DEC-2026-003 landing, DEC-2026-004 choix d'amorçage du skill contribute, DEC-2026-005 licences du dépôt, ADR-001 coordination et place de tokenpool, instruite par TH-006 et adoptée le 20/10/2026, ADR-002 stack proposée par TH-007)
 
-## État au 20/10/2026
+## État au 21/10/2026
 
-- Lot 0 (amorçage) en cours ; missions TH-001 à TH-029 publiées, 19 intégrées ; suites TH-021 à TH-029 publiées par la PR #31. Lot 1 : TH-101 intégrée en avance ; contrats TH-102, TH-103, TH-105, TH-109 et TH-114 publiés (PR #28), sans `priority` ; TH-116 publiée en `draft` (PR #31), à passer à `open` maintenant que TH-102 et TH-114 sont sur `main`. Réservables : TH-012, TH-021 à TH-025 et TH-027 à TH-029 ; TH-102 en cours (PR TH-102) ; TH-026 attend TH-022 ; TH-103, TH-105, TH-109 et TH-114 attendent l'intégration de TH-102.
+- Lot 0 (amorçage) en cours ; missions TH-001 à TH-029 publiées, 19 intégrées ; suites TH-021 à TH-029 publiées par la PR #31. Lot 1 : TH-101 et TH-102 intégrées ; contrats TH-103, TH-105, TH-109 et TH-114 publiés (PR #28), sans `priority` ; TH-116 publiée en `draft` (PR #31), passée à `open` en version 2 avec les dépendances TH-102 et TH-114 (PR #36) ; TH-110 et TH-115 ont leurs dépendances intégrées mais pas encore de contrat. Réservables : TH-012, TH-021 à TH-025, TH-027 à TH-029, TH-103, TH-105, TH-109 et TH-114 ; TH-026 attend TH-022 ; TH-116 attend TH-114. Aucune mission en cours ni réservée au 21/10/2026.
 - Dépôt public. Licences (DEC-2026-005, PR #30) : AGPL-3.0-only pour la plateforme et le reste du dépôt, Apache-2.0 pour `schemas/`, `examples/`, `skills/` et `tools/usage/`, CC BY 4.0 pour `docs/` et `decisions/` ; un fichier `LICENSE` par couche.
 - Dépôt réglé : description, site, sujets, labels, Discussions activées. Les catégories Clarifications, Décisions, Propositions restent à créer dans l'interface GitHub (aucune API).
 - `main` protégée : PR obligatoire (y compris pour les administrateurs), historique linéaire (fusion en rebase ou squash), conversations résolues, ni force-push ni suppression. Zéro approbation requise tant que le porteur est seul mainteneur ; depuis le 18/10/2026, les 10 statuts de CI listés plus bas sont requis et la branche doit être à jour avec `main` avant fusion.
@@ -47,6 +47,10 @@ Fusionnées en rebase, une par une, après mise à jour sur `main` et CI verte :
 - TH-014 (#29) : runbook Coolify, `docs/exploitation/`, FR et EN.
 - Contrats du lot 1 (#28) : TH-102, TH-103, TH-105, TH-109, TH-114.
 - TH-006 (#22, audit de tokenpool, dossier d'options et ADR-001 ; passage à `integrated` par #32). ADR-001 adoptée par le porteur, option B : réimplémentation compatible, sans reprise du code de tokenpool. Le module de coordination (TH-202, `packages/core`) aligne ses mécanismes de réservation sur tokenpool (mise à jour conditionnelle, preuve opaque, bail de 600 s renouvelé par heartbeat) et y ajoute générations, plafond `max_lease_minutes`, `Idempotency-Key`, états de soumission et de revue ; une façade compatible tokenpool, limitée au périmètre réservation, fait l'objet d'une mission S distincte, reportable à la porte du lot 2. Les trois réponses par défaut de la PR #22 (conduite `continue`) sont acceptées avec la fusion.
+
+### Intégré sur `main` le 21/10/2026
+
+TH-102 (#34, passage à `integrated` par #35) : identité (OAuth GitHub, profil, langues), socle de données `packages/db` (Drizzle, migrations, service `migrate`), conventions de module (voir « Plateforme »). La connexion reste indisponible en production (constaté le 21/10/2026 sur `/login`) tant que l'application OAuth GitHub et les variables Coolify ne sont pas en place (voir « Déploiement »).
 
 ## Landing (`landing/`)
 
@@ -120,7 +124,7 @@ Statuts obligatoires sur `main` depuis le 18/10/2026 (protection de branche, sou
 2. Porteur : formulaire Brevo et `BREVO_FORM_ACTION` ; catégories Discussions (puis `contribute.discussionCategory` de `landing/site.config.json`, `general` en attendant) ; watch paths Coolify de la landing complétés par `docs/specs/plan-de-developpement.md` et `decisions/**`.
 3. Suites d'ADR-001 : confronter TH-009 à la décision (voir plus haut) ; mission S « façade compatible tokenpool » à ajouter au plan du lot 2 et au backlog, par une mission de mise à jour du plan ; qualificatif « éprouvé » du protocole de tokenpool à corriger dans `docs/specs/coordination.md` (FR et EN), par TH-029 (PR #31) ; décision du porteur sur l'instance tokenpool d'amorçage (catégorie 1 ; licence choisie par DEC-2026-005), puis `CONTRIBUTING.md` et TH-210 selon la voie retenue.
 4. Relire les textes de la landing, les pages légales et la traduction EN des spécifications et de la charte (statut `machine`).
-5. Missions suivantes : TH-102 (identité, OAuth GitHub, `packages/db` avec Drizzle) en revue ; après son intégration, l'application OAuth GitHub et les variables Coolify (porteur), puis TH-103, TH-105, TH-109 et TH-114 ; TH-012 (projet externe pilote) ; suites du lot 0 TH-021 à TH-029 (feuille de route : TH-012, TH-021, TH-022 en tête) ; le stockage S3 laissé hors de TH-013.
+5. Missions suivantes : l'application OAuth GitHub et les variables Coolify (porteur), pour ouvrir la connexion livrée par TH-102 ; TH-103, TH-105, TH-109 et TH-114, réservables depuis l'intégration de TH-102, puis TH-116 après TH-114 ; contrats de TH-110 et TH-115 à rédiger ; TH-012 (projet externe pilote) ; suites du lot 0 TH-021 à TH-029 (feuille de route : TH-012, TH-021, TH-022 en tête, faute de `priority`) ; le stockage S3 laissé hors de TH-013.
 
 ## Conventions de commit
 
