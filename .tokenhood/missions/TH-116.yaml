@@ -1,6 +1,6 @@
 schema_version: "2.1"
 id: TH-116
-version: 1
+version: 2
 lot: 1
 title:
   fr: "Base PostgreSQL hors du compose : DATABASE_URL fournie par l'environnement"
@@ -24,10 +24,14 @@ acceptance:
     - "Runbook FR et EN (docs/exploitation/) : base autonome gérée par Coolify pour le staging comme pour la production ; procédure de bascule de la ressource actuelle (créer la base dans l'environnement staging, renseigner DATABASE_URL dans Coolify avant la fusion de cette PR, faute de quoi le déploiement automatique échoue ; données de test reprises ou abandonnées ; témoin du schéma exploitation ; volume pgdata retiré après vérification) ; sections 1, 6.3 et 11 à jour"
     - "CLAUDE.md : sections Plateforme et Déploiement à jour (services du compose, DATABASE_URL, SERVICE_PASSWORD_POSTGRES retiré de la ressource après la bascule)"
     - "Aucune donnée, aucun volume ni aucun réglage de Coolify touchés par l'agent : la PR liste dans l'ordre les gestes du porteur à faire avant sa fusion et n'en accomplit aucun ; aucun secret dans le dépôt"
-dependencies:                # à compléter à la publication par TH-102 et TH-114 (integrated), absents de main tant que la PR #28 n'est pas fusionnée
+dependencies:
   - mission: TH-013
     type: integrated
   - mission: TH-014
+    type: integrated
+  - mission: TH-102
+    type: integrated
+  - mission: TH-114
     type: integrated
 skills: [tokenhood-contribute@0.1]
 estimate:
@@ -43,4 +47,4 @@ verification:
   reviewers: 1
   prefer_different_model_family: false
   maintainer_approval: true
-status: draft                # à passer à open (version 2) quand TH-102 et TH-114 seront publiées sur main et ajoutées aux dépendances
+status: open
