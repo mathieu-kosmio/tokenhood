@@ -140,7 +140,7 @@
       "TH-027": "Une faille de sécurité se signale en privé, selon une procédure publique.",
       "TH-028": "Le bouton « Contribuer » ouvre directement la réservation de la mission.",
       "TH-029": "La spécification décrit tokenpool tel que l'audit l'a trouvé.",
-      "TH-030": "Les images partent des versions corrigées de Node.js et nginx.",
+      "TH-030": "Les images et les dépendances de la plateforme portent les correctifs de sécurité d'octobre 2026.",
       "TH-101": "Le socle de l'application est posé, bilingue dès la première ligne.",
       "TH-102": "On se connecte avec son compte GitHub et on choisit ses langues.",
       "TH-103": "Les liens d'intérêt sont déclarés et écartent d'eux-mêmes les conflits.",

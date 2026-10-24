@@ -140,7 +140,7 @@
       "TH-027": "Security vulnerabilities are reported privately, following a public procedure.",
       "TH-028": "The \"Contribute\" button opens the mission's claim directly.",
       "TH-029": "The specification describes tokenpool as the audit found it.",
-      "TH-030": "The images start from the patched Node.js and nginx versions.",
+      "TH-030": "The platform's images and dependencies carry the October 2026 security fixes.",
       "TH-101": "The application's foundation is laid, bilingual from the first line.",
       "TH-102": "You sign in with your GitHub account and choose your languages.",
       "TH-103": "Declared interests keep conflicted reviewers and voters out automatically.",

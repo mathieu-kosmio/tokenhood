@@ -3,12 +3,12 @@ id: TH-030
 version: 1
 lot: 0
 title:
-  fr: "Images de base épinglées sur les versions corrigées de Node.js et nginx"
-  en: "Base images pinned to the patched Node.js and nginx versions"
+  fr: "Correctifs de sécurité d'octobre 2026 : images de base Node.js et nginx, fast-uri"
+  en: "October 2026 security fixes: Node.js and nginx base images, fast-uri"
 type: code
-objective: "Épingler les images de base du Dockerfile de la plateforme et de celui de la landing sur des versions exactes qui corrigent les failles publiées en octobre 2026 : Node.js 22.23.4 (version de sécurité du 21/10/2026, dont CVE-2026-111497 sur le décodeur Brotli, les contournements de vérification d'hôte TLS et la mise à jour des certificats racines) et nginx 1.30.6 (avis d'octobre 2026). Un tag flottant (node:22-alpine, nginx-unprivileged:1.30-alpine) laisse une reconstruction réutiliser une image de base en cache, donc une version non corrigée ; une version exacte force le téléchargement et rend le build reproductible."
+objective: "Épingler les images de base du Dockerfile de la plateforme et de celui de la landing sur des versions exactes qui corrigent les failles publiées en octobre 2026 : Node.js 22.23.4 (version de sécurité du 21/10/2026, dont CVE-2026-111497 sur le décodeur Brotli, les contournements de vérification d'hôte TLS et la mise à jour des certificats racines) et nginx 1.30.6 (avis d'octobre 2026). Un tag flottant (node:22-alpine, nginx-unprivileged:1.30-alpine) laisse une reconstruction réutiliser une image de base en cache, donc une version non corrigée ; une version exacte force le téléchargement et rend le build reproductible. Monter aussi la dépendance transitive fast-uri (via Fastify et ajv) en 3.1.9 et 4.2.3, qui corrigent les avis GHSA-w74x-v6f9-j3xg, GHSA-wjr9-j795-jxcr, GHSA-xhq7-xmqj-769h et GHSA-333x-w4r6-6crp, publiés pendant la mission et qui font échouer deps-audit."
 scope:
-  paths: [Dockerfile, landing/Dockerfile]
+  paths: [Dockerfile, landing/Dockerfile, pnpm-lock.yaml, tools/validate/package-lock.json]
 inputs:
   paths: [Dockerfile, landing/Dockerfile, landing/nginx.conf, compose.yaml]
 outputs:
@@ -19,6 +19,7 @@ acceptance:
     - "L'image de service de la landing part de nginxinc/nginx-unprivileged:1.30.6-alpine"
     - "Aucun tag suffixé par une version d'Alpine (ces tags cessent d'être mis à jour quand l'image change d'Alpine)"
     - "Rien d'autre ne change dans les images : étapes, utilisateur non root, retrait de npm, corepack et yarn, healthchecks"
+    - "fast-uri est résolu en 3.1.9 et 4.2.3 dans pnpm-lock.yaml et en 3.1.9 dans tools/validate/package-lock.json, par mise à jour du lockfile seule (aucun package.json modifié, aucune exception à la politique d'âge minimal) ; pnpm audit --prod et npm audit --omit=dev ne relèvent plus rien à partir de moderate"
     - "Les statuts requis sur main passent, dont compose, image, trivy-image et trivy-repo"
     - "Après le déploiement par Coolify, node --version dans le conteneur api renvoie v22.23.4 (constat du porteur)"
 dependencies:
