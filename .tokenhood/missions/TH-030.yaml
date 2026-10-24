@@ -1,0 +1,46 @@
+schema_version: "2.1"
+id: TH-030
+version: 1
+lot: 0
+title:
+  fr: "Images de base épinglées sur les versions corrigées de Node.js et nginx"
+  en: "Base images pinned to the patched Node.js and nginx versions"
+type: code
+objective: "Épingler les images de base du Dockerfile de la plateforme et de celui de la landing sur des versions exactes qui corrigent les failles publiées en octobre 2026 : Node.js 22.23.4 (version de sécurité du 21/10/2026, dont CVE-2026-111497 sur le décodeur Brotli, les contournements de vérification d'hôte TLS et la mise à jour des certificats racines) et nginx 1.30.6 (avis d'octobre 2026). Un tag flottant (node:22-alpine, nginx-unprivileged:1.30-alpine) laisse une reconstruction réutiliser une image de base en cache, donc une version non corrigée ; une version exacte force le téléchargement et rend le build reproductible."
+scope:
+  paths: [Dockerfile, landing/Dockerfile]
+inputs:
+  paths: [Dockerfile, landing/Dockerfile, landing/nginx.conf, compose.yaml]
+outputs:
+  kind: pull_request
+acceptance:
+  requirements:
+    - "Les étapes du Dockerfile de la plateforme et l'étape de build de la landing partent de node:22.23.4-alpine ; aucune ne garde le tag flottant node:22-alpine"
+    - "L'image de service de la landing part de nginxinc/nginx-unprivileged:1.30.6-alpine"
+    - "Aucun tag suffixé par une version d'Alpine (ces tags cessent d'être mis à jour quand l'image change d'Alpine)"
+    - "Rien d'autre ne change dans les images : étapes, utilisateur non root, retrait de npm, corepack et yarn, healthchecks"
+    - "Les statuts requis sur main passent, dont compose, image, trivy-image et trivy-repo"
+    - "Après le déploiement par Coolify, node --version dans le conteneur api renvoie v22.23.4 (constat du porteur)"
+dependencies:
+  - mission: TH-013
+    type: integrated
+  - mission: TH-017
+    type: integrated
+skills: [tokenhood-contribute@0.1]
+languages:
+  source: fr
+  targets: [en]
+estimate:
+  size: S
+  tokens_eq: null          # à produire par l'agent au cadrage
+  source: agent
+risk: low
+attempts: {mode: exclusive}
+execution:
+  max_lease_minutes: 120
+  environment: any
+verification:
+  reviewers: 1
+  prefer_different_model_family: false
+  maintainer_approval: true
+status: in_progress
