@@ -5,7 +5,7 @@
 #   docker run -e DATABASE_URL=… tokenhood-app node packages/db/dist/migrate.js
 # La landing a sa propre image : landing/Dockerfile.
 
-FROM node:22-alpine AS base
+FROM node:22.23.4-alpine AS base
 ENV COREPACK_ENABLE_DOWNLOAD_PROMPT=0
 RUN corepack enable
 WORKDIR /repo
@@ -32,7 +32,7 @@ FROM base AS prod-deps
 RUN pnpm install --frozen-lockfile --prod
 
 # Exécution : utilisateur non root, aucun secret, aucun outil de build.
-FROM node:22-alpine AS runtime
+FROM node:22.23.4-alpine AS runtime
 # Seul node sert à l'exécution : npm, corepack et yarn de l'image de base sont retirés, avec les vulnérabilités
 # de leurs dépendances embarquées (scan Trivy de TH-015).
 RUN rm -rf /usr/local/lib/node_modules /usr/local/bin/npm /usr/local/bin/npx /usr/local/bin/corepack \

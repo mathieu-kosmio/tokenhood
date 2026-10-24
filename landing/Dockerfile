@@ -5,7 +5,7 @@
 #   docker build -f landing/Dockerfile -t tokenhood-landing .
 #   docker build -f landing/Dockerfile --build-arg BREVO_FORM_ACTION=https://xxx.sibforms.com/serve/... .
 
-FROM node:22-alpine AS build
+FROM node:22.23.4-alpine AS build
 WORKDIR /repo/landing
 COPY landing/package.json landing/package-lock.json ./
 RUN npm ci --ignore-scripts --no-audit --no-fund
@@ -17,7 +17,7 @@ COPY landing/ ./
 ARG BREVO_FORM_ACTION=""
 RUN npm test && BREVO_FORM_ACTION="$BREVO_FORM_ACTION" npm run build
 
-FROM nginxinc/nginx-unprivileged:1.30-alpine
+FROM nginxinc/nginx-unprivileged:1.30.6-alpine
 COPY landing/nginx.conf /etc/nginx/conf.d/default.conf
 COPY --from=build /repo/landing/dist /usr/share/nginx/html
 # Utilisateur non root de l'image de base (nginx, uid 101), déclaré pour le contrôle de configuration de Trivy (TH-015).
